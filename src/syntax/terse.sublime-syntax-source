@@ -1,0 +1,504 @@
+%YAML 1.2
+---
+_extends: human-readable.sublime-syntax-source
+
+variables:
+
+  # CONTEXT CONTROL PATTERNS ###################################################
+  MAT_word_or_any_one_char: '\w+|\S'
+  PLA_anything: '(?=[\S\s])'
+
+  whitespace: '\s+'
+
+  KEYWORD_BOUNDARY: '[\s{(\[*#$?^/"'']'
+
+  PN_PREFIX: >-
+    (?x)
+      (?:
+        {{PN_CHARS_BASE}}
+        (?:
+          (?:{{PN_CHARS}}|\.)*
+          {{PN_CHARS}}
+        )?
+      )
+
+  PN_LOCAL: >-
+    (?x)
+      (?:
+        (?:
+          {{PN_CHARS_U}}|:|[0-9]
+        )
+        (?:
+          (?:
+            {{PN_CHARS}}|\.|:
+          )*
+          (?:
+            {{PN_CHARS}}|:
+          )
+        )?
+      )
+
+  PN_LOCAL_ESC: '\\[-_~.!$&''()*+,;=/?#@%]'
+  PLX: '(?:%{{HEX}}{2}|{{PN_LOCAL_ESC}})'
+
+  EXPONENT: '([eE])([+-]?)([0-9]+)'
+  STRING_SHORT_SINGLE: '[^\x{27}\x{5C}\x{0A}\x{0D}]'
+  STRING_SHORT_DOUBLE: '[^\x{22}\x{5C}\x{0A}\x{0D}]'
+  ECHAR_SINGLE: '(?:\\[tbnrf''\\])'
+  ECHAR_DOUBLE: '(?:\\[tbnrf"\\])'
+
+
+  BLANK_NODE_LABEL: '(?:{{PN_CHARS_U}}|[0-9])(?:(?:{{PN_CHARS}}|\.)*{{PN_CHARS}})?'
+
+
+  # lookaheads
+
+  openBrace_LOOKAHEAD: '(?=\{)'
+  openParen_LOOKAHEAD: '(?=\()'
+
+  prefixedName_LOOKAHEAD: '(?={{PN_PREFIX}}?:)'
+
+  pnLocal_LOOKAHEAD: >-
+    (?x)
+      (?=
+        (?:
+          {{PN_CHARS_U}}|:|[0-9]|{{PLX}}
+        )
+        (?:
+          (?:
+            {{PN_CHARS}}|\.|:||{{PLX}}
+          )*
+          (?:
+            {{PN_CHARS}}|:||{{PLX}}
+          )
+        )?
+      )
+
+  numericLiteral_LOOKAHEAD: '(?=[0-9+-]|\.[0-9])'
+  booleanLiteral_LOOKAHEAD: '(?i)(?=(?:true|false){{KEYWORD_BOUNDARY}})'
+
+  a_LOOKAHEAD: '(?=a{{KEYWORD_BOUNDARY}})'
+
+  collection_LOOKAHEAD: '(?=\()'
+
+  literal_LOOKAHEAD: '(?={{stringLiteral_LOOKAHEAD}}|{{numericLiteral_LOOKAHEAD}}|{{booleanLiteral_LOOKAHEAD}})'
+
+  namedNode_LOOKAHEAD: '(?:{{iriRef_LOOKAHEAD}}|{{prefixedName_LOOKAHEAD}})'
+
+  node_LOOKAHEAD: '(?:{{namedNode_LOOKAHEAD}}|{{blankNode_LOOKAHEAD}})'
+
+  object_LOOKAHEAD: '{{node_LOOKAHEAD}}|{{literal_LOOKAHEAD}}|{{collection_LOOKAHEAD}}'
+
+  tripleTerminator_LOOKAHEAD: '(?=[.\])}#])'
+  objectTerminator_LOOKAHEAD: '(?=[;,^@]|{{tripleTerminator_LOOKAHEAD}})'
+
+contexts:
+  baseDeclarationSparql:
+    - meta_scope: meta.base-declaration.keyword.SYNTAX
+    - _case: base
+      scope: storage.type.base.sparql.SYNTAX
+      set: baseDeclaration_AFTER_KEYWORD
+
+  baseDeclaration_AFTER_KEYWORD:
+    - _iriRef:
+        scope: base-declaration
+        pop: true
+    - _throw: true
+
+  prefixDeclarationSparql:
+    - _case: prefix
+      scope: storage.type.prefix.sparql.SYNTAX
+      set: [prefixDeclarationSparql_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD]
+
+  prefixDeclaration_AFTER_KEYWORD:
+    - meta_include_prototype: false
+    - match: '\s+'
+      scope: meta.whitespace.SYNTAX
+      pop: true
+    - include: prototype
+    - _throw: false
+
+  prefixDeclarationSparql_AFTER_KEYWORD_SPACE:
+    - _registeredPrefixDeclarations: sparql
+    - match: '(({{PN_PREFIX}}?)(:))'
+      captures: 
+        1: meta.prefix-declaration.sparql.namespace.SYNTAX
+        2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.SYNTAX
+        3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
+      set: prefixDeclaration_AFTER_NAME
+    - match: '{{MAT_word_or_any_one_char}}'
+      scope: meta.prefix-declaration.sparql.namespace.SYNTAX invalid.illegal.token.expected.prefixDeclarationSparql_AFTER_KEYWORD_SPACE.SYNTAX
+      pop: true
+
+  prefixDeclaration_AFTER_NAME:
+    - _iriRef:
+        scope: prefix-declaration
+        pop: true
+    - _throw: true
+
+
+  # subjectData:
+  #   - _node:
+  #       scope: subject
+  #       pop: true
+  #   - match: '\['
+  #     scope: punctuation.definition.blank-node-property-list.begin.subject.SYNTAX
+  #     set: [blankNodePropertyList_TERMINATE, pair_REQUIRED]
+  #   # - match: '\('
+  #   #   scope: punctuation.definition.collection.begin.subject.SYNTAX
+  #   #   set: [collection_TERMINATE, triple_AFTER_OBJECT_COLLECTION_BEGIN]
+  #     # scope: p
+  #   - _throw: true
+
+  predicateData:
+    - match: '{{a_LOOKAHEAD}}'
+      set: a
+    - _namedNode:
+        scope: predicate
+        pop: true
+
+  a:
+    - match: 'a(?={{KEYWORD_BOUNDARY}})'
+      scope: support.constant.predicate.a.SYNTAX
+      pop: true
+    - _throw: true
+
+  objectData:
+    - _switch: [collection, labeledBlankNode]
+    - _namedNode:
+        scope: object
+        pop: true
+    - include: literal
+    - _throw: true
+
+  literal:
+    - match: '{{stringLiteral_LOOKAHEAD}}'
+      set: rdfLiteral
+    - match: '(true)|(false)'
+      captures: 
+        1: constant.language.boolean.true.SYNTAX
+        2: constant.language.boolean.false.SYNTAX
+      pop: true
+    - include: numericLiteral
+
+  blankNodePropertyList:
+    - _open_bracket: definition.blank-node-property-list
+      set: [blankNodePropertyList_TERMINATE, predicateObjectList]
+    - _throw: true
+
+  blankNodePropertyList_TERMINATE:
+    - _close_bracket: definition.blank-node-property-list
+      pop: true
+    - _throw: true
+
+  predicateObjectList_REQUIRED:
+    - _goto: predicateObjectList
+
+  predicateObjectList_OPTIONAL:
+    - _switch:
+        - verb: predicateObjectList
+    - match: '{{tripleTerminator_LOOKAHEAD}}'
+      pop: true
+    - _throw: false
+
+  predicateObjectList:
+    - _goto: [predicateObjectList_AFTER_OBJECT_LIST, objectList, verb]
+
+  predicateObjectList_AFTER_OBJECT_LIST:
+    - match: ';'
+      scope: punctuation.separator.predicate-object-list.SYNTAX
+      set: predicateObjectList_OPTIONAL
+    - include: else_pop
+
+  objectList:
+    - _goto: [objectList_AFTER_OBJECT, object]
+
+  objectList_AFTER_OBJECT:
+    - match: ','
+      scope: punctuation.separator.object.rq
+      push: object
+    - match: '{{objectTerminator_LOOKAHEAD}}'
+      pop: true
+    - _throw: false
+    # - include: else_pop
+
+  collection:
+    - _open_paren: section.collection
+      set: collection_AFTER_BEGIN
+    - _throw: true
+
+  collection_TERMINATE:
+    - _close_paren: section.collection
+      pop: true
+    - _throw: true
+
+  numericLiteral:
+    - match: '((?:(\+)|(-))?([0-9]+)(\.)([0-9]*){{EXPONENT}})'
+      captures:
+        1: constant.numeric.decimal.SYNTAX
+        2: keyword.operator.arithmetic.sign.positive.SYNTAX
+        3: keyword.operator.arithmetic.sign.negative.SYNTAX
+        4: meta.numeric.decimal.characteristic.SYNTAX
+        5: punctuation.decimal.SYNTAX
+        6: meta.numeric.decimal.mantissa.SYNTAX
+        7: meta.numeric.exponent.e.SYNTAX
+        8: meta.numeric.exponent.sign.SYNTAX
+        9: meta.numeric.exponent.digit.SYNTAX
+      pop: true
+    - match: '((?:(\+)|(-))?(\.)?([0-9]+){{EXPONENT}})'
+      captures:
+        1: constant.numeric.decimal.SYNTAX
+        2: keyword.operator.arithmetic.sign.positive.SYNTAX
+        3: keyword.operator.arithmetic.sign.negative.SYNTAX
+        4: punctuation.decimal.SYNTAX
+        5: meta.numeric.decimal.mantissa.SYNTAX
+        6: meta.numeric.exponent.e.SYNTAX
+        7: meta.numeric.exponent.sign.SYNTAX
+        8: meta.numeric.exponent.digit.SYNTAX
+      pop: true
+    - match: '((?:(\+)|(-))?([0-9]*)(\.)([0-9]+))'
+      captures:
+        1: constant.numeric.decimal.SYNTAX
+        2: keyword.operator.arithmetic.sign.positive.SYNTAX
+        3: keyword.operator.arithmetic.sign.negative.SYNTAX
+        4: meta.numeric.decimal.characteristic.SYNTAX
+        5: punctuation.decimal.SYNTAX
+        6: meta.numeric.decimal.mantissa.SYNTAX
+      pop: true
+    - match: '((?:(\+)|(-))?([0-9]+))'
+      captures:
+        1: constant.numeric.integer.SYNTAX
+        2: keyword.operator.arithmetic.sign.positive.SYNTAX
+        3: keyword.operator.arithmetic.sign.negative.SYNTAX
+        4: meta.numeric.decimal.integer.SYNTAX
+      pop: true
+
+  rdfLiteral:
+    - _goto: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteral]
+
+  rdfLiteral_AFTER_STRING_LITERAL:
+    - meta_include_prototype: false
+    - include: comment
+    - match: '@'
+      scope: punctuation.separator.language-tag.symbol.SYNTAX
+      set: languageTag
+    - match: '\^\^'
+      scope: punctuation.separator.datatype.symbol.SYNTAX
+      set: datatype
+    - include: else_pop
+
+  stringLiteral:
+    - match: '"""'
+      scope: punctuation.definition.string.begin.literal.double.long.SYNTAX
+      set: stringLiteralLongDouble
+    - match: '"'
+      scope: punctuation.definition.string.begin.literal.double.short.SYNTAX
+      set: stringLiteralShortDouble
+    - match: ''''''''
+      scope: punctuation.definition.string.begin.literal.single.long.SYNTAX
+      set: stringLiteralLongSingle
+    - match: ''''
+      scope: punctuation.definition.string.begin.literal.single.short.SYNTAX
+      set: stringLiteralShortSingle
+    - _throw: true
+
+  stringLiteralLongDouble:
+    - meta_scope: string.quoted.double.literal.long.SYNTAX
+    - meta_include_prototype: false
+    - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
+    - match: '"""'
+      scope: punctuation.definition.string.end.literal.double.long.SYNTAX
+      pop: true
+    - match: '""'
+      push:
+        - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
+        - include: else_pop
+    - match: '"'
+      push:
+        - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
+        - include: else_pop
+    - _throw: true
+
+  stringLiteralLongDouble_AFTER_INNER_QUOTE:
+    - match: '[^"\\]'
+      scope: string.quoted.double.literal.long.SYNTAX
+      set: stringLiteralLongDouble
+    - match: '{{ECHAR_DOUBLE}}'
+      scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.escape.long.SYNTAX
+      set: stringLiteralLongDouble
+    - match: '\\'''
+      scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.escape.pointless.long.SYNTAX
+      set: stringLiteralLongDouble
+    - match: '{{UCHAR}}'
+      scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.unicode.long.SYNTAX
+      set: stringLiteralLongDouble
+    - match: '\\.'
+      scope: string.quoted.double.literal.long.SYNTAX invalid.illegal.escape.SYNTAX
+      pop: true
+
+  stringLiteralShortDouble:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.literal.short.SYNTAX
+    - match: '{{STRING_SHORT_DOUBLE}}+'
+    - match: '"'
+      scope: punctuation.definition.string.end.literal.double.short.SYNTAX
+      pop: true
+    - match: '{{ECHAR_DOUBLE}}'
+      scope: constant.character.escape.literal.escape.short.SYNTAX
+    - match: '\\'''
+      scope: constant.character.escape.literal.escape.pointless.short.SYNTAX
+    - match: '{{UCHAR}}'
+      scope: constant.character.escape.literal.unicode.short.SYNTAX
+    - match: '\\.'
+      scope: invalid.illegal.escape.SYNTAX
+      pop: true
+    - _throw: true
+
+  stringLiteralLongSingle:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.single.literal.long.SYNTAX
+    - include: stringLiteralLongSingle_AFTER_QUOTE
+    - match: ''''''''
+      scope: punctuation.definition.string.end.literal.single.long.SYNTAX
+      pop: true
+    - match: ''''''
+      scope: string.quoted.single.literal.long.SYNTAX
+      push:
+        - include: stringLiteralLongSingle_AFTER_QUOTE
+        - include: else_pop
+    - match: ''''
+      scope: string.quoted.single.literal.long.SYNTAX
+      push:
+        - include: stringLiteralLongSingle_AFTER_QUOTE
+        - include: else_pop
+    - _throw: true
+
+  stringLiteralLongSingle_AFTER_QUOTE:
+    - match: '[^''\\]'
+      scope: string.quoted.single.literal.long.SYNTAX
+      set: stringLiteralLongSingle
+    - match: '{{ECHAR_SINGLE}}'
+      scope: string.quoted.single.literal.long.SYNTAX constant.character.escape.literal.escape.single.SYNTAX
+      set: stringLiteralLongSingle
+    - match: '\\"'
+      scope: string.quoted.single.literal.long.SYNTAX constant.character.escape.literal.escape.pointless.single.SYNTAX
+      set: stringLiteralLongSingle
+    - match: '{{UCHAR}}'
+      scope: string.quoted.single.literal.long.SYNTAX constant.character.escape.literal.unicode.single.SYNTAX
+      set: stringLiteralLongSingle
+    - match: '\\.'
+      scope: string.quoted.double.literal.long.SYNTAX invalid.illegal.escape.SYNTAX
+      pop: true
+
+  stringLiteralShortSingle:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.single.literal.short.SYNTAX
+    - match: '{{STRING_SHORT_SINGLE}}+'
+    - match: ''''
+      scope: punctuation.definition.string.end.literal.single.short.SYNTAX
+      pop: true
+    - match: '{{ECHAR_SINGLE}}'
+      scope: constant.character.escape.literal.escape.short.SYNTAX
+    - match: '\\'''
+      scope: constant.character.escape.literal.escape.pointless.short.SYNTAX
+    - match: '{{UCHAR}}'
+      scope: constant.character.escape.literal.unicode.short.SYNTAX
+    - match: '\\.'
+      scope: invalid.illegal.escape.SYNTAX
+      pop: true
+    - _throw: true
+
+  languageTag:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.SYNTAX
+    - match: '[a-zA-Z]+'
+      scope: meta.language-tag.primary.SYNTAX
+      set: languageTag_AFTER_PRIMARY
+    - _throw: true
+
+  languageTag_AFTER_PRIMARY:
+    - meta_include_prototype: false
+    - match: '-'
+      scope: punctuation.separator.language-tag.hyphen.SYNTAX
+      set: languageTag_AFTER_SEPARATOR
+    - match: '{{PLA_anything}}'
+      pop: true
+
+  languageTag_AFTER_SEPARATOR:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.SYNTAX
+    - match: '[a-zA-Z0-9]+'
+      scope: meta.language-tag.subtag.SYNTAX
+      set: languageTag_AFTER_PRIMARY
+    - _throw: true
+
+  datatype:
+    - meta_include_prototype: false
+    - _namedNode:
+        scope: datatype
+        pop: true
+    - _throw: true
+
+  namedNode:
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set: iriRef
+    - match: '{{prefixedName_LOOKAHEAD}}'
+      set: prefixedName
+    - _throw: true
+
+  iriRef:
+    - match: '<'
+      scope: punctuation.definition.iri.begin.SYNTAX
+      set: iriRef_AFTER_BEGIN
+    - _throw: true
+
+  iriRef_AFTER_BEGIN:
+    - meta_include_prototype: false
+    - match: '{{IRI_CONTENTS}}'
+      scope: string.unquoted.iri.SYNTAX
+    - match: '{{UCHAR}}'
+      scope: constant.character.escape.iri.SYNTAX
+    - match: '>'
+      scope: punctuation.definition.iri.end.SYNTAX
+      pop: true
+    - match: '\s'
+      scope: invalid.illegal.token.expected.iriRef_AFTER_BEGIN.SYNTAX
+    - _throw: false
+
+  prefixedName:
+    - match: '({{PN_PREFIX}}?)(:)'
+      captures:
+        1: variable.other.readwrite.prefixed-name.namespace.SYNTAX
+        2: punctuation.separator.prefixed-name.namespace.SYNTAX
+      set: prefixedName_AFTER_PREFIX_NAMESPACE
+
+  prefixedName_AFTER_PREFIX_NAMESPACE:
+    - meta_include_prototype: false
+    - match: '{{PN_LOCAL}}'
+      scope: variable.other.member.prefixed-name.local.SYNTAX
+    - match: '{{PLX}}'
+      scope: constant.character.escape.prefixed-name.local.SYNTAX
+    - match: '{{PLA_anything}}'
+      pop: true
+
+  labeledBlankNode:
+    - match: '_:'
+      scope: variable.other.readwrite.blank-node.underscore.SYNTAX
+      set: labeledBlankNode_AFTER_NAMESPACE
+    - _throw: true
+
+  labeledBlankNode_AFTER_NAMESPACE:
+    - match: '{{BLANK_NODE_LABEL}}'
+      scope: variable.other.member.blank-node.label.SYNTAX
+      pop: true
+    - _throw: true
+
+  anonymousBlankNode:
+    - _open_paren: definition.anonymous-blank-node
+      set: anonymousBlankNode_AFTER_BEGIN
+    - _throw: true
+
+  anonymousBlankNode_AFTER_BEGIN:
+    - _close_paren: definition.anonymous-blank-node
+      pop: true
+    - _throw: true

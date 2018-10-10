@@ -1,0 +1,82 @@
+%YAML 1.2
+---
+name: TriG (graphy)
+file_extensions:
+  - trig
+scope: source.trig
+_extends: t-family.sublime-syntax-source
+
+variables:
+  graph_LOOKAHEAD: '(?=graph{{KEYWORD_BOUNDARY}})'
+
+contexts:
+
+
+####
+  main:  # trigDoc
+    - match: '{{directive_LOOKAHEAD}}'
+      push: directive
+    - match: '{{block_LOOKAHEAD}}'
+      push: [directive, block]
+    - _throw: false
+
+  block:
+    - _switch:
+        - openBrace: wrappedGraph
+        - openParen: triples2
+        - anonymousBlankNode: triples2
+        - graph: block_AFTER_GRAPH
+        - triplesOrGraph
+    - _throw: true
+
+  triplesOrGraph:
+    - _goto: [triplesOrGraph_AFTER_LABEL_OR_SUBJECT, labelOrSubject]
+
+  triplesOrGraph_AFTER_LABEL_OR_SUBJECT:
+    - _switch:
+        - openBrace: wrappedGraph
+        - verb: [triplesOrGraph_TERMINATE, predicateObjectList]
+    - _throw: false
+
+  triples2:
+    - _switch:
+        - anonymousBlankNode: [triples_TERMINATE, predicateObjectList_OPTIONAL, blankNodePropertyList]
+        - collection: [triples_TERMINATE, predicateObjectList_REQUIRED, collection]
+    - _throw: false
+
+  wrappedGraph:
+    - _open_brace: section.wrapped-graph
+      set: [wrappedGraph_TERMINATE, triplesBlock_OPTIONAL]
+    - _throw: true
+
+  wrappedGraph_TERMINATE:
+    - _close_brace: section.wrapped-graph
+      pop: true
+    - _throw: true
+
+  triplesBlock:
+    - _goto: [triplesBlock_AFTER_TRIPLES, triples]
+
+  labelOrSubject:
+    - _switch: [iri, blankNode]
+    - _throw: false
+
+  directive:
+    - _switch: [prefixDeclaration, baseDeclaration]
+    - _throw: false
+
+  # prefixId
+  # base
+  # sparqlPrefix
+  # sparqlBase
+  
+  triples:
+    - switch:
+        - namedNode: [predicateObjectList_REQUIRED, namedNode]
+        - anonymousBlankNode: [predicateObjectList_OPTIONAL, blankNodePropertyList]
+    - _throw: false
+
+  # predicateObjectList
+  # objectList
+  # verb
+

@@ -1,0 +1,141 @@
+%YAML 1.2
+---
+_extends: terse.sublime-syntax-source
+
+variables:
+
+  # prologue lookaheads
+  baseDeclaration_LOOKAHEAD: '(?i)(?=@?base\b)'
+  prefixDeclaration_LOOKAHEAD: '(?i)(?=@?prefix\b)'
+
+  directive_LOOKAHEAD: '(?:{{baseDeclaration_LOOKAHEAD}}|{{prefixDeclaration_LOOKAHEAD}})'
+  triples_LOOKAHEAD: '(?:{{node_LOOKAHEAD}}|{{collection_LOOKAHEAD}})'
+
+  verb_LOOKAHEAD: (?={{namedNode_LOOKAHEAD}}|{{a_LOOKAHEAD}})
+
+contexts:
+  prototype:
+    - include: whitespace
+    - include: comment
+
+  directive:
+    - match: '{{baseDeclaration_LOOKAHEAD}}'
+      set: baseDeclaration
+    - match: '{{prefixDeclaration_LOOKAHEAD}}'
+      set: prefixDeclaration
+    - _throw: false
+
+  baseDeclaration:
+    - include: baseDeclarationSparql
+    - match: '@'
+      scope: punctuation.definition.storage.base.at.SYNTAX storage.type.base.at.SYNTAX
+      set: [baseDeclarationAt_TERMINATE, baseDeclarationAt_AFTER_AT]
+    - _throw: true
+
+  baseDeclarationAt_AFTER_AT:
+    - _case: base
+      scope: storage.type.base.at.SYNTAX
+      set: baseDeclaration_AFTER_KEYWORD
+    - _throw: false
+
+  baseDeclarationAt_TERMINATE:
+    - meta_include_prototype: false
+    - match: '\n'
+      scope: invalid.illegal.token.expected.baseDeclarationAt_TERMINATE.SYNTAX
+    - match: '\.'
+      scope: punctuation.terminator.base-declaration.SYNTAX
+      pop: true
+    - include: comment
+    - _throw: true
+
+  prefixDeclaration:
+    - include: prefixDeclarationSparql
+    - match: '@'
+      scope: punctuation.definition.storage.prefix.at.SYNTAX storage.type.prefix.at.SYNTAX
+      set: prefixDeclarationAt_AFTER_AT
+    - _throw: true
+
+  prefixDeclarationAt_AFTER_AT:
+    - _case: prefix
+      scope: storage.type.prefix.at.SYNTAX
+      set: [prefixDeclarationAt_TERMINATE, prefixDeclarationAt_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD]
+    - _throw: false
+
+  prefixDeclarationAt_AFTER_KEYWORD_SPACE:
+    - _registeredPrefixDeclarations: at
+    - match: '(({{PN_PREFIX}}?)(:))'
+      captures: 
+        1: meta.prefix-declaration.at.namespace.SYNTAX
+        2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.SYNTAX
+        3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
+      set: prefixDeclaration_AFTER_NAME
+    - match: '{{MAT_word_or_any_one_char}}'
+      scope: meta.prefix-declaration.at.namespace.SYNTAX invalid.illegal.token.expected.prefixDeclarationAt_AFTER_KEYWORD_SPACE.SYNTAX
+      pop: true
+
+  prefixDeclarationAt_TERMINATE:
+    - meta_include_prototype: false
+    - match: '\n'
+      scope: invalid.illegal.token.expected.prefixDeclarationAt_TERMINATE.SYNTAX
+    - match: '\.'
+      scope: punctuation.terminator.prefix-declaration.SYNTAX
+      pop: true
+    - include: comment
+    - _throw: true
+
+  triples:
+    - _open_bracket: definition.blank-node
+      set: triples_AFTER_OPEN_BRACKET
+    - _switch:
+        - collection: [predicateObjectList_REQUIRED, collection]
+        - namedNode: [predicateObjectList_REQUIRED, namedNode]
+    - _throw: false
+
+  triples_AFTER_OPEN_BRACKET:
+    - _close_bracket: definition.blank-node
+      set: predicateObjectList_REQUIRED
+    - _switch:
+        - verb:
+            - predicateObjectList_OPTIONAL
+            - blankNodePropertyList_TERMINATE
+            - predicateObjectList_REQUIRED
+
+  verb:
+    - _switch: [a, namedNode]
+    - _throw: true
+
+  subject:
+    - _switch:
+        - anonymousBlankNode: blankNodePropertyList
+        - collection
+        - namedNode
+
+  subject_META:
+    - meta_include_prototype: false
+    - meta_scope: meta.data.triple.subject.SYNTAX
+    - match: '{{PLA_anything}}'
+      pop: true
+
+  object:
+    - _switch:
+        - anonymousBlankNode: anonymousBlankNodeOrPropertyList
+    - include: objectData
+
+  collection_AFTER_BEGIN:
+    - match: '{{object_LOOKAHEAD}}'
+      push: object
+    - _close_paren: section.collection
+      pop: true
+    - _throw: false
+
+  anonymousBlankNodeOrPropertyList:
+    - _open_bracket: definition.blank-node-property-list
+      set: anonymousBlankNodeOrPropertyList_AFTER_BEGIN
+    - _throw: true
+
+  anonymousBlankNodeOrPropertyList_AFTER_BEGIN:
+    - _close_bracket: definition.blank-node-property-list
+      pop: true
+    - _switch:
+        - verb: [blankNodePropertyList_TERMINATE, predicateObjectList]
+    - _throw: true

@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "10"
+env:
+  - NODE_ENV=production
+deploy:
+  provider: releases
+  api_key: ""
+  file_glob: true
+  file: build/sublime/*
+  skip_cleanup: true
+  on:
+    tags: true

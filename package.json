@@ -1,0 +1,15 @@
+{
+  "name": "linked-data.syntaxes",
+  "private": true,
+  "devDependencies": {
+    "emk": "^1.4.3",
+    "js-yaml": "^3.12.0",
+    "plist": "^3.0.1"
+  },
+  "scripts": {
+    "test": "npm run build",
+    "build": "npx emk"
+  },
+  "author": "",
+  "license": "ISC"
+}

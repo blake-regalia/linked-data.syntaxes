@@ -1,0 +1,72 @@
+%YAML 1.2
+---
+
+variables:
+
+  # CONTEXT CONTROL PATTERNS ###################################################
+  MAT_word_or_any_one_char: '\w+|\S'
+  PLA_anything: '(?=[\S\s])'
+
+  whitespace: '\s+'
+
+  KEYWORD_BOUNDARY: '[\s{(\[*#$?^/"'']'
+
+  PN_CHARS_BASE: '[A-Za-z\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{02FF}\x{0370}-\x{037D}\x{037F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]'
+  PN_CHARS_U: '(?:{{PN_CHARS_BASE}}|_)'
+  PN_CHARS: '(?:{{PN_CHARS_U}}|\-|[0-9\x{00B7}\x{0300}-\x{036F}\x{203F}\x{2040}])'
+
+  HEX: '(?:[0-9A-Fa-f])'
+  UCHAR: '(?:\\u{{HEX}}{4}|\\U{{HEX}}{8})'
+
+  IRI_CONTENTS: '(?:[^\x{00}-\x{20}<>"{}|^`\\]+)'
+  
+  BLANK_NODE_LABEL: '(?:{{PN_CHARS_U}}|[0-9])(?:(?:{{PN_CHARS}}|\.)*{{PN_CHARS}})?'
+
+
+  ECHAR: '(?:\\[tbnrf"''\\])'
+
+
+  # lookaheads
+
+  iriRef_LOOKAHEAD: '(?=<)'
+
+  # COMMON GRAMMAR PRODUCTIONS #################################################
+
+  stringLiteral_LOOKAHEAD: '(?=["''])'
+
+  anonymousBlankNode_LOOKAHEAD: '(?=\[)'
+  labeledBlankNode_LOOKAHEAD: '(?=_:)'
+  blankNode_LOOKAHEAD: '(?={{anonymousBlankNode_LOOKAHEAD}}|{{labeledBlankNode_LOOKAHEAD}})'
+
+contexts:
+  # FUNCTIONAL CONTEXTS ########################################################
+
+  # no match has been made; pop from stack
+  else_pop:
+    - meta_include_prototype: false
+    - match: '{{PLA_anything}}'
+      pop: true
+
+  whitespace:
+    - meta_include_prototype: false
+    - match: '\s+'
+      scope: meta.whitespace.SYNTAX
+
+  comment:
+    - meta_include_prototype: false
+    - match: '#'
+      scope: punctuation.definition.comment.SYNTAX
+      push: line_comment
+
+  line_comment:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.SYNTAX
+    - include: whitespace
+    - match: '$'
+      pop: true
+
+  triple_TERMINATE:
+    - match: '\.'
+      scope: punctuation.terminator.triple.SYNTAX
+      pop: true
+    - _throw: false
