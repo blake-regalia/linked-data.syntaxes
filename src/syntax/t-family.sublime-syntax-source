@@ -19,11 +19,16 @@ contexts:
     - include: comment
 
   directive:
-    - match: '{{baseDeclaration_LOOKAHEAD}}'
-      set: baseDeclaration
-    - match: '{{prefixDeclaration_LOOKAHEAD}}'
-      set: prefixDeclaration
+    - _switch:
+        - baseDeclaration
+        - prefixDeclaration
     - _throw: false
+
+  triple_TERMINATE:
+    - match: '\.'
+      scope: punctuation.terminator.triple.SYNTAX
+      pop: true
+    - _throw: true
 
   baseDeclaration:
     - include: baseDeclarationSparql
@@ -84,21 +89,42 @@ contexts:
     - _throw: true
 
   triples:
-    - _open_bracket: definition.blank-node
+    - _open_bracket: definition.anonymous-blank-node
       set: triples_AFTER_OPEN_BRACKET
     - _switch:
         - collection: [predicateObjectList_REQUIRED, collection]
         - namedNode: [predicateObjectList_REQUIRED, namedNode]
+        - labeledBlankNode: [predicateObjectList_REQUIRED, labeledBlankNode]
     - _throw: false
 
   triples_AFTER_OPEN_BRACKET:
-    - _close_bracket: definition.blank-node
+    - _close_bracket: definition.anonymous-blank-node
       set: predicateObjectList_REQUIRED
     - _switch:
         - verb:
             - predicateObjectList_OPTIONAL
             - blankNodePropertyList_TERMINATE
             - predicateObjectList_REQUIRED
+    - _throw: true
+
+  predicateObjectList_REQUIRED:
+    - _goto: predicateObjectList
+
+  predicateObjectList_OPTIONAL:
+    - _switch:
+        - verb: predicateObjectList
+    - match: '{{tripleTerminator_LOOKAHEAD}}'
+      pop: true
+    - _throw: false
+
+  predicateObjectList:
+    - _goto: [predicateObjectList_AFTER_OBJECT_LIST, objectList, verb]
+
+  predicateObjectList_AFTER_OBJECT_LIST:
+    - match: ';'
+      scope: punctuation.separator.predicate-object-list.SYNTAX
+      set: predicateObjectList_OPTIONAL
+    - include: else_pop
 
   verb:
     - _switch: [a, namedNode]

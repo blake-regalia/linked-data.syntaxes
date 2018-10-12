@@ -22,6 +22,12 @@ const G_SYNTAX_DEPS = {
 			'src/syntax/terse.sublime-syntax-source',
 		];
 	},
+	get verbose() {
+		return [
+			...this.human_readable,
+			'src/syntax/verbose.sublime-syntax-source',
+		];
+	},
 	get t_family() {
 		return [
 			...this.terse,
@@ -42,6 +48,10 @@ const G_SYNTAXES = {
 	trig: {
 		supplementals: {},
 		dependencies: G_SYNTAX_DEPS.t_family,
+	},
+	'n-triples': {
+		supplementals: {},
+		dependencies: G_SYNTAX_DEPS.verbose,
 	},
 };
 

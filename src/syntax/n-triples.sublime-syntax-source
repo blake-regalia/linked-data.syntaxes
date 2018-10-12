@@ -1,0 +1,13 @@
+%YAML 1.2
+---
+name: N-Triples
+file_extensions:
+  - nt
+scope: source.nt
+_extends: verbose.sublime-syntax-source
+
+variables:
+
+contexts:
+  main:
+    - _goto: triple

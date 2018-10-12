@@ -67,6 +67,9 @@ module.exports = {
 
 			// all 'other' keywords (namely modifiers)
 			'keyword.operator': 15,
+
+			// `graph`
+			'keyword.control': -15,
 		},
 
 		root_boost: {
@@ -110,10 +113,17 @@ module.exports = {
 		},
 
 		flare: {
-			// datatypes
+			// datatype symbol `^^`
 			'punctuation.separator.datatype.symbol': -65,
-			'variable.other.readwrite.prefixed-name.namespace.datatype': -50,
-			'variable.other.member.prefixed-name.local.datatype': -35,
+
+			// prefixed-names
+			'meta.datatype variable.other.readwrite.prefixed-name.namespace': -50,
+			'meta.datatype variable.other.member.prefixed-name.local': -35,
+
+			// iri datatypes
+			'meta.datatype string.unquoted.iri': -25,
+			'meta.datatype constant.character.escape.iri': -40,
+			'meta.datatype punctuation.definition.iri': -50,
 
 			// blank node property list
 			'punctuation.definition.blank-node-property-list': -10,
@@ -142,7 +152,6 @@ module.exports = {
 			// language-tags
 			'string.unquoted.language-tag': -5,
 			'punctuation.separator.language-tag.symbol': -60,
-
 
 			// numerics
 			'keyword.operator.arithmetic': -0,

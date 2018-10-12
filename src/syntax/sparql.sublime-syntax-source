@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-name: SPARQL (graphy)
+name: SPARQL
 file_extensions:
   - rq
 scope: source.rq

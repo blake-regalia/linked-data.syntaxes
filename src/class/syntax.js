@@ -7,7 +7,7 @@ const r_switches = /\(\?([ix]+)\)/g;
 const regex_to_literal = (s_regex, b_no_unicode_mode=false) => {
 	let s_switches = '';
 	let m_switches = r_switches.exec(s_regex);
-	s_regex = s_regex.replace(r_switches, '');
+	s_regex = s_regex.replace(r_switches, '').replace(/[\r\n]/g, '');
 	let b_ignore_case = false;
 
 	// extract switches from modes
@@ -73,8 +73,15 @@ class def {
 			h_contexts[si_context] = new context(a_rules, si_context, this);
 		}
 
+		// normalize name
+		let s_name = '';
+		if(g_syntax.name) {
+			s_name = `${g_syntax.name} (LinkedData)`;
+		}
+
 		Object.assign(this, {
 			path: p_syntax,
+			name: s_name,
 			other: g_syntax,
 			variables: g_syntax.variables,
 			contexts: h_contexts,
@@ -85,6 +92,7 @@ class def {
 		return `%YAML 1.2\n---\n${yaml.safeDump({
 			...this.other,
 			...g_def,
+			name: this.name,
 			variables: this.export_variables(),
 			contexts: Object.entries(this.contexts)
 				.reduce((h_contexts, [si_context, k_context]) => ({
@@ -94,6 +102,7 @@ class def {
 		}, {
 			noRefs: true,
 			noCompatMode: true,
+			lineWidth: 600,
 			schema: yaml.DEFAULT_FULL_SCHEMA,
 		})}`;
 	}
@@ -228,7 +237,7 @@ class def {
 		}
 
 		// create new context from rule list and append it to hash
-		h_contexts[si_context] = new context(a_rules, si_context, this);
+		return (h_contexts[si_context] = new context(a_rules, si_context, this));
 	}
 
 	extends(k_other) {
@@ -251,6 +260,34 @@ class def {
 				...this.contexts,
 			},
 		});
+	}
+
+	validate() {
+		let as_defined = new Set();
+		let as_referenced = new Set();
+
+		for(let [si_context, k_context] of Object.entries(this.contexts)) {
+			// context is defined
+			as_defined.add(si_context);
+
+			// each subrule in context
+			for(let [k_rule] of k_context.subrules()) {
+				let a_states = k_rule.states();
+
+				// each state in rule
+				for(let s_state of a_states) {
+					// state is referenced
+					as_referenced.add(s_state);
+				}
+			}
+		}
+
+		// make sure every reference is defined
+		for(let s_state of as_referenced) {
+			if(!as_defined.has(s_state)) {
+				throw new Error(`state '${s_state}' is referenced but not defined`);
+			}
+		}
 	}
 }
 
@@ -297,6 +334,27 @@ class context {
 	}
 }
 
+
+const rule_to_states = (g_rule) => {
+	// union of `push`, `set` and `include`
+	let z_states = g_rule.push || g_rule.set || g_rule.include;
+
+	// no states
+	if(!z_states) return [];
+
+	// coerce to array
+	let a_states = Array.isArray(z_states)? z_states: [z_states];
+
+	// map each item to state
+	return a_states.reduce((a_out, z_state) => [
+		...a_out,
+		...('string' === typeof z_state
+			? [z_state]
+			: rule_to_states(z_state)),
+	], []);
+};
+
+
 class rule {
 	static from(z_rule, i_rule, k_context) {
 		if(z_rule instanceof rule) return z_rule;
@@ -342,12 +400,26 @@ class rule {
 		return this;
 	}
 
+	// extract sub states
+	states() {
+		return rule_to_states(this.source);
+	}
+
 	clone(i_rule) {
 		return new rule({...this.source}, i_rule, this.context);
 	}
 
 	export(f_apply=null, a_rules) {
-		return f_apply? f_apply(this.source, a_rules): this.source;
+		let g_export = f_apply? f_apply(this.source, a_rules): this.source;
+
+		if(g_export && g_export.match) {
+			return {
+				match: g_export.match,
+				...g_export,
+			};
+		}
+
+		return g_export;
 	}
 
 	mod(f_mod) {

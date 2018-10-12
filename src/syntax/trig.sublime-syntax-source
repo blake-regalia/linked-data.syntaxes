@@ -1,13 +1,15 @@
 %YAML 1.2
 ---
-name: TriG (graphy)
+name: TriG
 file_extensions:
   - trig
 scope: source.trig
 _extends: t-family.sublime-syntax-source
 
 variables:
-  graph_LOOKAHEAD: '(?=graph{{KEYWORD_BOUNDARY}})'
+  graph_LOOKAHEAD: '(?i)(?=graph{{KEYWORD_BOUNDARY}})'
+
+  block_LOOKAHEAD: '{{graph_LOOKAHEAD}}|{{openBrace_LOOKAHEAD}}|{{triples_LOOKAHEAD}}|{{collection_LOOKAHEAD}}'
 
 contexts:
 
@@ -17,17 +19,22 @@ contexts:
     - match: '{{directive_LOOKAHEAD}}'
       push: directive
     - match: '{{block_LOOKAHEAD}}'
-      push: [directive, block]
+      push: block
     - _throw: false
 
   block:
+    - _case: graph
+      scope: keyword.control.graph.trig
+      set: block_AFTER_GRAPH
     - _switch:
         - openBrace: wrappedGraph
         - openParen: triples2
         - anonymousBlankNode: triples2
-        - graph: block_AFTER_GRAPH
-        - triplesOrGraph
+        - node: triplesOrGraph
     - _throw: true
+
+  block_AFTER_GRAPH:
+    - _goto: [wrappedGraph, labelOrSubject]
 
   triplesOrGraph:
     - _goto: [triplesOrGraph_AFTER_LABEL_OR_SUBJECT, labelOrSubject]
@@ -35,13 +42,16 @@ contexts:
   triplesOrGraph_AFTER_LABEL_OR_SUBJECT:
     - _switch:
         - openBrace: wrappedGraph
-        - verb: [triplesOrGraph_TERMINATE, predicateObjectList]
+        - verb: [triplesOrGraph_AFTER_PREDICATE_OBJECT_LIST, predicateObjectList]
     - _throw: false
+
+  triplesOrGraph_AFTER_PREDICATE_OBJECT_LIST:
+    - _goto: triple_TERMINATE
 
   triples2:
     - _switch:
-        - anonymousBlankNode: [triples_TERMINATE, predicateObjectList_OPTIONAL, blankNodePropertyList]
-        - collection: [triples_TERMINATE, predicateObjectList_REQUIRED, collection]
+        - anonymousBlankNode: [triple_TERMINATE, predicateObjectList_OPTIONAL, blankNodePropertyList]
+        - collection: [triple_TERMINATE, predicateObjectList_REQUIRED, collection]
     - _throw: false
 
   wrappedGraph:
@@ -54,27 +64,34 @@ contexts:
       pop: true
     - _throw: true
 
+  triplesBlock_OPTIONAL:
+    - _switch:
+        - triples: triplesBlock
+    - include: else_pop
+
   triplesBlock:
     - _goto: [triplesBlock_AFTER_TRIPLES, triples]
 
+  triplesBlock_AFTER_TRIPLES:
+    - match: '\.'
+      scope: punctuation.terminator.triple.trig
+      set: triplesBlock_OPTIONAL
+    - include: else_pop
+
   labelOrSubject:
-    - _switch: [iri, blankNode]
+    - _switch: [namedNode, blankNode]
     - _throw: false
 
-  directive:
-    - _switch: [prefixDeclaration, baseDeclaration]
+  blankNode:
+    - _switch:
+        - labeledBlankNode
+        - anonymousBlankNode
     - _throw: false
 
   # prefixId
   # base
   # sparqlPrefix
   # sparqlBase
-  
-  triples:
-    - switch:
-        - namedNode: [predicateObjectList_REQUIRED, namedNode]
-        - anonymousBlankNode: [predicateObjectList_OPTIONAL, blankNodePropertyList]
-    - _throw: false
 
   # predicateObjectList
   # objectList

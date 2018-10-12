@@ -4,14 +4,6 @@ _extends: human-readable.sublime-syntax-source
 
 variables:
 
-  # CONTEXT CONTROL PATTERNS ###################################################
-  MAT_word_or_any_one_char: '\w+|\S'
-  PLA_anything: '(?=[\S\s])'
-
-  whitespace: '\s+'
-
-  KEYWORD_BOUNDARY: '[\s{(\[*#$?^/"'']'
-
   PN_PREFIX: >-
     (?x)
       (?:
@@ -136,20 +128,6 @@ contexts:
         pop: true
     - _throw: true
 
-
-  # subjectData:
-  #   - _node:
-  #       scope: subject
-  #       pop: true
-  #   - match: '\['
-  #     scope: punctuation.definition.blank-node-property-list.begin.subject.SYNTAX
-  #     set: [blankNodePropertyList_TERMINATE, pair_REQUIRED]
-  #   # - match: '\('
-  #   #   scope: punctuation.definition.collection.begin.subject.SYNTAX
-  #   #   set: [collection_TERMINATE, triple_AFTER_OBJECT_COLLECTION_BEGIN]
-  #     # scope: p
-  #   - _throw: true
-
   predicateData:
     - match: '{{a_LOOKAHEAD}}'
       set: a
@@ -190,25 +168,6 @@ contexts:
     - _close_bracket: definition.blank-node-property-list
       pop: true
     - _throw: true
-
-  predicateObjectList_REQUIRED:
-    - _goto: predicateObjectList
-
-  predicateObjectList_OPTIONAL:
-    - _switch:
-        - verb: predicateObjectList
-    - match: '{{tripleTerminator_LOOKAHEAD}}'
-      pop: true
-    - _throw: false
-
-  predicateObjectList:
-    - _goto: [predicateObjectList_AFTER_OBJECT_LIST, objectList, verb]
-
-  predicateObjectList_AFTER_OBJECT_LIST:
-    - match: ';'
-      scope: punctuation.separator.predicate-object-list.SYNTAX
-      set: predicateObjectList_OPTIONAL
-    - include: else_pop
 
   objectList:
     - _goto: [objectList_AFTER_OBJECT, object]
@@ -272,20 +231,6 @@ contexts:
         3: keyword.operator.arithmetic.sign.negative.SYNTAX
         4: meta.numeric.decimal.integer.SYNTAX
       pop: true
-
-  rdfLiteral:
-    - _goto: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteral]
-
-  rdfLiteral_AFTER_STRING_LITERAL:
-    - meta_include_prototype: false
-    - include: comment
-    - match: '@'
-      scope: punctuation.separator.language-tag.symbol.SYNTAX
-      set: languageTag
-    - match: '\^\^'
-      scope: punctuation.separator.datatype.symbol.SYNTAX
-      set: datatype
-    - include: else_pop
 
   stringLiteral:
     - match: '"""'
@@ -408,35 +353,11 @@ contexts:
       pop: true
     - _throw: true
 
-  languageTag:
-    - meta_include_prototype: false
-    - meta_scope: string.unquoted.language-tag.SYNTAX
-    - match: '[a-zA-Z]+'
-      scope: meta.language-tag.primary.SYNTAX
-      set: languageTag_AFTER_PRIMARY
-    - _throw: true
-
-  languageTag_AFTER_PRIMARY:
-    - meta_include_prototype: false
-    - match: '-'
-      scope: punctuation.separator.language-tag.hyphen.SYNTAX
-      set: languageTag_AFTER_SEPARATOR
-    - match: '{{PLA_anything}}'
-      pop: true
-
-  languageTag_AFTER_SEPARATOR:
-    - meta_include_prototype: false
-    - meta_scope: string.unquoted.language-tag.SYNTAX
-    - match: '[a-zA-Z0-9]+'
-      scope: meta.language-tag.subtag.SYNTAX
-      set: languageTag_AFTER_PRIMARY
-    - _throw: true
-
   datatype:
     - meta_include_prototype: false
     - _namedNode:
+        set: datatype_META
         scope: datatype
-        pop: true
     - _throw: true
 
   namedNode:
@@ -445,25 +366,6 @@ contexts:
     - match: '{{prefixedName_LOOKAHEAD}}'
       set: prefixedName
     - _throw: true
-
-  iriRef:
-    - match: '<'
-      scope: punctuation.definition.iri.begin.SYNTAX
-      set: iriRef_AFTER_BEGIN
-    - _throw: true
-
-  iriRef_AFTER_BEGIN:
-    - meta_include_prototype: false
-    - match: '{{IRI_CONTENTS}}'
-      scope: string.unquoted.iri.SYNTAX
-    - match: '{{UCHAR}}'
-      scope: constant.character.escape.iri.SYNTAX
-    - match: '>'
-      scope: punctuation.definition.iri.end.SYNTAX
-      pop: true
-    - match: '\s'
-      scope: invalid.illegal.token.expected.iriRef_AFTER_BEGIN.SYNTAX
-    - _throw: false
 
   prefixedName:
     - match: '({{PN_PREFIX}}?)(:)'
@@ -480,18 +382,6 @@ contexts:
       scope: constant.character.escape.prefixed-name.local.SYNTAX
     - match: '{{PLA_anything}}'
       pop: true
-
-  labeledBlankNode:
-    - match: '_:'
-      scope: variable.other.readwrite.blank-node.underscore.SYNTAX
-      set: labeledBlankNode_AFTER_NAMESPACE
-    - _throw: true
-
-  labeledBlankNode_AFTER_NAMESPACE:
-    - match: '{{BLANK_NODE_LABEL}}'
-      scope: variable.other.member.blank-node.label.SYNTAX
-      pop: true
-    - _throw: true
 
   anonymousBlankNode:
     - _open_paren: definition.anonymous-blank-node

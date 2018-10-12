@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-name: Turtle (graphy)
+name: Turtle
 file_extensions:
   - ttl
 scope: source.ttl

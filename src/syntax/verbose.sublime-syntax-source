@@ -1,0 +1,64 @@
+%YAML 1.2
+---
+_extends: human-readable.sublime-syntax-source
+
+variables:
+
+contexts:
+  prototype:
+    - include: whitespace
+    - include: comment
+
+  triple:
+    - _goto: [triple_TERMINATE, object, predicate, subject]
+
+  subject:
+    - _iriRef:
+        scope: subject
+        pop: true
+    - _switch: [labeledBlankNode]
+    - _throw: false
+
+  predicate:
+    - _iriRef:
+        scope: predicate
+        pop: true
+    - _throw: true
+
+  object:
+    - _iriRef:
+        scope: object
+        pop: true
+    - _blankNode:
+        scope: object
+        pop: true
+    - _switch:
+        - stringLiteral: rdfLiteral
+    - _throw: false
+
+  stringLiteral:
+    - match: '"'
+      scope: punctuation.definition.string.begin.literal.double.long.SYNTAX
+      set: stringLiteral_AFTER_QUOTE
+    - _throw: true
+
+  stringLiteral_AFTER_QUOTE:
+    - match: '[^"\\\r\n]+'
+      scope: string.quoted.double.literal.long.SYNTAX
+    - match: '"'
+      scope: punctuation.definition.string.begin.literal.double.long.SYNTAX
+      pop: true
+    - match: '{{ECHAR}}'
+      scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.escape.long.SYNTAX
+    - match: '{{UCHAR}}'
+      scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.unicode.long.SYNTAX
+    - match: '[\\\r\n]'
+      scope: invalid.illegal.token.string-literal-contents.SYNTAX
+      pop: true
+
+  datatype:
+    - meta_include_prototype: false
+    - _iriRef:
+        scope: datatype
+        set: datatype_META
+    - _throw: true

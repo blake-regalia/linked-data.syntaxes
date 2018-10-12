@@ -25,10 +25,10 @@ const normalize_insert_spec = (g_spec, a_stack=[]) => {
 	}
 	else if(g_spec.set) {
 		b_pop = true;
-		a_stack.push(...(Array.isArray(g_spec.set)? g_spec.set: [g_spec.set]));
+		a_stack.unshift(...(Array.isArray(g_spec.set)? g_spec.set: [g_spec.set]));
 	}
 	else if(g_spec.push) {
-		a_stack.push(...(Array.isArray(g_spec.push)? g_spec.push: [g_spec.push]));
+		a_stack.unshift(...(Array.isArray(g_spec.push)? g_spec.push: [g_spec.push]));
 	}
 
 	return {
@@ -96,15 +96,23 @@ const insert_blank_node = (h_env, k_context, i_rule, g_spec) => {
 	});
 
 	// new context
-	k_context.def.append(si_context_blank_node_begin, [
+	let k_context_new = k_context.def.append(si_context_blank_node_begin, [
 		{meta_include_prototype:false},
 		{
 			match: /* syntax: sublime-syntax.regex */ `'{{BLANK_NODE_LABEL}}'`.slice(1, -1),
 			scope: `variable.other.member.blank-node.label.${s_scope_frag}.${h_env.syntax}`,
 			...h_stack_action,
 		},
-		{include:'other_illegal_pop'},
+		// {include:'other_illegal_pop'},
+		{
+			match: /* syntax: sublime-syntax.regex */ `'{{MAT_word_or_any_one_char}}'`.slice(1, -1),
+			scope: `invalid.illegal.token.expected.${k_context.id}.${h_env.syntax}`,
+			pop: true,
+		},
 	]);
+
+	// throw pop
+	H_MODIFIERS._throw(h_env, k_context_new, 2, true);
 };
 
 const insert_cases = (h_env, k_context, i_rule, k_rule, s_word, h_cases) => {
@@ -163,50 +171,50 @@ const punctuation = (s_type, s_name, s_match_begin, s_match_end) => ({
 
 const H_MODIFIERS = {
 	// apply capitalization permutations of the given word in the appearing context
-	_case: (h_env, k_context, k_rule_source, s_word) => {
+	_case: (h_env, k_context, k_rule, s_word) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
-		return insert_cases(h_env, k_context, i_rule, k_rule_source, s_word, H_CASES);
+		return insert_cases(h_env, k_context, i_rule, k_rule, s_word, H_CASES);
 	},
 
 	// array-style of above
-	_cases: (h_env, k_context, k_rule_source, a_words) => {
+	_cases: (h_env, k_context, k_rule, a_words) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// each keyword
 		for(let s_word of a_words) {
-			i_rule = insert_cases(h_env, k_context, i_rule, k_rule_source, s_word, H_CASES);
+			i_rule = insert_cases(h_env, k_context, i_rule, k_rule, s_word, H_CASES);
 		}
 
 		return i_rule;
 	},
 
-	_case_camel: (h_env, k_context, k_rule_source, s_word) => {
+	_case_camel: (h_env, k_context, k_rule, s_word) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
-		return insert_cases(h_env, k_context, i_rule, k_rule_source, s_word, H_CASES_EXTENDED);
+		return insert_cases(h_env, k_context, i_rule, k_rule, s_word, H_CASES_EXTENDED);
 	},
 
 	// array-style of above
-	_cases_camel: (h_env, k_context, k_rule_source, a_words) => {
+	_cases_camel: (h_env, k_context, k_rule, a_words) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// each keyword
 		for(let s_word of a_words) {
-			i_rule = insert_cases(h_env, k_context, i_rule, k_rule_source, s_word, H_CASES_EXTENDED);
+			i_rule = insert_cases(h_env, k_context, i_rule, k_rule, s_word, H_CASES_EXTENDED);
 		}
 
 		return i_rule;
 	},
 
 	// insert all registered prefixe declaration productions in the appearing context
-	_registeredPrefixDeclarations: (h_env, k_context, k_rule_source, s_version) => {
+	_registeredPrefixDeclarations: (h_env, k_context, k_rule, s_version) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// each prefix in environment
 		for(let [si_prefix, p_prefix_iri] of Object.entries(h_env.prefixes)) {
@@ -230,25 +238,33 @@ const H_MODIFIERS = {
 		return i_rule;
 	},
 
-	_prefixedName: (h_env, k_context, k_rule_source, w_spec) => {
+	_prefixedName: (h_env, k_context, k_rule, w_spec) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// insert iri ref rules; update rule index
 		return insert_prefixed_name(h_env, k_context, i_rule, w_spec);
 	},
 
-	_iriRef: (h_env, k_context, k_rule_source, w_spec) => {
+	_iriRef: (h_env, k_context, k_rule, w_spec) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// insert iri ref rules; update rule index
 		return insert_iri_ref(h_env, k_context, i_rule, w_spec);
 	},
 
-	_namedNode: (h_env, k_context, k_rule_source, w_spec) => {
+	_blankNode: (h_env, k_context, k_rule, w_spec) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
+
+		// insert blank node rules; return rule index
+		return insert_blank_node(h_env, k_context, i_rule, w_spec);
+	},
+
+	_namedNode: (h_env, k_context, k_rule, w_spec) => {
+		// remove source rule from context
+		let i_rule = k_context.drop(k_rule);
 
 		// insert iri ref rules; update rule index
 		i_rule = insert_iri_ref(h_env, k_context, i_rule, w_spec);
@@ -257,17 +273,17 @@ const H_MODIFIERS = {
 		return insert_prefixed_name(h_env, k_context, i_rule, w_spec);
 	},
 
-	_node: (h_env, k_context, k_rule_source, w_spec) => {
+	_node: (h_env, k_context, k_rule, w_spec) => {
 		// remove source rule from context
-		let i_rule = H_MODIFIERS._namedNode(h_env, k_context, k_rule_source, w_spec);
+		let i_rule = H_MODIFIERS._namedNode(h_env, k_context, k_rule, w_spec);
 
 		// insert blank node rules; return rule index
 		return insert_blank_node(h_env, k_context, i_rule, w_spec);
 	},
 
-	_throw: (h_env, k_context, k_rule_source, b_pop) => {
+	_throw: (h_env, k_context, k_rule, b_pop) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// insert other illegal pop
 		k_context.insert(i_rule++, {
@@ -279,9 +295,9 @@ const H_MODIFIERS = {
 		return i_rule;
 	},
 
-	_goto: (h_env, k_context, k_rule_source, w_context_goto) => {
+	_goto: (h_env, k_context, k_rule, w_context_goto) => {
 		// remove source rule from context
-		let i_rule = k_context.drop(k_rule_source);
+		let i_rule = k_context.drop(k_rule);
 
 		// insert jump
 		k_context.insert(i_rule++, {
@@ -381,6 +397,9 @@ const load_syntax_source = (p_yaml) => {
 
 		// extend this
 		k_syntax.extends(k_syntax_super);
+
+		// remove property
+		delete k_syntax.other._extends;
 	}
 
 	return k_syntax;
@@ -424,6 +443,10 @@ const build_syntax = (h_env) => {
 		k_rule.scopes(s_scope => s_scope.replace(/\.SYNTAX/g, `.${h_env.syntax}`));
 	}
 
+	// validate
+	k_syntax.validate();
+
+	// return
 	return k_syntax;
 };
 

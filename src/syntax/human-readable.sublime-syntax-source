@@ -70,3 +70,76 @@ contexts:
       scope: punctuation.terminator.triple.SYNTAX
       pop: true
     - _throw: false
+
+  rdfLiteral:
+    - _goto: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteral]
+
+  rdfLiteral_AFTER_STRING_LITERAL:
+    - meta_include_prototype: false
+    - include: comment
+    - match: '@'
+      scope: punctuation.separator.language-tag.symbol.SYNTAX
+      set: languageTag
+    - match: '\^\^'
+      scope: punctuation.separator.datatype.symbol.SYNTAX
+      set: datatype
+    - include: else_pop
+
+  languageTag:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.SYNTAX
+    - match: '[a-zA-Z]+'
+      scope: meta.language-tag.primary.SYNTAX
+      set: languageTag_AFTER_PRIMARY
+    - _throw: true
+
+  languageTag_AFTER_PRIMARY:
+    - meta_include_prototype: false
+    - match: '-'
+      scope: punctuation.separator.language-tag.hyphen.SYNTAX
+      set: languageTag_AFTER_SEPARATOR
+    - match: '{{PLA_anything}}'
+      pop: true
+
+  languageTag_AFTER_SEPARATOR:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.SYNTAX
+    - match: '[a-zA-Z0-9]+'
+      scope: meta.language-tag.subtag.SYNTAX
+      set: languageTag_AFTER_PRIMARY
+    - _throw: true
+
+  datatype_META:
+    - meta_scope: meta.datatype.SYNTAX
+    - include: else_pop
+
+  iriRef:
+    - match: '<'
+      scope: punctuation.definition.iri.begin.SYNTAX
+      set: iriRef_AFTER_BEGIN
+    - _throw: true
+
+  iriRef_AFTER_BEGIN:
+    - meta_include_prototype: false
+    - match: '{{IRI_CONTENTS}}'
+      scope: string.unquoted.iri.SYNTAX
+    - match: '{{UCHAR}}'
+      scope: constant.character.escape.iri.SYNTAX
+    - match: '>'
+      scope: punctuation.definition.iri.end.SYNTAX
+      pop: true
+    - match: '\s'
+      scope: invalid.illegal.token.expected.iriRef_AFTER_BEGIN.SYNTAX
+    - _throw: false
+
+  labeledBlankNode:
+    - match: '_:'
+      scope: variable.other.readwrite.blank-node.underscore.SYNTAX
+      set: labeledBlankNode_AFTER_NAMESPACE
+    - _throw: true
+
+  labeledBlankNode_AFTER_NAMESPACE:
+    - match: '{{BLANK_NODE_LABEL}}'
+      scope: variable.other.member.blank-node.label.SYNTAX
+      pop: true
+    - _throw: true
