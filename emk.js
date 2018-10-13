@@ -1,6 +1,6 @@
 
 const p_prefixes_jsonld = 'http://prefix.cc/context.jsonld';
-const p_package = 'production' === process.env.NODE_ENV? 'Packages/LinkedData': 'Packages/User/linked-data';
+const p_package = 'development' === process.env.NODE_ENV? 'Packages/User/linked-data': 'Packages/LinkedData';
 
 
 const A_SYNTAX_DEPS_ALL = [
