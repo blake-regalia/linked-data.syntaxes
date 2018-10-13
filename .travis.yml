@@ -1,8 +1,8 @@
 language: node_js
 node_js:
-  - "10"
+  - '10'
 install:
-  - npm install
+  - rm -rf build && npm ci
 env:
   - NODE_ENV=production
 deploy:
