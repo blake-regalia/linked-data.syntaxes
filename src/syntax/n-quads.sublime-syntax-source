@@ -1,0 +1,29 @@
+%YAML 1.2
+---
+name: N-Quads
+file_extensions:
+  - nq
+scope: source.nq
+_extends: verbose.sublime-syntax-source
+
+variables:
+
+contexts:
+  main:
+    - _goto: quads
+
+  quads:
+    - _goto: [quad_TERMINATE, graph_OPTIONAL, object, predicate, subject]
+
+  graph_OPTIONAL:
+    - _iriRef:
+        scope: graph
+        pop: true
+    - _switch: [labeledBlankNode]
+    - include: else_pop
+
+  quad_TERMINATE:
+    - match: '\.'
+      scope: punctuation.terminator.quad.SYNTAX
+      pop: true
+    - _throw: false

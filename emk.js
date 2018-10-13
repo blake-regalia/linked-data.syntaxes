@@ -53,6 +53,10 @@ const G_SYNTAXES = {
 		supplementals: {},
 		dependencies: G_SYNTAX_DEPS.verbose,
 	},
+	'n-quads': {
+		supplementals: {},
+		dependencies: G_SYNTAX_DEPS.verbose,
+	},
 };
 
 const A_COLOR_SCHEMES = [

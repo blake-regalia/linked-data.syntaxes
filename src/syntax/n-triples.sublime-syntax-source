@@ -11,3 +11,6 @@ variables:
 contexts:
   main:
     - _goto: triple
+
+  triple:
+    - _goto: [triple_TERMINATE, object, predicate, subject]

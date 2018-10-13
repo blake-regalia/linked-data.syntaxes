@@ -9,9 +9,6 @@ contexts:
     - include: whitespace
     - include: comment
 
-  triple:
-    - _goto: [triple_TERMINATE, object, predicate, subject]
-
   subject:
     - _iriRef:
         scope: subject
