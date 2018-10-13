@@ -3,6 +3,7 @@
   "private": true,
   "devDependencies": {
     "emk": "^1.4.3",
+    "eslint": "^5.7.0",
     "js-yaml": "^3.12.0",
     "plist": "^3.0.1"
   },

@@ -1,0 +1,5 @@
+name: Indent
+scope: source.rq, source.ttl, source.trig, source.nt, source.nq
+settings:
+	increaseIndentPattern:
+	decreaseIndentPattern:
