@@ -1,9 +1,10 @@
 language: node_js
 node_js:
-  - '10'
+- '10'
 deploy:
   provider: releases
-  api_key: ""
+  api_key:
+    secure: UBDeFtv8vBWhWy0FvAFEnwKTfldPqRuQ3M0mSljeSDWJMeKgW28ew4QCYTVXwmWPpJLPZLObyq19R6DW0qT3VM52/eKtGZwOLRIhgtCLUUu8jY6dIx9b411OQ990aAAS06HJ1eomrpFXIoVrz8wiPpwRaPYFW1d9H9J6v8cn6XSmujO1bi/sagAnE4YmHilgC/zCbF63lExAOJd/sAfJTSzWUP8RTB7HJ4WZvPPzswjFouunPOXSF5tZREoFIDX1iuzvunOdpcLzuiP22VRTWYd1rHYyHj5WOxWki57HrK+BaL7YUpcvRJ4qspEpxwpUTJCLP3qhyPXvUBK1BpzHi3r6RQl1ts23teVBtfYMZT8x/vPLizj46w/8aaRbWBxYL7LGwiTnCPXz5bbICdDJ9WrVMa0tYb+IetMDhG3Y/x7XpQuVf15H0BnbHhpoqZFQZF1aT52/bC5osQ2lzNnTr6noLpueT52UwMZ8kK59qGmg1q0bkIMhJkKjf23Y+VAk7IFZ1CwLqnofqPcJj7uG8MfVbnDV+Q94zd1s9bpNa9FvlHvzGTLb+yMfZ3Zr3Y0uE7TkVMMWt3VKjIJ7BC3m5C50Cc/bDn8zqdwc4suetlLLZi9YomMgvmOeeFMG4uQfi4Ma0CF1oyuXnacnB7WbuWOsPoBah4WtbDLZoupPE98=
   file_glob: true
   file: build/sublime/*
   skip_cleanup: true
