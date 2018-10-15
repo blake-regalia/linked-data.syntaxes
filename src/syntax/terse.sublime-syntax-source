@@ -48,23 +48,24 @@ variables:
   openBrace_LOOKAHEAD: '(?=\{)'
   openParen_LOOKAHEAD: '(?=\()'
 
-  prefixedName_LOOKAHEAD: '(?={{PN_PREFIX}}?:)'
-
-  pnLocal_LOOKAHEAD: >-
+  prefixedNameNamespace: '{{PN_PREFIX}}?:'
+  prefixedNameLocal: >-
     (?x)
-      (?=
+      (?:
         (?:
           {{PN_CHARS_U}}|:|[0-9]|{{PLX}}
         )
         (?:
           (?:
-            {{PN_CHARS}}|\.|:||{{PLX}}
+            {{PN_CHARS}}|\.|:|{{PLX}}
           )*
           (?:
-            {{PN_CHARS}}|:||{{PLX}}
+            {{PN_CHARS}}|:|{{PLX}}
           )
         )?
-      )
+      )?
+
+  prefixedName_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
 
   numericLiteral_LOOKAHEAD: '(?=[0-9+-]|\.[0-9])'
   booleanLiteral_LOOKAHEAD: '(?i)(?=(?:true|false){{KEYWORD_BOUNDARY}})'

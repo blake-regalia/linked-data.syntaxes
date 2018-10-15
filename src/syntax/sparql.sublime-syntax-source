@@ -49,7 +49,7 @@ variables:
       (?=
         (?:
           (?:<{{IRI_CONTENTS}}>)
-          |(?:{{PN_PREFIX}}?:{{pnLocal_LOOKAHEAD}})
+          |(?:{{prefixedNameNamespace}}{{prefixedNameLocal}})
         )\s*\(
       )
 
@@ -91,6 +91,7 @@ variables:
         |sample
         |group_concat
       )\s*\(
+      |{{namedNodeFunction_LOOKAHEAD}}
     )
 
   builtInCall_LOOKAHEAD: >-
@@ -137,7 +138,7 @@ variables:
 
   constraint_LOOKAHEAD: >-
     (?x)(?=
-      \(
+      \(\s*
       |{{builtInCall_LOOKAHEAD}}
       |{{namedNodeFunction_LOOKAHEAD}}
     )
@@ -309,8 +310,7 @@ contexts:
       set: selectClauseExpressionBinding_AFTER_META
 
   selectClauseExpressionBinding_AFTER_META:
-    - match: '\('
-      scope: punctuation.definition.expression.begin.rq
+    - _open_paren: definition.expression
       set: [selectClauseExpressionBinding_TERMINATE, selectClauseExpressionBinding_AFTER_EXPRESSION, expression]
     - _throw: true
 
@@ -321,8 +321,7 @@ contexts:
     - _throw: false
 
   selectClauseExpressionBinding_TERMINATE:
-    - match: '\)'
-      scope: punctuation.definition.expression.end.rq
+    - _close_paren: definition.expression
       pop: true
     - _throw: true
 
@@ -438,8 +437,7 @@ contexts:
     - _throw: true
 
   groupCondition:
-    - match: '\('
-      scope: punctuation.definition.arguments.begin.rq meta.brace.round.rq
+    - _open_paren: definition.arguments
       set: [groupCondition_TERMINATE_BINDING, groupCondition_AFTER_EXPRESSION, expression]
     - match: '{{var_LOOKAHEAD}}'
       set: var
@@ -455,8 +453,7 @@ contexts:
     - include: else_pop
 
   groupCondition_TERMINATE_BINDING:
-    - match: '\)'
-      scope: punctuation.definition.arguments.end.rq meta.brace.round.rq
+    - _close_paren: definition.arguments
       pop: true
     - _throw: true
 
@@ -874,7 +871,7 @@ contexts:
       set: bind_AFTER_BIND
     - _case: values
       type: qualifier
-      set: inlineData_AFTER_VALUES
+      set: dataBlock
     - _throw: true
 
   graphGraphPattern_AFTER_GRAPH:
@@ -895,10 +892,20 @@ contexts:
       scope: 'silent'
 
   bind_AFTER_BIND:
-    - match: '.'
+    - _open_paren: section.bind
+      set: [bind_AFTER_EXPRESSION, expression]
+    - _throw: true
 
-  inlineData_AFTER_VALUES:
-    - match: '.'
+  bind_AFTER_EXPRESSION:
+    - _case: as
+      scope: storage.type.variable.as.select-clause.rq
+      set: [bind_AFTER_VAR, var]
+    - _throw: true
+
+  bind_AFTER_VAR:
+    - _close_paren: section.bind
+      pop: true
+    - _throw: true
 
   dataBlock:
     - match: '{{var_LOOKAHEAD}}'
@@ -911,56 +918,51 @@ contexts:
     - _goto: [inlineDataOneVar_AFTER_VAR, var]
 
   inlineDataOneVar_AFTER_VAR:
-    - _open_brace: section.inline-data
+    - _open_brace: section.values-data-block.one-var
       set: [inlineDataOneVar_AFTER_DATA_BLOCK_VALUE, dataBlockValue]
     - _throw: true
 
   inlineDataOneVar_AFTER_DATA_BLOCK_VALUE:
-    - _close_brace: section.inline-data
+    - _close_brace: section.values-data-block.one-var
       pop: true
     - _throw: true
 
   inlineDataFull:
-    - _open_paren: section.inline-data
+    - _open_paren: section.inline-data-vars
       set: inlineDataFull_AFTER_BEGIN
     - _throw: true
 
   inlineDataFull_AFTER_BEGIN:
-    - _close_paren: section.inline-data
+    - _close_paren: section.inline-data-vars
       set: inlineDataFull_AFTER_VARS
     - match: '{{var_LOOKAHEAD}}'
       push: var
     - _throw: true
 
   inlineDataFull_AFTER_VARS:
-    - _open_brace: section.values-data-block
+    - _open_brace: section.values-data-block.full
       set: inlineDataFull_AFTER_BRACE
     - _throw: true
 
   inlineDataFull_AFTER_BRACE:
     - _open_paren: section.data
       set: [inlineDataFull_AFTER_DATA_BLOCK_VALUE, dataBlockValue]
-    - _close_brace: section.values-data-block
+    - _close_brace: section.values-data-block.full
       pop: true
     - _throw: true
 
   inlineDataFull_AFTER_DATA_BLOCK_VALUE:
     - _close_paren: section.data
-      set: inlineDataFull_TERMINATE
-    - _throw: true
-
-  inlineDataFull_TERMINATE:
-    - _close_brace: section.values-data-block
-      pop: true
+      set: inlineDataFull_AFTER_BRACE
     - _throw: true
 
   dataBlockValue:
+    - _case: undef
+      scope: support.constant.undef.rq
     - match: '{{namedNode_LOOKAHEAD}}'
       push: namedNode
     - match: '{{literal_LOOKAHEAD}}'
       push: literal
-    - _case: undef
-      scope: support.constant.undef.rq
     - include: else_pop
 
   # minusGraphPattern:
@@ -994,6 +996,7 @@ contexts:
     - _namedNode:
         scope: function-call
         set: [functionCall_TERMINATE, argList]
+    - _throw: true
 
   functionCall_TERMINATE:
     - meta_content_scope: meta.function-call.rq
@@ -1001,8 +1004,7 @@ contexts:
       pop: true
 
   argList:
-    - match: '\('
-      scope: punctuation.definition.arguments.begin.rq meta.brace.round.rq
+    - _open_paren: definition.arguments
       set: [argList_AFTER_ARGUMENT, argList_AFTER_BEGIN]
     - include: else_pop
 
@@ -1016,20 +1018,17 @@ contexts:
     - match: ','
       scope: punctuation.separator.argument.rq
       push: expression
-    - match: '\)'
-      scope: punctuation.definition.arguments.end.rq meta.brace.round.rq
+    - _close_paren: definition.arguments
       pop: true
     - _throw: true
 
   expressionList:
-    - match: '\('
-      scope: punctuation.definition.expression.begin.rq meta.brace.round.rq
+    - _open_paren: definition.expression
       set: expressionList_AFTER_BEGIN
     - _throw: true
 
   expressionList_AFTER_BEGIN:
-    - match: '\)'
-      scope: punctuation.definition.expression.end.rq meta.brace.round.rq
+    - _close_paren: definition.expression
       pop: true
     - _goto: [expressionList_AFTER_EXPRESSION, expression]
 
@@ -1037,8 +1036,7 @@ contexts:
     - match: ','
       scope: punctuation.separator.expression.rq
       push: expression
-    - match: '\)'
-      scope: punctuation.definition.expression.end.rq meta.brace.round.rq
+    - _close_paren: definition.expression
       pop: true
     - _throw: true
 
@@ -1477,29 +1475,27 @@ contexts:
     - _goto: primaryExpression
 
   primaryExpression:
+    - match: '{{namedNodeFunction_LOOKAHEAD}}'
+      set: functionCall
     - match: '{{var_LOOKAHEAD}}'
       set: var
     - match: '{{openParen_LOOKAHEAD}}'
       set: brackettedExpression
-    - match: '{{namedNodeFunction_LOOKAHEAD}}'
-      set: functionCall
+    - include: builtInCall
+    - include: literal
     - _namedNode:
         scope: expression
         pop: true
-    - include: builtInCall
-    - include: literal
     - _throw: true
 
   brackettedExpression:
-    - match: '\('
-      scope: punctuation.definition.expression.begin.rq
+    - _open_paren: definition.expression
       set: [brackettedExpression_TERMINATE, expression]
     - _throw: true
 
   brackettedExpression_TERMINATE:
     - meta_content_scope: meta.group.bracketted-expression.rq
-    - match: '\)'
-      scope: punctuation.definition.expression.begin.rq
+    - _close_paren: definition.expression
       pop: true
     - _throw: true
 
@@ -1630,8 +1626,7 @@ contexts:
     - include: aggregateFunction
 
   builtInCallArguments:
-    - match: '\('
-      scope: punctuation.definition.arguments.begin.rq meta.brace.round.rq
+    - _open_paren: definition.arguments
       pop: true
     - _throw: true
 
@@ -1649,14 +1644,12 @@ contexts:
 
   builtInCall_TERMINATE:
     - meta_content_scope: meta.invocation.built-in.rq
-    - match: '\)'
-      scope: punctuation.definition.arguments.end.rq meta.brace.round.rq
+    - _close_paren: definition.arguments
       pop: true
     - _throw: true
 
   optionalArgumentExpression:
-    - match: '\)'
-      scope: punctuation.definition.arguments.end.rq
+    - _close_paren: definition.arguments
       pop: true
     - _goto: expression
 
@@ -1698,8 +1691,7 @@ contexts:
     - _goto: builtInCall_TERMINATE
 
   aggregateFunctionArguments:
-    - match: '\('
-      scope: punctuation.definition.arguments.begin.rq meta.brace.round.rq
+    - _open_paren: definition.arguments
       set: aggregateFunctionArguments_AFTER_BEGIN
     - _throw: true
 

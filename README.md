@@ -22,7 +22,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
  - Macaroon Dark
 
 #### *Planned langauage support*:
- - SheX
+ - ShEx
  - RDFa
  - JSON-LD
 
