@@ -802,7 +802,7 @@ contexts:
 
   groupGraphPattern_AFTER_BEGIN:
     - match: '{{selectQuery_LOOKAHEAD}}'
-      set: subSelect
+      set: [groupGraphPattern_TERMINATE, subSelect]
     - _goto: [groupGraphPattern_TERMINATE, groupGraphPatternSub]
 
   groupGraphPatternSub:
@@ -917,12 +917,12 @@ contexts:
     - _goto: [inlineDataOneVar_AFTER_VAR, var]
 
   inlineDataOneVar_AFTER_VAR:
-    - _open_brace: section.values-data-block.one-var
+    - _open_brace: section.block.values-data.one-var
       set: [inlineDataOneVar_AFTER_DATA_BLOCK_VALUE, dataBlockValue]
     - _throw: true
 
   inlineDataOneVar_AFTER_DATA_BLOCK_VALUE:
-    - _close_brace: section.values-data-block.one-var
+    - _close_brace: section.block.values-data.one-var
       pop: true
     - _throw: true
 
@@ -939,14 +939,14 @@ contexts:
     - _throw: true
 
   inlineDataFull_AFTER_VARS:
-    - _open_brace: section.values-data-block.full
+    - _open_brace: section.block.values-data.full
       set: inlineDataFull_AFTER_BRACE
     - _throw: true
 
   inlineDataFull_AFTER_BRACE:
     - _open_paren: section.data
       set: [inlineDataFull_AFTER_DATA_BLOCK_VALUE, dataBlockValue]
-    - _close_brace: section.values-data-block.full
+    - _close_brace: section.block.values-data.full
       pop: true
     - _throw: true
 

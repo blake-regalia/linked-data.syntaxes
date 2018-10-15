@@ -77,7 +77,7 @@ module.exports = {
 			'keyword.operator.word.qualifier': -10,
 
 			// where clause brace
-			'punctuation.section.braces, meta.clause.where': 10,
+			'punctuation.section, meta.clause.where': 10,
 
 			// built-ins
 			'support.function': 0,
@@ -89,6 +89,7 @@ module.exports = {
 
 			'keyword.operator.path': 0,
 			'punctuation.section.group': -20,
+			'punctuation.section.block': -15,
 			'meta.path.negated punctuation.section.group': -10,
 			'meta.path.inverse punctuation.section.group': -10,
 
