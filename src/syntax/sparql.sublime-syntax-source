@@ -240,6 +240,13 @@ contexts:
     - _throw: true
 
   unit_AFTER_PROLOGUE:
+    - match: '(#(\s*)(@unit)(\s*))'
+      captures:
+        1: comment.line.rq
+        2: meta.whitespace.rq
+        3: meta.directive.prologue.rq
+        4: meta.whitespace.rq
+      set: [unit_AFTER_PROLOGUE, line_comment]
     - match: '{{query_LOOKAHEAD}}'
       set: [valuesClause, query_AFTER_PROLOGUE]
     - match: '{{update_LOOKAHEAD}}'

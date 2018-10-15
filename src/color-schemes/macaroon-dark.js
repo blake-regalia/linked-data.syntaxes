@@ -127,7 +127,7 @@ module.exports = {
 			'meta.datatype punctuation.definition.iri': -50,
 
 			// blank node property list
-			'punctuation.definition.blank-node-property-list': -10,
+			'punctuation.definition.blank-node-property-list': 5,
 			'punctuation.definition.anonymous-blank-node': -45,
 
 			// terminators and separators

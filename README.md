@@ -23,6 +23,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
 
 #### *Planned langauage support*:
  - ShEx
+ - Notation3
  - RDFa
  - JSON-LD
 
@@ -37,6 +38,9 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
 
 ### Previews:
 
-Turtle:
-
+#### Turtle:
 ![Turtle Preview](doc/preview/turtle.png)
+
+#### SPARQL:
+![SPARQL Preview](doc/preview/sparql.png)
+
