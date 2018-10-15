@@ -1,17 +1,19 @@
-const fs = require('fs');
 const yaml = require('js-yaml');
 const plist = require('plist');
 
-// theme file
-let p_file = process.argv[2];
+// load input file contents
+let s_contents = '';
+process.stdin.setEncoding('utf8');
+process.stdin
+	.on('data', (s_chunk) => {
+		s_contents += s_chunk;
+	})
+	.on('end', () => {
+		// parse scheme def as yaml
+		let g_scheme = yaml.safeLoad(s_contents, {
+			filename: 'stdin',
+		});
 
-// load color scheme file contents
-let s_scheme = fs.readFileSync(p_file, 'utf8');
-
-// parse scheme def as yaml
-let g_scheme = yaml.safeLoad(s_scheme, {
-	filename: p_file,
-});
-
-// output new YAML-tmTheme file
-process.stdout.write(plist.build(g_scheme));
+		// output new YAML-tmTheme file
+		process.stdout.write(plist.build(g_scheme));
+	});

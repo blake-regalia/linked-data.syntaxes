@@ -1,3 +1,4 @@
+const fs = require('fs');
 
 const p_prefixes_jsonld = 'http://prefix.cc/context.jsonld';
 const p_package = 'development' === process.env.NODE_ENV? 'Packages/User/linked-data': 'Packages/LinkedData';
@@ -74,6 +75,10 @@ module.exports = {
 			'sparql',
 			'at',
 		],
+
+		preference: fs.readdirSync('src/supplementals')
+			.filter(s => s.endsWith('.preferences.yaml'))
+			.map(s => s.replace(/\.preferences\.yaml$/, '')),
 	},
 
 	tasks: {
@@ -141,6 +146,17 @@ module.exports = {
 
 					run: /* syntax: bash */ `
 						node $1 ${h.color_scheme} > $@
+					`,
+				}),
+
+				'linked-data.:preference.tmPreferences': h => ({
+					deps: [
+						`src/main/convert-yaml-to-plist.js`,
+						`src/supplementals/${h.preference}.preferences.yaml`,
+					],
+
+					run: /* syntax: bash */ `
+						node $1 < $2 > $@
 					`,
 				}),
 			},
