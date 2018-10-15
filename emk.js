@@ -61,7 +61,7 @@ const G_SYNTAXES = {
 
 const A_COLOR_SCHEMES = [
 	'macaroon-dark',
-	// 'macaroon',
+	// 'macaroon-light',
 ];
 
 module.exports = {
@@ -93,18 +93,6 @@ module.exports = {
 			}),
 
 			sublime: {
-				// 'turtle.sublime-syntax': () => ({
-				// 	deps: [
-				// 		'src/main/turtle.js',
-				// 		'src/syntax/turtle.sublime-syntax-source',
-				// 		'build/context.jsonld',
-				// 	],
-
-				// 	run: /* syntax: bash */ `
-				// 		node $1 $2 < $3 > $@
-				// 	`,
-				// }),
-
 				':syntax': [s_syntax => ({
 					[`${s_syntax}.sublime-syntax`]: () => ({
 						deps: [
