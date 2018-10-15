@@ -888,8 +888,7 @@ contexts:
     - _goto: serviceGraphPattern_AFTER_SILENT
 
   serviceGraphPattern_AFTER_SILENT:
-    - match: '.'
-      scope: 'silent'
+    - _goto: [groupGraphPattern, varOrNamedNode]
 
   bind_AFTER_BIND:
     - _open_paren: section.bind
@@ -1332,7 +1331,6 @@ contexts:
         - term: graphTerm
     - _throw: true
 
-  # varOrIri:
   varOrNamedNode:
     - _switch: [var, namedNode]
     - _throw: true
