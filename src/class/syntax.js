@@ -61,6 +61,21 @@ const scope_to_context = s_scope => s_scope
 
 const R_REFERENCE = /\{\{([A-Za-z0-9_]+)\}\}/g;
 
+const search_reachable = (h_defined, a_search, as_reachable=new Set()) => {
+	for(let s_search of a_search) {
+		// first encounter
+		if(!as_reachable.has(s_search)) {
+			// add to set
+			as_reachable.add(s_search);
+
+			// recurse on children
+			search_reachable(h_defined, [...h_defined[s_search]], as_reachable);
+		}
+	}
+
+	return as_reachable;
+};
+
 class def {
 	static from_yaml_contents(s_contents, p_yaml) {
 		// parse syntax def as yaml
@@ -263,12 +278,14 @@ class def {
 	}
 
 	validate() {
-		let as_defined = new Set();
-		let as_referenced = new Set();
+		let h_contexts = this.contexts;
+		let h_defined = {};
+		let h_referenced = {};
 
-		for(let [si_context, k_context] of Object.entries(this.contexts)) {
+		for(let [si_context, k_context] of Object.entries(h_contexts)) {
 			// context is defined
-			as_defined.add(si_context);
+			// as_defined.add(si_context);
+			let as_states_reachable = new Set();
 
 			// each subrule in context
 			for(let [k_rule] of k_context.subrules()) {
@@ -276,20 +293,51 @@ class def {
 
 				// each state in rule
 				for(let s_state of a_states) {
-					// state is referenced
-					as_referenced.add(s_state);
+					// add state to context's set
+					as_states_reachable.add(s_state);
+
+					// add state to reference => [...contexts] map
+					if(!(s_state in h_referenced)) {
+						h_referenced[s_state] = [si_context];
+					}
+					else {
+						h_referenced[s_state].push(si_context);
+					}
 				}
+			}
+
+			// set of states reachable from context
+			h_defined[si_context] = as_states_reachable;
+		}
+
+		// find all reachable contexts
+		let as_reachable = search_reachable(h_defined, ['prototype', 'main']);
+
+		// test each context for reachability
+		for(let si_context in h_defined) {
+			// not reachable
+			if(!as_reachable.has(si_context)) {
+				// print
+				console.warn(`removed unreachable context '${si_context}'`);
+
+				// remove context
+				delete h_contexts[si_context];
 			}
 		}
 
 		// make sure every reference is defined
-		for(let s_state of as_referenced) {
-			if(!as_defined.has(s_state)) {
-				throw new Error(`state '${s_state}' is referenced but not defined`);
+		for(let s_state in h_referenced) {
+			// reference is not reachable; skip
+			if(!(s_state in h_contexts)) continue;
+
+			// reference is not defined
+			if(!(s_state in h_defined)) {
+				throw new Error(`state '${s_state}' is referenced but not defined; appears in contexts [${h_referenced[s_state].join(', ')}]`);
 			}
 		}
 	}
 }
+
 
 class context {
 	static from(a_rules) {
