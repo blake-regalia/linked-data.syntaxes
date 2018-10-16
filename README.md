@@ -20,6 +20,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
 
 #### Currently supported color themes:
  - Macaroon Dark
+ - Macaroon Light (in beta)
 
 #### *Planned langauage support*:
  - ShEx
@@ -28,11 +29,12 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
  - JSON-LD
 
 #### *Planned platform support*:
+ - Atom
  - CodeMirror
  - Emacs
 
-#### *Planned color theme support*:
- - Macaroon Light
+#### *Planned color theme support*
+ - *Suggestions?*
 
 ---
 
