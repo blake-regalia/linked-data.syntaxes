@@ -62,7 +62,7 @@ const G_SYNTAXES = {
 
 const A_COLOR_SCHEMES = [
 	'macaroon-dark',
-	// 'macaroon-light',
+	'macaroon-light',
 ];
 
 module.exports = {
