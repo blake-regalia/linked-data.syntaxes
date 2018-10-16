@@ -153,10 +153,8 @@ contexts:
   literal:
     - match: '{{stringLiteral_LOOKAHEAD}}'
       set: rdfLiteral
-    - match: '(true)|(false)'
-      captures: 
-        1: constant.language.boolean.true.SYNTAX
-        2: constant.language.boolean.false.SYNTAX
+    - _cases: ['true', false']
+      scope: constant.language.boolean.WORD.SYNTAX
       pop: true
     - include: numericLiteral
 
