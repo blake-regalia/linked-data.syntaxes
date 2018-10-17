@@ -38,7 +38,19 @@ const G_SYNTAX_DEPS = {
 };
 
 const G_SYNTAXES = {
+	'n-triples': {
+		supplementals: {},
+		dependencies: G_SYNTAX_DEPS.verbose,
+	},
+	'n-quads': {
+		supplementals: {},
+		dependencies: G_SYNTAX_DEPS.verbose,
+	},
 	sparql: {
+		supplementals: {},
+		dependencies: G_SYNTAX_DEPS.terse,
+	},
+	notation3: {
 		supplementals: {},
 		dependencies: G_SYNTAX_DEPS.terse,
 	},
@@ -49,14 +61,6 @@ const G_SYNTAXES = {
 	trig: {
 		supplementals: {},
 		dependencies: G_SYNTAX_DEPS.t_family,
-	},
-	'n-triples': {
-		supplementals: {},
-		dependencies: G_SYNTAX_DEPS.verbose,
-	},
-	'n-quads': {
-		supplementals: {},
-		dependencies: G_SYNTAX_DEPS.verbose,
 	},
 };
 
