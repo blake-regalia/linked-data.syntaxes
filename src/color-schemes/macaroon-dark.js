@@ -158,6 +158,7 @@ module.exports = {
 			// language-tags
 			'string.unquoted.language-tag': -5,
 			'punctuation.separator.language-tag.symbol': -60,
+			'string.unquoted.barename': -30,
 
 			// numerics
 			'keyword.operator.arithmetic': -0,

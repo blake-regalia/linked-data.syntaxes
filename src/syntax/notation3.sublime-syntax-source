@@ -148,7 +148,7 @@ contexts:
   barenameCslTail:
     - match: ','
       scope: punctuation.separator.barename.n3
-      set: barename
+      push: barename
     - include: else_pop
 
   prefix:
@@ -227,7 +227,7 @@ contexts:
 
   pathList:
     - _switch:
-        - pathItem: expression
+        - pathItem: [pathList, expression]
     - include: else_pop
 
   pathTail:
@@ -260,7 +260,7 @@ contexts:
         2: punctuation.definition.keyword.predicate.has.n3
       set: expression
       pop: true
-    - match: '((@)is)\b'
+    - match: '((@)?is)\b'
       captures:
         1: support.function.built-in.is.n3
         2: punctuation.definition.keyword.predicate.is.n3
@@ -269,10 +269,11 @@ contexts:
     - include: expression
 
   predicate_EXPECT_OF:
-    - match: '((@)of)\b'
+    - match: '((@)?of)\b'
       captures:
         1: support.constant.predicate.of.n3
         2: punctuation.definition.keyword.predicate.of.n3
+      pop: true
     - _throw: true
 
   propertyList:
@@ -283,6 +284,7 @@ contexts:
   propertyListTail:
     - match: ';'
       scope: punctuation.separator.property-list.n3
+      set: propertyList
     - include: else_pop
 
   objectTail:

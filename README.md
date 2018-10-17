@@ -13,7 +13,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
  - TriG
  - N-Triples (NT)
  - N-Quads (NQ)
- - Notation3
+ - Notation3 (N3)
 
 #### Currently supported platforms:
  - Sublime Text 3
@@ -24,7 +24,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
  - Macaroon Light (in beta)
 
 #### *Planned langauage support*:
- - ShEx
+ - ShExC
  - RDFa
  - JSON-LD
 
