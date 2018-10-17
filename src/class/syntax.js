@@ -69,7 +69,7 @@ const search_reachable = (h_defined, a_search, as_reachable=new Set()) => {
 			as_reachable.add(s_search);
 
 			// recurse on children
-			search_reachable(h_defined, [...h_defined[s_search]], as_reachable);
+			search_reachable(h_defined, [...h_defined[s_search] || []], as_reachable);
 		}
 	}
 
@@ -256,11 +256,23 @@ class def {
 	}
 
 	extends(k_other) {
+		let h_variables = {
+			...k_other.variables,
+			...this.variables,
+		};
+
+		// for(let s_variable in this.variables) {
+		// 	// overwrite existing by deleting key first
+		// 	if(s_variable in h_variables) {
+		// 		delete h_variables[s_variable];
+		// 	}
+
+		// 	// append to object
+		// 	h_variables[s_variable] = this.variables[s_variable]
+		// }
+
 		Object.assign(this, {
-			variables: {
-				...k_other.variables,
-				...this.variables,
-			},
+			variables: h_variables,
 
 			contexts: {
 				...Object.entries(k_other.contexts)
@@ -279,8 +291,12 @@ class def {
 
 	validate() {
 		let h_contexts = this.contexts;
-		let h_defined = {};
-		let h_referenced = {};
+		let h_variables = this.variables;
+
+		let h_defined_contexts = {};
+		let h_referenced_states = {};
+
+		let h_referenced_vars = {}
 
 		for(let [si_context, k_context] of Object.entries(h_contexts)) {
 			// context is defined
@@ -289,6 +305,7 @@ class def {
 
 			// each subrule in context
 			for(let [k_rule] of k_context.subrules()) {
+				// collect states
 				let a_states = k_rule.states();
 
 				// each state in rule
@@ -297,24 +314,41 @@ class def {
 					as_states_reachable.add(s_state);
 
 					// add state to reference => [...contexts] map
-					if(!(s_state in h_referenced)) {
-						h_referenced[s_state] = [si_context];
+					if(!(s_state in h_referenced_states)) {
+						h_referenced_states[s_state] = [si_context];
 					}
 					else {
-						h_referenced[s_state].push(si_context);
+						h_referenced_states[s_state].push(si_context);
+					}
+				}
+
+				// extract variable references
+				let a_variables = ('object' === typeof k_rule.source? k_rule.source.match || '': '').match(R_REFERENCE);
+				if(a_variables && a_variables.length) {
+					// each reference
+					for(let s_ref of a_variables) {
+						let si_variable = s_ref.slice(2, -2);
+
+						// add to var references
+						if(si_context in h_referenced_vars) {
+							h_referenced_vars[si_context].push(si_variable);
+						}
+						else {
+							h_referenced_vars[si_context] = [si_variable];
+						}
 					}
 				}
 			}
 
 			// set of states reachable from context
-			h_defined[si_context] = as_states_reachable;
+			h_defined_contexts[si_context] = as_states_reachable;
 		}
 
 		// find all reachable contexts
-		let as_reachable = search_reachable(h_defined, ['prototype', 'main']);
+		let as_reachable = search_reachable(h_defined_contexts, ['prototype', 'main']);
 
 		// test each context for reachability
-		for(let si_context in h_defined) {
+		for(let si_context in h_defined_contexts) {
 			// not reachable
 			if(!as_reachable.has(si_context)) {
 				// print
@@ -325,14 +359,47 @@ class def {
 			}
 		}
 
+		// deduce reachable vars
+		let as_reachable_vars = new Set(['MAT_word_or_any_one_char', 'PLA_anything']);
+
+		// each reachable context
+		for(let s_state of as_reachable) {
+			// append variables to reachable set
+			as_reachable_vars = new Set([...as_reachable_vars, ...h_referenced_vars[s_state] || []]);
+		}
+
+		let as_reachable_vars_re = new Set([...as_reachable_vars]);
+
+		// each variable
+		let h_defined_vars = {};
+		for(let si_variable in h_variables) {
+			h_defined_vars[si_variable] = (h_variables[si_variable].match(R_REFERENCE) || [])
+				.map(s => s.slice(2, -2));
+		}
+
+		//
+		let as_reachable_vars_searched = search_reachable(h_defined_vars, [...as_reachable_vars]);
+
+		// each variable
+		for(let si_variable in h_variables) {
+			// unreachable variable
+			if(!as_reachable_vars_searched.has(si_variable)) {
+				// print
+				console.warn(`removed unreachable variable '${si_variable}'`);
+
+				// remove variable
+				delete h_variables[si_variable];
+			}
+		}
+
 		// make sure every reference is defined
-		for(let s_state in h_referenced) {
+		for(let s_state in h_referenced_states) {
 			// reference is not reachable; skip
 			if(!(s_state in h_contexts)) continue;
 
 			// reference is not defined
-			if(!(s_state in h_defined)) {
-				throw new Error(`state '${s_state}' is referenced but not defined; appears in contexts [${h_referenced[s_state].join(', ')}]`);
+			if(!(s_state in h_defined_contexts)) {
+				throw new Error(`state '${s_state}' is referenced but not defined; appears in contexts [${h_referenced_states[s_state].join(', ')}]`);
 			}
 		}
 	}
