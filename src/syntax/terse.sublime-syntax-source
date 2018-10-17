@@ -67,7 +67,8 @@ variables:
 
   prefixedName_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
 
-  numericLiteral_LOOKAHEAD: '(?=[0-9+-]|\.[0-9])'
+  numericLiteral: '[0-9+-]|\.[0-9]'
+  numericLiteral_LOOKAHEAD: '(?={{numericLiteral}})'
   booleanLiteral_LOOKAHEAD: '(?i)(?=(?:true|false){{KEYWORD_BOUNDARY}})'
 
   a_LOOKAHEAD: '(?=a{{KEYWORD_BOUNDARY}})'

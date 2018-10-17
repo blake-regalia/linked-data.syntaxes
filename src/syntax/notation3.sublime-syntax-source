@@ -1,0 +1,406 @@
+%YAML 1.2
+---
+name: Notation3
+file_extensions:
+  - n3
+scope: source.n3
+_extends: terse.sublime-syntax-source
+
+variables:
+  barename: >-
+    (?x)
+      [A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
+      [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
+
+  prefix: >-
+    (?x)(
+      [A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
+      [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
+    )?(:)
+
+  quickVariable: >-
+    (?x)
+      \?[A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
+      [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
+
+  quickVariable_LOOKAHEAD: '(?={{quickVariable}})'
+
+  qName: >-
+    (?x)(?:{{prefix}})?
+      (
+        [A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
+        [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
+      )
+
+  qName_LOOKAHEAD: '(?=[:A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}])'
+
+  symbol: '<|{{qName}}'
+  symbol_LOOKAHEAD: '(?=[<:A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}])'
+
+  boolean: '@(true|false){{KEYWORD_BOUNDARY}}'
+  boolean_LOOKAHEAD: '(?={{boolean}})'
+
+  baseDeclaration: '@base{{KEYWORD_BOUNDARY}}'
+  keywordsDeclaration: '@keywords{{KEYWORD_BOUNDARY}}'
+  prefixDeclaration: '@prefix{{KEYWORD_BOUNDARY}}'
+
+  baseDeclaration_LOOKAHEAD: '(?={{baseDeclaration}})'
+  keywordsDeclaration_LOOKAHEAD: '(?={{keywordsDeclaration}})'
+  prefixDeclaration_LOOKAHEAD: '(?={{prefixDeclaration}})'
+
+  declaration: '{{baseDeclaration}}|{{keywordsDeclaration}}|{{prefixDeclaration}}'
+  declaration_LOOKAHEAD: '(?={{declaration}})'
+
+  existential: '@forSome{{KEYWORD_BOUNDARY}}'
+  existential_LOOKAHEAD: '(?={{existential}})'
+
+  universal: '@forAll{{KEYWORD_BOUNDARY}}'
+  universal_LOOKAHEAD: '(?={{universal}})'
+
+  numericLiteral: '[-+]?[0-9]'
+  # numericLiteral_LOOKAHEAD: '(?={{numericLiteral}})'
+
+  pathItem: '[(\[{"<]|{{boolean}}|{{numericLiteral}}|{{quickVariable}}|{{prefix}}|{{qName}}'
+  pathItem_LOOKAHEAD: '(?={{pathItem}})'
+
+  predicate: 'a{{KEYWORD_BOUNDARY}}|@(?:(?:a|has|is){{KEYWORD_BOUNDARY}})|<?=|=>|{{pathItem}}'
+  predicate_LOOKAHEAD: '(?={{predicate}})'
+
+  statement_LOOKAHEAD: >-
+    (?x)(?=
+      {{declaration}}
+      |{{existential}}
+      |{{universal}}
+      |{{pathItem}}
+    )
+
+contexts:
+  prototype:
+    - include: whitespace
+    - include: comment
+
+  main:
+    - match: '{{PLA_anything}}'
+      push: [statement_TERMINATE, statement]
+
+  iriRef:
+    - match: '(<)([^>]*)(>)'
+      captures:
+        1: punctuation.definition.iri.begin.n3
+        2: string.unquoted.iri.SYNTAX
+        3: punctuation.definition.iri.end.n3
+      pop: true
+    - _throw: true
+
+  boolean:
+    - match: '((@)true)'
+      captures:
+        1: constant.language.boolean.true.n3
+        2: punctuation.definition.keyword.boolean.n3
+      pop: true
+    - match: '((@)false)'
+      captures:
+        1: constant.language.boolean.false.n3
+        2: punctuation.definition.keyword.boolean.n3
+      pop: true
+    - _throw: true
+
+  declaration:
+    - _switch: [baseDeclaration, keywordsDeclaration, prefixDeclaration]
+    - _throw: true
+
+  baseDeclaration:
+    - match: '((@)base)\b'
+      captures:
+        1: storage.type.base.n3
+        2: punctuation.definition.keyword.base.n3
+      set: iriRef
+    - _throw: true
+
+  keywordsDeclaration:
+    - match: '((@)keywords)\b'
+      captures:
+        1: storage.type.keywords.n3
+        2: punctuation.definition.keyword.keywords.n3
+      set: barenameCsl
+    - _throw: true
+
+  prefixDeclaration:
+    - match: '((@)prefix)\b'
+      captures:
+        1: storage.type.prefix.n3
+        2: punctuation.definition.keyword.prefix.n3
+      set: [iriRef, prefix]
+    - _throw: true
+
+  barename:
+    - match: '{{barename}}'
+      scope: string.unquoted.barename.n3
+      pop: true
+    - _throw: true
+
+  barenameCsl:
+    - match: '{{barename}}'
+      scope: string.unquoted.barename.n3
+      set: barenameCslTail
+    - include: else_pop
+
+  barenameCslTail:
+    - match: ','
+      scope: punctuation.separator.barename.n3
+      set: barename
+    - include: else_pop
+
+  prefix:
+    - match: '(({{PN_PREFIX}}?)(:))'
+      captures: 
+        1: meta.prefix-declaration.at.namespace.n3
+        2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.n3
+        3: punctuation.separator.prefixed-name.namespace.prefix-declaration.n3
+      pop: true
+
+  statement:
+    - _switch:
+        - declaration
+        - existential
+        - pathItem: simpleStatement
+        - universal
+    - _throw: false
+
+  statement_TERMINATE:
+    - match: '\.'
+      scope: punctuation.terminator.statement.n3
+      pop: true
+    - _throw: false
+
+  statementList:
+    - _switch:
+        - statement: [statementTail, statement]
+    - include: else_pop
+
+  statementTail:
+    - match: '(?=\.)'
+      set: [statementList, statement_TERMINATE]
+    - include: else_pop
+
+  expression:
+    - _goto: [pathTail, pathItem]
+
+  quickVariable:
+    - match: '{{quickVariable}}'
+      scope: variable.other.readwrite.quick-variable.n3
+      pop: true
+    - _throw: true
+
+  formulaContent:
+    - _goto: [statementList]
+
+  pathItem:
+    - _open_paren: section.path
+      set: [pathItem_AFTER_PATH_LIST, pathList]
+    - _open_bracket: definition.property-list
+      set: [pathItem_AFTER_PROPERTY_LIST, propertyList]
+    - _open_brace: section.formula
+      set: [pathItem_AFTER_FORMULA_CONTENT, formulaContent]
+    - _switch:
+        - boolean
+        - literal: rdfLiteral
+        - numericLiteral
+        - quickVariable
+        - symbol
+    - _throw: false
+
+  pathItem_AFTER_PATH_LIST:
+    - _close_paren: section.path
+      pop: true
+    - _throw: false
+
+  pathItem_AFTER_PROPERTY_LIST:
+    - _close_bracket: definition.property-list
+      pop: true
+    - _throw: false
+
+  pathItem_AFTER_FORMULA_CONTENT:
+    - _close_brace: section.formula
+      pop: true
+    - _throw: false
+
+  pathList:
+    - _switch:
+        - pathItem: expression
+    - include: else_pop
+
+  pathTail:
+    - match: '!'
+      scope: keyword.operator.path.logical.not.rq meta.path.negated.rq
+      set: expression
+    - match: '\^'
+      scope: keyword.operator.path.inverse.rq meta.path.inverse.rq
+      set: expression
+    - include: else_pop
+
+  predicate:
+    - match: '<='
+      scope: keyword.operator.predicate.is-implied-by.n3
+      pop: true
+    - match: '=>'
+      scope: keyword.operator.predicate.implies.n3
+      pop: true
+    - match: '='
+      scope: keyword.operator.predicate.same-as.n3
+      pop: true
+    - match: '((@)?a)\b'
+      captures:
+        1: support.constant.predicate.a.n3
+        2: punctuation.definition.keyword.predicate.a.n3
+      pop: true
+    - match: '((@)has)\b'
+      captures:
+        1: support.function.built-in.has.n3
+        2: punctuation.definition.keyword.predicate.has.n3
+      set: expression
+      pop: true
+    - match: '((@)is)\b'
+      captures:
+        1: support.function.built-in.is.n3
+        2: punctuation.definition.keyword.predicate.is.n3
+      set: [predicate_EXPECT_OF, expression]
+      pop: true
+    - include: expression
+
+  predicate_EXPECT_OF:
+    - match: '((@)of)\b'
+      captures:
+        1: support.constant.predicate.of.n3
+        2: punctuation.definition.keyword.predicate.of.n3
+    - _throw: true
+
+  propertyList:
+    - _switch:
+        - predicate: [propertyListTail, objectTail, expression, predicate]
+    - include: else_pop
+
+  propertyListTail:
+    - match: ';'
+      scope: punctuation.separator.property-list.n3
+    - include: else_pop
+
+  objectTail:
+    - match: ','
+      scope: punctuation.separator.object-list.n3
+      push: expression
+    - include: else_pop
+
+
+  simpleStatement:
+    - _goto: [propertyList, expression]
+
+  symbol:
+    - _switch:
+        - iriRef: iriRef
+        - qName
+    - match: '[A-Za-z]+'
+      scope: word
+      pop: true
+    - _throw: true
+
+  qName:
+    - match: '{{qName}}'
+      captures:
+        1: variable.other.readwrite.prefixed-name.namespace.n3
+        2: punctuation.separator.prefixed-name.namespace.SYNTAX
+        3: variable.other.member.prefixed-name.local.SYNTAX
+      pop: true
+    - _throw: true
+
+  symbolCsl:
+    - _switch:
+        - symbol: [symbolCslTail, symbol]
+    - include: else_pop
+
+  symbolCslTail:
+    - match: ','
+      scope: punctuation.separator.symbol.n3
+      push: symbol
+    - include: else_pop
+
+  stringLiteral:
+    - match: '"""'
+      scope: punctuation.definition.string.begin.literal.double.long.n3
+      set: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteralLongDouble]
+    - match: '"'
+      scope: punctuation.definition.string.begin.literal.double.short.n3
+      set: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteralShortDouble]
+    - _throw: false
+
+  datatype:
+    - meta_include_prototype: false
+    - _switch:
+        - symbol: [symbol]
+    - _throw: true
+
+  numericLiteral:
+    # decimal
+    - match: '((?:(\+)|(-))?([0-9]+)(?:(\.)([0-9]+))?)'
+      captures:
+        1: constant.numeric.decimal.n3
+        2: keyword.operator.arithmetic.sign.positive.n3
+        3: keyword.operator.arithmetic.sign.negative.n3
+        4: meta.numeric.decimal.characteristic.n3
+        5: punctuation.decimal.n3
+        6: meta.numeric.decimal.mantissa.n3
+      pop: true
+    # double
+    - match: '((?:(\+)|(-))?([0-9]+)(?:(\.)([0-9]+)){{EXPONENT}})'
+      captures:
+        1: constant.numeric.decimal.n3
+        2: keyword.operator.arithmetic.sign.positive.n3
+        3: keyword.operator.arithmetic.sign.negative.n3
+        4: meta.numeric.decimal.characteristic.n3
+        5: punctuation.decimal.n3
+        6: meta.numeric.decimal.mantissa.n3
+        7: meta.numeric.exponent.e.n3
+        8: meta.numeric.exponent.sign.n3
+        9: meta.numeric.exponent.digit.n3
+      pop: true
+    # integer
+    - match: '((?:(\+)|(-))?([0-9]+))'
+      captures:
+        1: constant.numeric.integer.n3
+        2: keyword.operator.arithmetic.sign.positive.n3
+        3: keyword.operator.arithmetic.sign.negative.n3
+        4: meta.numeric.decimal.integer.n3
+      set: rational_AFTER_INTEGER
+    - _throw: true
+
+  rational_AFTER_INTEGER:
+    - match: '/'
+      scope: keyword.operator.arithmetic.division.n3
+      set: rational_AFTER_DIVISION
+    - include: else_pop
+
+  rational_AFTER_DIVISION:
+    - match: '[0-9]+'
+      scope: constant.numeric.integer.n3
+      pop: true
+    - _throw: false
+
+  existential:
+    - match: '((@)forSome)'
+      captures:
+        1: support.function.built-in.for-some.n3
+        2: punctuation.definition.keyword.for-some.n3
+      set: symbolCsl
+    - _throw: true
+
+  universal:
+    - match: '((@)forAll)'
+      captures:
+        1: support.function.built-in.for-all.n3
+        2: punctuation.definition.keyword.all.n3
+      set: symbolCsl
+    - _throw: true
+
+
+
+
