@@ -70,6 +70,8 @@ module.exports = {
 
 			// `graph`
 			'keyword.control': -15,
+
+			'punctuation.section.formula': -20,
 		},
 
 		root_boost: {
@@ -95,6 +97,9 @@ module.exports = {
 
 			// constants `true` and `false`
 			'constant.language': -5,
+
+			// n3 predicates
+			'keyword.operator.predicate': 0,
 		},
 
 		scape: {
