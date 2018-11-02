@@ -1,16 +1,20 @@
 {
   "name": "linked-data.syntaxes",
+  "version": "0.3.0",
   "private": true,
+  "license": "ISC",
+  "author": {
+    "name": "Blake Regalia",
+    "email": "blake.regalia@gmail.com"
+  },
+  "scripts": {
+    "build": "npx emk",
+    "test": "npm run build"
+  },
   "devDependencies": {
     "emk": "^1.4.3",
     "eslint": "^5.7.0",
     "js-yaml": "^3.12.0",
     "plist": "^3.0.1"
-  },
-  "scripts": {
-    "test": "npm run build",
-    "build": "npx emk"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }
