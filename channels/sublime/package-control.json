@@ -1,0 +1,29 @@
+{
+	"schema_version": "3.0.0",
+	"packages": [
+		{
+			"name": "LinkedData",
+			"details": "https://github.com/blake-regalia/linked-data.syntaxes",
+			"labels": [
+				"semantic web",
+				"linked data",
+				"rdf",
+				"n-triples",
+				"n-quads",
+				"turtle",
+				"trig",
+				"n3",
+				"notation3",
+				"sparql"
+			],
+			"releases": [
+				{
+					"version": "0.2.2",
+					"sublime_text": ">=3000",
+					"url": "https://github.com/blake-regalia/linked-data.syntaxes/releases/download/v0.2.2/LinkedData.sublime-package",
+					"date": "2018-11-03 01:11:36"
+				}
+			]
+		}
+	]
+}

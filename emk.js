@@ -83,10 +83,18 @@ module.exports = {
 		preference: fs.readdirSync('src/supplementals')
 			.filter(s => s.endsWith('.preferences.yaml'))
 			.map(s => s.replace(/\.preferences\.yaml$/, '')),
+
+		version_bump: [
+			'patch',
+			'minor',
+			'major',
+		],
 	},
 
 	tasks: {
 		all: 'build/**',
+
+		release: 'channels/**',
 
 		syntax: {
 			':syntax': h => `build/${h.syntax}.sublime-syntax`,
@@ -94,6 +102,21 @@ module.exports = {
 	},
 
 	outputs: {
+		channels: {
+			sublime: {
+				'package-control.json': () => ({
+					deps: [
+						'src/channel/package-control.js',
+						'package.json',
+						'build/sublime/**',
+					],
+					run: /* syntax: bash */ `
+						node $1 < $2 > $@
+					`,
+				}),
+			},
+		},
+
 		build: {
 			'context.jsonld': () => ({
 				run: /* syntax: bash */ `
@@ -102,67 +125,77 @@ module.exports = {
 			}),
 
 			sublime: {
-				':syntax': [s_syntax => ({
-					[`${s_syntax}.sublime-syntax`]: () => ({
+				'LinkedData.sublime-package': () => ({
+					deps: ['build/sublime/assets/*'],
+					run: /* syntax: bash */ `
+						cd $(dirname $@)
+						zip -r $(basename $@) assets/
+					`,
+				}),
+
+				'assets': {
+					':syntax': [s_syntax => ({
+						[`${s_syntax}.sublime-syntax`]: () => ({
+							deps: [
+								'src/main/sublime-syntax.js',
+								`src/syntax/${s_syntax}.sublime-syntax-source`,
+								...G_SYNTAXES[s_syntax].dependencies,
+							],
+
+							run: /* syntax: bash */ `
+								node $1 $2 < $3 > $@
+							`,
+						}),
+
+						[`${s_syntax}.sublime-settings`]: () => ({
+							deps: [
+								'src/supplementals/settings.jmacs.sublime-settings',
+							],
+
+							run: /* syntax: bash */ `
+								npx jmacs -g '${/* eslint-disable indent */JSON.stringify({
+									PACKAGE_PATH: p_package,
+									COLOR_SCHEME: A_COLOR_SCHEMES[0],
+								})}' $1 > $@
+							`,
+						}),
+
+						...G_SYNTAXES[s_syntax].supplementals,
+					})],
+
+					'prefix-declarations.:declaration_type.sublime-completions': h => ({
 						deps: [
-							'src/main/sublime-syntax.js',
-							`src/syntax/${s_syntax}.sublime-syntax-source`,
-							...G_SYNTAXES[s_syntax].dependencies,
+							'src/supplementals/completions.js',
+							'build/context.jsonld',
 						],
 
 						run: /* syntax: bash */ `
-							node $1 $2 < $3 > $@
+							node $1 '${h.declaration_type}' < $2 > $@
 						`,
 					}),
 
-					[`${s_syntax}.sublime-settings`]: () => ({
+					':color_scheme.sublime-color-scheme': h => ({
 						deps: [
-							'src/supplementals/settings.jmacs.sublime-settings',
+							'src/main/color-scheme.js',
+							`src/color-schemes/${h.color_scheme}.js`,
 						],
 
 						run: /* syntax: bash */ `
-							npx jmacs -g '${/* eslint-disable indent */JSON.stringify({
-								PACKAGE_PATH: p_package,
-								COLOR_SCHEME: A_COLOR_SCHEMES[0],
-							})}' $1 > $@
+							node $1 ${h.color_scheme} > $@
 						`,
 					}),
 
-					...G_SYNTAXES[s_syntax].supplementals,
-				})],
+					'linked-data.:preference.tmPreferences': h => ({
+						deps: [
+							`src/main/convert-yaml-to-plist.js`,
+							`src/supplementals/${h.preference}.preferences.yaml`,
+						],
 
-				'prefix-declarations.:declaration_type.sublime-completions': h => ({
-					deps: [
-						'src/supplementals/completions.js',
-						'build/context.jsonld',
-					],
-
-					run: /* syntax: bash */ `
-						node $1 '${h.declaration_type}' < $2 > $@
-					`,
-				}),
-
-				':color_scheme.sublime-color-scheme': h => ({
-					deps: [
-						'src/main/color-scheme.js',
-						`src/color-schemes/${h.color_scheme}.js`,
-					],
-
-					run: /* syntax: bash */ `
-						node $1 ${h.color_scheme} > $@
-					`,
-				}),
-
-				'linked-data.:preference.tmPreferences': h => ({
-					deps: [
-						`src/main/convert-yaml-to-plist.js`,
-						`src/supplementals/${h.preference}.preferences.yaml`,
-					],
-
-					run: /* syntax: bash */ `
-						node $1 < $2 > $@
-					`,
-				}),
+						run: /* syntax: bash */ `
+							node $1 < $2 > $@
+						`,
+					}),
+				},
 			},
 
 			ace: {
