@@ -25,7 +25,6 @@ process.stdin
 					],
 					releases: [
 						{
-							platforms: ['*'],
 							version: g_package.version,
 							sublime_text: ">=3000",
 							url: `https://github.com/blake-regalia/linked-data.syntaxes/releases/download/v${g_package.version}/LinkedData.sublime-package`,
