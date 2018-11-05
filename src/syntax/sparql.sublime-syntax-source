@@ -490,15 +490,20 @@ contexts:
   orderCondition:
     - _case: asc
       scope: support.function.built-in.sort.asc.rq
-      set: brackettedExpression
+      set: [orderCondition_AFTER_CONDITION, brackettedExpression]
     - _case: desc
       scope: support.function.built-in.sort.desc.rq
-      set: brackettedExpression
+      set: [orderCondition_AFTER_CONDITION, brackettedExpression]
     - match: '{{constraint_LOOKAHEAD}}'
-      set: constraint
+      set: [orderCondition_AFTER_CONDITION, constraint]
     - match: '{{var_LOOKAHEAD}}'
-      set: var
+      set: [orderCondition_AFTER_CONDITION, var]
     - _throw: true
+
+  orderCondition_AFTER_CONDITION:
+    - match: '{{constraint_LOOKAHEAD}}|{{var_LOOKAHEAD}}|(?i:(?=:asc|desc)\b)'
+      set: orderCondition
+    - include: else_pop
 
   limitOffsetClauses:
     - match: '{{limit_LOOKAHEAD}}'
