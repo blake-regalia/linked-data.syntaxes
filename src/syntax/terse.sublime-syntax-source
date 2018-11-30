@@ -154,7 +154,7 @@ contexts:
   literal:
     - match: '{{stringLiteral_LOOKAHEAD}}'
       set: rdfLiteral
-    - _cases: ['true', false']
+    - _cases: ['true', 'false']
       scope: constant.language.boolean.WORD.SYNTAX
       pop: true
     - include: numericLiteral
