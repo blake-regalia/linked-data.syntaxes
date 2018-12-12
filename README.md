@@ -32,6 +32,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
  - Atom
  - CodeMirror
  - Emacs
+ - minted (LaTeX)
 
 #### *Planned color theme support*
  - *Suggestions?*

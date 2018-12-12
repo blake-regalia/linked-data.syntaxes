@@ -62,9 +62,18 @@ contexts:
 
   prefixDeclarationAt_AFTER_AT:
     - _case: prefix
+      lookahead: '(?:{{KEYWORD_BOUNDARY}}|:)'
       scope: storage.type.prefix.at.SYNTAX
-      set: [prefixDeclarationAt_TERMINATE, prefixDeclarationAt_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD]
+      set: [prefixDeclarationAt_TERMINATE, prefixDeclarationAt_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD_OPTIONAL]
     - _throw: false
+
+  prefixDeclaration_AFTER_KEYWORD_OPTIONAL:
+    - meta_include_prototype: false
+    - match: '\s+'
+      scope: meta.whitespace.SYNTAX
+      pop: true
+    - include: prototype
+    - include: else_pop
 
   prefixDeclarationAt_AFTER_KEYWORD_SPACE:
     - _registeredPrefixDeclarations: at

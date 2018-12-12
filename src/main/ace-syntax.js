@@ -6,11 +6,16 @@ transform.build().then((k_syntax) => {
 	process.stdout.write(/* syntax: js */ `
 		/* global define */
 
-		define(function(require, exports, module) {
+		let a_imports = [
+			'ace/lib/oop',
+			'ace/mode/text_highlight_rules',
+		];
+
+		require('brace').define('ace/mode/sparql_highlight_rules', a_imports, function(ace_require, exports) {
 			"use strict";
 
-			var oop = require("../lib/oop");
-			var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+			var oop = ace_require("ace/lib/oop");
+			var TextHighlightRules = ace_require("ace/mode/text_highlight_rules").TextHighlightRules;
 
 			function next_states(a_states) {
 				return function(s_state, a_stack) {
@@ -54,7 +59,7 @@ transform.build().then((k_syntax) => {
 
 			oop.inherits(SPARQLgraphyHighlightRules, TextHighlightRules);
 
-			exports.SPARQLgraphyHighlightRules = SPARQLgraphyHighlightRules;
+			exports.HighlightRules = SPARQLgraphyHighlightRules;
 		});
 	`);
 });
