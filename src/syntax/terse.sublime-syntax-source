@@ -344,7 +344,7 @@ contexts:
       pop: true
     - match: '{{ECHAR_SINGLE}}'
       scope: constant.character.escape.literal.escape.short.SYNTAX
-    - match: '\\'''
+    - match: '\\"'
       scope: constant.character.escape.literal.escape.pointless.short.SYNTAX
     - match: '{{UCHAR}}'
       scope: constant.character.escape.literal.unicode.short.SYNTAX
