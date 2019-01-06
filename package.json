@@ -14,9 +14,9 @@
   "repository": "blake-regalia/linked-data.syntaxes",
   "devDependencies": {
     "emk": "^1.6.0",
-    "eslint": "^5.11.1",
-    "jmacs": "^1.2.4",
-    "js-yaml": "^3.12.0",
+    "eslint": "^5.12.0",
+    "jmacs": "^1.2.7",
+    "js-yaml": "^3.12.1",
     "plist": "^3.0.1"
   }
 }
