@@ -17,8 +17,8 @@ variables:
   numericLiteralNegative_LOOKAHEAD: '(?=\-\.?[0-9])'
 
 
-  limit_LOOKAHEAD: '(?=limit{{KEYWORD_BOUNDARY}})'
-  offset_LOOKAHEAD: '(?=offset{{KEYWORD_BOUNDARY}})'
+  limit_LOOKAHEAD: '(?i)(?=limit{{KEYWORD_BOUNDARY}})'
+  offset_LOOKAHEAD: '(?i)(?=offset{{KEYWORD_BOUNDARY}})'
 
   namedNodeOrVar_LOOKAHEAD: '(?={{namedNode_LOOKAHEAD}}|{{var_LOOKAHEAD}})'
 
