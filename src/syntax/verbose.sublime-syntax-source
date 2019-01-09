@@ -26,10 +26,8 @@ contexts:
     - _iriRef:
         scope: object
         pop: true
-    - _blankNode:
-        scope: object
-        pop: true
     - _switch:
+        - labeledBlankNode
         - stringLiteral: rdfLiteral
     - _throw: false
 
