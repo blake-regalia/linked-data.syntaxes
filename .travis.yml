@@ -14,4 +14,4 @@ deploy:
   on:
     tags: true
 after_deploy:
-  - ./push_assets.sh
+  - ./push-assets.sh
