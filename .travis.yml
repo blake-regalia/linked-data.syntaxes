@@ -1,6 +1,9 @@
 language: node_js
 node_js:
 - '10'
+env:
+  global:
+    - secure: bOThtfGKwzKz4ZYjTRF61VelU2MMCNU5Y0DA3oFhJulk8kF2wXwojGJeK8K16Ny6yn5suVW49SUqdNh/RasyaWGwRiAGFPacUTwMW7PccMZ2OIEtFvrEe0G2fMrMwfd9wUtm7llGNe/4WDYUodXMTfwQl0gBPtqK+y87aZbKchpqoQlNKMHnBskA3VdZ5WRzCHZkP0eQheI44LKsmDimwLK5YbNoH2vXU4wv23tiBSWmgNk1UHWMyz/SGoDo8AkP51Y5ej8MbQOxHzfB4S+x0yPs7kEFQ9ieNL0SFzeFd3LET8c06YhADm6bGfylPzd/h8//vN6JzNAAtVBeI72kno8FCRw2/nod6ZGlrKzUoZfELB3qMnhqtxXnyDu9E2hHgjZpWPxgnTU5mig8Tn+p+Nl7VOQ96njmGomylmRvSw8yjc9OinBcrzG2WP9c+kKhkFmLCJhg7rwxzhYcggPaLdPXY7vjsaEtb+FROX98Qgq6ydk7m0Vpfep1M1Yn0hHGnCR7YSeiOzQcza+VgxKKehKC3DIUvGQUKSqvCOqsJruzJTouptp8We9e1lIFnpKvCPRgd4SNqxytCd6MNW/ncOJrtYQhLuI2EMmhJYcgfra/Wt6yVu8m2NTgTUy8B9tCQwyiT5MqcXTs0TxCwqZAOY4mWP0M8Ial5Q4HTc3kPPo=
 deploy:
   provider: releases
   api_key:
@@ -10,3 +13,5 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+after_deploy:
+  - ./push_assets.sh
