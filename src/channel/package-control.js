@@ -27,7 +27,7 @@ process.stdin
 						{
 							version: g_package.version,
 							sublime_text: ">=3000",
-							url: `https://github.com/blake-regalia/linked-data.syntaxes/releases/download/v${g_package.version}/LinkedData.sublime-package`,
+							url: 'https://raw.githubusercontent.com/blake-regalia/linked-data.syntaxes/assets/build/sublime/LinkedData.sublime-package',
 							date: (new Date()).toISOString().replace(/T/, ' ').replace(/\.\d+Z/, ''),
 						},
 					],

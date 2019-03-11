@@ -18,10 +18,10 @@
 			],
 			"releases": [
 				{
-					"version": "0.4.4",
+					"version": "0.4.13",
 					"sublime_text": ">=3000",
-					"url": "https://github.com/blake-regalia/linked-data.syntaxes/releases/download/v0.4.4/LinkedData.sublime-package",
-					"date": "2018-11-05 00:03:31"
+					"url": "https://raw.githubusercontent.com/blake-regalia/linked-data.syntaxes/assets/build/sublime/LinkedData.sublime-package",
+					"date": "2019-03-11 23:25:56"
 				}
 			]
 		}
