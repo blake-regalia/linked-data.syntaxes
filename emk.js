@@ -134,6 +134,10 @@ module.exports = {
 				}),
 
 				'assets': {
+					'LICENSE': () => ({
+						copy: 'LICENSE',
+					}),
+
 					':syntax': [s_syntax => ({
 						[`${s_syntax}.sublime-syntax`]: () => ({
 							deps: [
