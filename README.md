@@ -17,7 +17,6 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
 
 #### Currently supported platforms:
  - Sublime Text 3
- - Ace
 
 #### Currently supported color themes:
  - Macaroon Dark
@@ -33,6 +32,7 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
  - CodeMirror
  - Emacs
  - minted (LaTeX)
+ - ~Ace~
 
 #### *Planned color theme support*
  - *Suggestions?*

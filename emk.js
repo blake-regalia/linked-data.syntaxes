@@ -198,41 +198,41 @@ module.exports = {
 				},
 			},
 
-			ace: {
-				':syntax': [s_syntax => ({
-					[`${s_syntax}.js`]: () => ({
-						deps: [
-							'src/ace/mode.jmacs.js',
-						],
+			// ace: {
+			// 	':syntax': [s_syntax => ({
+			// 		[`${s_syntax}.js`]: () => ({
+			// 			deps: [
+			// 				'src/ace/mode.jmacs.js',
+			// 			],
 
-						run: /* syntax: bash */ `
-							npx jmacs -g '{SYNTAX:"${s_syntax}"}' $1 > $@
-						`,
-					}),
+			// 			run: /* syntax: bash */ `
+			// 				npx jmacs -g '{SYNTAX:"${s_syntax}"}' $1 > $@
+			// 			`,
+			// 		}),
 
-					[`${s_syntax}_highlight_rules.js`]: () => ({
-						deps: [
-							'src/main/ace-syntax.js',
-							`src/syntax/${s_syntax}.sublime-syntax-source`,
-							...G_SYNTAXES[s_syntax].dependencies,
-						],
+			// 		[`${s_syntax}_highlight_rules.js`]: () => ({
+			// 			deps: [
+			// 				'src/main/ace-syntax.js',
+			// 				`src/syntax/${s_syntax}.sublime-syntax-source`,
+			// 				...G_SYNTAXES[s_syntax].dependencies,
+			// 			],
 
-						run: /* syntax: bash */ `
-							node $1 $2 < $3 > $@
-							node_exit=$?
-							if [ $node_exit -ne 0 ]; then exit $node_exit; fi
+			// 			run: /* syntax: bash */ `
+			// 				node $1 $2 < $3 > $@
+			// 				node_exit=$?
+			// 				if [ $node_exit -ne 0 ]; then exit $node_exit; fi
 
-							eslint --fix --color --rule 'no-debugger: off' $@
-							eslint_exit=$?
-							# do not fail on warnings
-							if [ $eslint_exit -eq 2 ]; then
-								exit 0
-							fi
-							exit $eslint_exit
-						`,
-					}),
-				})],
-			},
+			// 				eslint --fix --color --rule 'no-debugger: off' $@
+			// 				eslint_exit=$?
+			// 				# do not fail on warnings
+			// 				if [ $eslint_exit -eq 2 ]; then
+			// 					exit 0
+			// 				fi
+			// 				exit $eslint_exit
+			// 			`,
+			// 		}),
+			// 	})],
+			// },
 		},
 	},
 };
