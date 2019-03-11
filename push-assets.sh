@@ -1,5 +1,5 @@
 #!/bin/bash
-PACKAGE_VERSION="$(npm info linked-data.syntaxes version)"
+PACKAGE_VERSION="${TRAVIS_COMMIT_MESSAGE}"
 git checkout --orphan assets
 git reset --hard
 git rm --cached -r .
