@@ -2,6 +2,9 @@
 
 Each syntax highlighter reflects a complete implementation of the grammar specification for its language. This provides highly-specific scoping and instant feedback on malformed code (i.e., invalid or misplaced tokens are easily identified).
 
+### Install:
+Available on [Package Control](https://packagecontrol.io/packages/LinkedData) as `LinkedData` .
+
 #### Features:
  - Highly-specific scoping allows for very detailed color schemes.
  - Malformed syntax detection. Expected token(s) are inspectable via scope name.
