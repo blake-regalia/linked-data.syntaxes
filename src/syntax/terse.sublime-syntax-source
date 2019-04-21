@@ -115,7 +115,7 @@ contexts:
   prefixDeclarationSparql_AFTER_KEYWORD_SPACE:
     - _registeredPrefixDeclarations: sparql
     - match: '(({{PN_PREFIX}}?)(:))'
-      captures: 
+      captures:
         1: meta.prefix-declaration.sparql.namespace.SYNTAX
         2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.SYNTAX
         3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
@@ -255,11 +255,11 @@ contexts:
       scope: punctuation.definition.string.end.literal.double.long.SYNTAX
       pop: true
     - match: '""'
-      push:
+      set:
         - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
         - include: else_pop
     - match: '"'
-      push:
+      set:
         - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
         - include: else_pop
     - _throw: true
@@ -302,23 +302,23 @@ contexts:
   stringLiteralLongSingle:
     - meta_include_prototype: false
     - meta_scope: string.quoted.single.literal.long.SYNTAX
-    - include: stringLiteralLongSingle_AFTER_QUOTE
+    - include: stringLiteralLongSingle_AFTER_INNER_QUOTE
     - match: ''''''''
       scope: punctuation.definition.string.end.literal.single.long.SYNTAX
       pop: true
     - match: ''''''
       scope: string.quoted.single.literal.long.SYNTAX
-      push:
-        - include: stringLiteralLongSingle_AFTER_QUOTE
+      set:
+        - include: stringLiteralLongSingle_AFTER_INNER_QUOTE
         - include: else_pop
     - match: ''''
       scope: string.quoted.single.literal.long.SYNTAX
-      push:
-        - include: stringLiteralLongSingle_AFTER_QUOTE
+      set:
+        - include: stringLiteralLongSingle_AFTER_INNER_QUOTE
         - include: else_pop
     - _throw: true
 
-  stringLiteralLongSingle_AFTER_QUOTE:
+  stringLiteralLongSingle_AFTER_INNER_QUOTE:
     - match: '[^''\\]'
       scope: string.quoted.single.literal.long.SYNTAX
       set: stringLiteralLongSingle
