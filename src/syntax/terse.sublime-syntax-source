@@ -248,20 +248,13 @@ contexts:
     - _throw: true
 
   stringLiteralLongDouble:
-    - meta_scope: string.quoted.double.literal.long.SYNTAX
     - meta_include_prototype: false
     - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
     - match: '"""'
       scope: punctuation.definition.string.end.literal.double.long.SYNTAX
       pop: true
-    - match: '""'
-      set:
-        - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
-        - include: else_pop
-    - match: '"'
-      set:
-        - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
-        - include: else_pop
+    - match: '""?'
+      scope: string.quoted.double.literal.long.SYNTAX
     - _throw: true
 
   stringLiteralLongDouble_AFTER_INNER_QUOTE:
@@ -301,21 +294,12 @@ contexts:
 
   stringLiteralLongSingle:
     - meta_include_prototype: false
-    - meta_scope: string.quoted.single.literal.long.SYNTAX
     - include: stringLiteralLongSingle_AFTER_INNER_QUOTE
     - match: ''''''''
       scope: punctuation.definition.string.end.literal.single.long.SYNTAX
       pop: true
-    - match: ''''''
+    - match: '''''?'
       scope: string.quoted.single.literal.long.SYNTAX
-      set:
-        - include: stringLiteralLongSingle_AFTER_INNER_QUOTE
-        - include: else_pop
-    - match: ''''
-      scope: string.quoted.single.literal.long.SYNTAX
-      set:
-        - include: stringLiteralLongSingle_AFTER_INNER_QUOTE
-        - include: else_pop
     - _throw: true
 
   stringLiteralLongSingle_AFTER_INNER_QUOTE:
