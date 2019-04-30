@@ -127,15 +127,15 @@ module.exports = {
 			'meta.datatype punctuation.definition.iri': -50,
 
 			// blank node property list
-			'punctuation.definition.blank-node-property-list': -15,
+			'punctuation.definition.blank-node-property-list': -30,
 			'punctuation.definition.anonymous-blank-node': -45,
 
 			// terminators and separators
 			'punctuation.separator.object': -40,
 			'punctuation.terminator.pair': -20,
-			'punctuation.terminator.triple': 100,
+			'punctuation.terminator.triple': -100,
 			'punctuation.terminator.graph-pattern': -60,
-			'punctuation.terminator.prefix-declaration': 40,
+			'punctuation.terminator.prefix-declaration': -40,
 		},
 
 		flare_boost: {
