@@ -10,7 +10,7 @@ Choose between the [Macaron Dark](#macaron-dark) and [Macaron Light](#macaron-li
 
 Create a new file in your Sublime Text 3 Packages directory: `Packages/User/LinkedData.sublime-settings`
 ```json
-// These settings override both User and Default settings for the turtle syntax
+// These settings override both User and Default settings for the specific LinkedData syntaxes
 {
 	"color_scheme": "Packages/LinkedData/macaron-dark.sublime-color-scheme"
 }
