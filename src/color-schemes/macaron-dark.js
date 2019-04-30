@@ -2,20 +2,20 @@
 module.exports = {
 	// base color scheme def
 	base: {
-		...require('./base/light.js'),
-		name: 'Macaroon Light (graphy)',
+		...require('./base/dark.js'),
+		name: 'Macaron Dark (LinkedData)',
 		variables: {
-			root: 'hsl(199, 56%, 58%)',
-			scape: 'hsl(344, 81%, 65%)',
-			flare: 'hsl(42, 98%, 66%)',
-			echo: 'hsl(175, 54%, 55%)',
-			chip: 'hsl(250, 48%, 73%)',
+			root: 'hsl(199, 56%, 73%)',
+			scape: 'hsl(344, 81%, 81%)',
+			flare: 'hsl(42, 98%, 83%)',
+			echo: 'hsl(175, 54%, 69%)',
+			chip: 'hsl(250, 48%, 92%)',
 
-			root_boost: 'hsl(199, 85%, 58%)',
-			scape_boost: 'hsl(344, 94%, 65%)',
-			flare_boost: 'hsl(42, 100%, 66%)',
-			echo_boost: 'hsl(175, 85%, 55%)',
-			chip_boost: 'hsl(250, 83%, 67%)',
+			root_boost: 'hsl(199, 85%, 73%)',
+			scape_boost: 'hsl(344, 94%, 81%)',
+			flare_boost: 'hsl(42, 100%, 83%)',
+			echo_boost: 'hsl(175, 85%, 69%)',
+			chip_boost: 'hsl(250, 83%, 87%)',
 		},
 	},
 
@@ -24,7 +24,7 @@ module.exports = {
 		// registered prefixes
 		{
 			scope: 'meta.prefix-declaration.either.registered',
-			background: 'hsla(220, 23%, 90%, 0.82)',
+			background: 'hsla(220, 23%, 10%, 0.62)',
 		},
 
 		// inverse path
@@ -70,6 +70,8 @@ module.exports = {
 
 			// `graph`
 			'keyword.control': -15,
+
+			'punctuation.section.formula': -20,
 		},
 
 		root_boost: {
@@ -95,6 +97,9 @@ module.exports = {
 
 			// constants `true` and `false`
 			'constant.language': -5,
+
+			// n3 predicates
+			'keyword.operator.predicate': 0,
 		},
 
 		scape: {
@@ -127,7 +132,7 @@ module.exports = {
 			'meta.datatype punctuation.definition.iri': -50,
 
 			// blank node property list
-			'punctuation.definition.blank-node-property-list': -15,
+			'punctuation.definition.blank-node-property-list': 5,
 			'punctuation.definition.anonymous-blank-node': -45,
 
 			// terminators and separators
@@ -153,6 +158,7 @@ module.exports = {
 			// language-tags
 			'string.unquoted.language-tag': -5,
 			'punctuation.separator.language-tag.symbol': -60,
+			'string.unquoted.barename': -30,
 
 			// numerics
 			'keyword.operator.arithmetic': -0,

@@ -22,8 +22,8 @@ Available on [Package Control](https://packagecontrol.io/packages/LinkedData) as
  - Sublime Text 3
 
 #### Currently supported color themes:
- - Macaroon Dark
- - Macaroon Light (in beta)
+ - Macaron Dark
+ - Macaron Light (in beta)
 
 #### *Planned langauage support*:
  - ShExC
