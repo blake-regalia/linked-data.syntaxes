@@ -30,7 +30,7 @@ module.exports = {
 		// inverse path
 		{
 			scope: 'meta.path.inverse',
-			background: 'hsla(226, 94%, 12%, 0.28)',
+			background: 'hsla(226, 94%, 62%, 0.12)',
 			font_style: 'italic',
 		},
 

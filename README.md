@@ -5,6 +5,30 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
 ### Install:
 Available on [Package Control](https://packagecontrol.io/packages/LinkedData) as `LinkedData` .
 
+### Activating the Color Scheme
+Choose between the [Macaron Dark](#macaron-dark) and [Macaron Light](#macaron-light) color schemes, these are designed specifically for the LinkedData languages. In order to keep your current color scheme for all other languages, you need to create a settings file to override only the syntaxes we are interested in:
+
+Create a new file in your Sublime Text 3 Packages directory: `Packages/User/LinkedData.sublime-settings`
+```json
+// These settings override both User and Default settings for the turtle syntax
+{
+	"color_scheme": "Packages/LinkedData/macaron-dark.sublime-color-scheme"
+}
+```
+
+Then, open a terminal to the user packages directory and create a symbolic link to this file for each syntax (shown here for \*nix systems):
+```bash
+ln -s LinkedData.sublime-settings n-triples.sublime-settings
+ln -s LinkedData.sublime-settings n-quads.sublime-settings
+ln -s LinkedData.sublime-settings turtle.sublime-settings
+ln -s LinkedData.sublime-settings trig.sublime-settings
+ln -s LinkedData.sublime-settings notation3.sublime-settings
+ln -s LinkedData.sublime-settings sparql.sublime-settings
+```
+
+This will override the default color scheme when any of these syntaxes are loaded in the current view.
+
+
 #### Features:
  - Highly-specific scoping allows for very detailed color schemes.
  - Malformed syntax detection. Expected token(s) are inspectable via scope name.
@@ -44,9 +68,19 @@ Available on [Package Control](https://packagecontrol.io/packages/LinkedData) as
 
 ### Previews:
 
-#### Turtle:
-![Turtle Preview](doc/preview/turtle.png)
+#### Macaron Dark
 
-#### SPARQL:
-![SPARQL Preview](doc/preview/sparql.png)
+##### Turtle:
+![Turtle Preview](doc/preview/macaron-dark/turtle.png)
+
+##### SPARQL:
+![SPARQL Preview](doc/preview/macaron-dark/sparql.png)
+
+#### Macaron Light
+
+##### Turtle:
+![Turtle Preview](doc/preview/macaron-light/turtle.png)
+
+##### SPARQL:
+![SPARQL Preview](doc/preview/macaron-light/sparql.png)
 
