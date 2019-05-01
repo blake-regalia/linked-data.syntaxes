@@ -16,7 +16,7 @@ Create a new file in your Sublime Text 3 Packages directory: `Packages/User/Link
 }
 ```
 
-Then, create a symbolic link to this file for each syntax (shown here are terminal commands to be run from the user packages directory for \*nix systems):
+Then, create a symbolic link to this file for each syntax (shown here are terminal commands to be run from the [user packages directory](https://stackoverflow.com/a/49967132/1641160) for \*nix systems):
 ```bash
 ln -s LinkedData.sublime-settings n-triples.sublime-settings
 ln -s LinkedData.sublime-settings n-quads.sublime-settings
