@@ -5,18 +5,18 @@ Each syntax highlighter reflects a complete implementation of the grammar specif
 ### Install:
 Available on [Package Control](https://packagecontrol.io/packages/LinkedData) as `LinkedData` .
 
-### Activating the Color Scheme
-Choose between the [Macaron Dark](#macaron-dark) and [Macaron Light](#macaron-light) color schemes, these are designed specifically for the LinkedData languages. In order to keep your current color scheme for all other languages, you need to create a settings file to override only the syntaxes we are interested in:
+### Activating the Light Color Scheme
+The package ships with two color schemes which are designed specifically for the detailed scopes that the syntax highlighting definitions create. By default, the package uses the [Macaron Dark](#macaron-dark) color scheme. If you prefer to use [Macaron Light](#macaron-light), you'll need to create a settings file to override the syntaxes:
 
 Create a new file in your Sublime Text 3 Packages directory: `Packages/User/LinkedData.sublime-settings`
 ```json
-// These settings override both User and Default settings for the specific LinkedData syntaxes
+// These settings will override both User and Default settings for the specific LinkedData syntaxes
 {
-	"color_scheme": "Packages/LinkedData/macaron-dark.sublime-color-scheme"
+	"color_scheme": "Packages/LinkedData/macaron-light.sublime-color-scheme"
 }
 ```
 
-Then, open a terminal to the user packages directory and create a symbolic link to this file for each syntax (shown here for \*nix systems):
+Then, create a symbolic link to this file for each syntax (shown here are terminal commands to be run from the user packages directory for \*nix systems):
 ```bash
 ln -s LinkedData.sublime-settings n-triples.sublime-settings
 ln -s LinkedData.sublime-settings n-quads.sublime-settings
