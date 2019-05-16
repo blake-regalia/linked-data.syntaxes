@@ -34,7 +34,7 @@ variables:
 
   triplesNode_LOOKAHEAD: '(?={{collection_LOOKAHEAD}}|\[)'
 
-  triplesSameSubject_LOOKAHEAD: '(?={{varOrTerm_LOOKAHEAD}}||{{triplesNode_LOOKAHEAD}})'
+  triplesSameSubject_LOOKAHEAD: '(?={{varOrTerm_LOOKAHEAD}}|{{triplesNode_LOOKAHEAD}})'
 
   path_LOOKAHEAD: >-
     (?x)
@@ -713,8 +713,8 @@ contexts:
   usingClause:
     - _case: using
       type: qualifier
-      set: usingClause_AFTER_USING
-    - _throw: true
+      push: usingClause_AFTER_USING
+    - include: else_pop
 
   usingClause_AFTER_USING:
     - _case: named
@@ -822,7 +822,7 @@ contexts:
 
   groupGraphPatternSub_AFTER_TRIPLES_BLOCK:
     - match: '{{graphPatternNotTriples_LOOKAHEAD}}'
-      set: 
+      set:
         - groupGraphPatternSub_AFTER_TRIPLES_BLOCK
         - triplesBlock_OPTIONAL
         - groupGraphPatternSub_AFTER_GRAPH_PATTERN_NOT_TRIPLES
@@ -1349,12 +1349,12 @@ contexts:
 
   var:
     - match: '((\?){{varName}})'
-      captures: 
+      captures:
         1: variable.other.readwrite.var.question-mark.rq
         2: punctuation.definition.variable.var.question-mark.rq
       pop: true
     - match: '((\$){{varName}})'
-      captures: 
+      captures:
         1: variable.other.readwrite.var.dollar-sign.rq
         2: punctuation.definition.variable.var.dollar-sign.rq
       pop: true
@@ -1539,7 +1539,7 @@ contexts:
         - sha384
         - sha512
       scope: support.function.built-in.WORD.rq
-      set: 
+      set:
         - builtInCall_TERMINATE
         - expression
         - builtInCallArguments
@@ -1552,7 +1552,7 @@ contexts:
         - strDt
         - sameTerm
       scope: support.function.built-in.WORD.rq
-      set: 
+      set:
         - builtInCall_TERMINATE
         - expression
         - builtInCall_AFTER_ARGUMENT
@@ -1560,13 +1560,13 @@ contexts:
         - builtInCallArguments
     - _case: bound
       scope: support.function.built-in.WORD.rq
-      set: 
+      set:
         - builtInCall_TERMINATE
         - var
         - builtInCallArguments
     - _case: bnode
       scope: support.function.built-in.WORD.rq
-      set: 
+      set:
         - builtInCall_TERMINATE
         - optionalArgumentExpression
         - builtInCallArguments
@@ -1588,7 +1588,7 @@ contexts:
         - isLiteral
         - isNumeric
       scope: support.function.built-in.WORD.rq
-      set: 
+      set:
         - builtInCall_TERMINATE
         - expression
         - builtInCallArguments
@@ -1599,7 +1599,7 @@ contexts:
         - builtInCallArguments
     - _case: if
       scope: support.function.built-in.WORD.rq
-      set: 
+      set:
         - builtInCall_TERMINATE
         - expression
         - builtInCall_AFTER_ARGUMENT
