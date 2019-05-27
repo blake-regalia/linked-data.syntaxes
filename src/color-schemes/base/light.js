@@ -1,10 +1,11 @@
 module.exports = {
 	globals: {
-		foreground: '#333333',
+		foreground: '#333366',
 		background: '#eff1f5',
 		gutter: '#c0c5ce',
-		caret: '#333333',
+		caret: '#666666',
 		accent: '#333333',
+		invisibles: '#bbbbcc',
 
 		// bracket_contents_options: 'stippled_underline',
 		// brackets_options: 'stippled_underline',
@@ -13,7 +14,7 @@ module.exports = {
 		// stack_guide: '#3B3C3D',
 		// active_guide: '#48494A',
 
-		line_highlight: '#a7adbaff',
+		line_highlight: '#a7adba',
 		multi_edit_highlight: '#A5EB5144',
 		find_highlight: '#FFE792',
 		find_highlight_foreground: '#FFE792',

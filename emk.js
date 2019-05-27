@@ -182,6 +182,8 @@ module.exports = {
 						deps: [
 							'src/main/color-scheme.js',
 							`src/color-schemes/${h.color_scheme}.js`,
+							'src/color-schemes/base/dark.js',
+							'src/color-schemes/base/light.js',
 						],
 
 						run: /* syntax: bash */ `

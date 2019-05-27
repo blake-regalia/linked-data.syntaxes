@@ -137,6 +137,7 @@ module.exports = {
 
 			// terminators and separators
 			'punctuation.separator.object': -40,
+			'punctuation.separator.predicate-object-list': -40,
 			'punctuation.terminator.pair': -20,
 			'punctuation.terminator.triple': 100,
 			'punctuation.terminator.graph-pattern': -60,

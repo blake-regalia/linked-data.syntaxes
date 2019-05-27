@@ -8,7 +8,7 @@ module.exports = {
 			root: 'hsl(199, 56%, 58%)',
 			scape: 'hsl(344, 81%, 65%)',
 			flare: 'hsl(42, 98%, 66%)',
-			echo: 'hsl(175, 54%, 55%)',
+			echo: 'hsl(175, 58%, 53%)',
 			chip: 'hsl(250, 48%, 73%)',
 
 			root_boost: 'hsl(199, 85%, 58%)',
@@ -101,7 +101,7 @@ module.exports = {
 			// prefixes
 			'variable.other.readwrite.prefixed-name.namespace': -25,
 			'punctuation.separator.prefixed-name': -10,
-			'variable.other.member.prefixed-name.local': 10,
+			'variable.other.member.prefixed-name.local': 0,
 
 			'constant.character.escape.prefixed-name': -5,
 
@@ -115,11 +115,12 @@ module.exports = {
 
 		flare: {
 			// datatype symbol `^^`
-			'punctuation.separator.datatype.symbol': -65,
+			'punctuation.separator.datatype.symbol': -60,
 
 			// prefixed-names
 			'meta.datatype variable.other.readwrite.prefixed-name.namespace': -50,
 			'meta.datatype variable.other.member.prefixed-name.local': -35,
+			'meta.datatype punctuation.separator.prefixed-name': -50,
 
 			// iri datatypes
 			'meta.datatype string.unquoted.iri': -25,
@@ -132,10 +133,11 @@ module.exports = {
 
 			// terminators and separators
 			'punctuation.separator.object': -40,
+			'punctuation.separator.predicate-object-list': -40,
 			'punctuation.terminator.pair': -20,
 			'punctuation.terminator.triple': -100,
 			'punctuation.terminator.graph-pattern': -60,
-			'punctuation.terminator.prefix-declaration': -40,
+			'punctuation.terminator.prefix-declaration': -60,
 		},
 
 		flare_boost: {
@@ -148,11 +150,11 @@ module.exports = {
 			// literasls
 			'string.quoted.double.literal, string.quoted.single.literal': -15,
 			'punctuation.definition.string': -35,
-			'constant.character.escape.literal': -50,
+			'constant.character.escape.literal': -40,
 
 			// language-tags
 			'string.unquoted.language-tag': -5,
-			'punctuation.separator.language-tag.symbol': -60,
+			'punctuation.separator.language-tag.symbol': -35,
 
 			// numerics
 			'keyword.operator.arithmetic': -0,
