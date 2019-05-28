@@ -5,16 +5,16 @@ module.exports = {
 		...require('./base/light.js'),
 		name: 'Macaron Light (LinkedData)',
 		variables: {
-			root: 'hsl(199, 56%, 58%)',
+			root: 'hsl(199, 56%, 51%)',
 			scape: 'hsl(344, 81%, 65%)',
 			flare: 'hsl(42, 98%, 66%)',
 			echo: 'hsl(175, 58%, 53%)',
-			chip: 'hsl(250, 48%, 73%)',
+			chip: 'hsl(250, 48%, 69%)',
 
-			root_boost: 'hsl(199, 85%, 58%)',
+			root_boost: 'hsl(199, 85%, 53%)',
 			scape_boost: 'hsl(344, 94%, 65%)',
-			flare_boost: 'hsl(42, 100%, 66%)',
-			echo_boost: 'hsl(175, 85%, 55%)',
+			flare_boost: 'hsl(42, 100%, 61%)',
+			echo_boost: 'hsl(175, 85%, 53%)',
 			chip_boost: 'hsl(250, 83%, 67%)',
 		},
 	},
@@ -24,7 +24,7 @@ module.exports = {
 		// registered prefixes
 		{
 			scope: 'meta.prefix-declaration.either.registered',
-			background: 'hsla(220, 23%, 90%, 0.82)',
+			background: 'hsla(220, 63%, 89%, 0.61)',
 		},
 
 		// inverse path
@@ -50,6 +50,12 @@ module.exports = {
 		{
 			scope: 'storage.modifier',
 			font_style: 'italic',
+		},
+
+		// comments
+		{
+			scope: 'comment',
+			foreground: 'hsla(0, 0%, 11%, 0.6)',
 		},
 	],
 
@@ -133,8 +139,8 @@ module.exports = {
 
 			// terminators and separators
 			'punctuation.separator.object': -40,
+			'punctuation.separator.pair': -20,
 			'punctuation.separator.predicate-object-list': -40,
-			'punctuation.terminator.pair': -20,
 			'punctuation.terminator.triple': -100,
 			'punctuation.terminator.graph-pattern': -60,
 			'punctuation.terminator.prefix-declaration': -60,

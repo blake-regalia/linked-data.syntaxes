@@ -1100,7 +1100,7 @@ contexts:
 
   propertyListNotEmpty_AFTER_SEMICOLON:
     - match: '{{verb_LOOKAHEAD}}'
-      set: [objectList, verb]
+      set: [propertyListNotEmpty_AFTER_OBJECT_LIST, objectList, verb]
     - match: '(?=;)'
       set: propertyListNotEmpty_AFTER_OBJECT_LIST
     - include: else_pop
@@ -1140,7 +1140,7 @@ contexts:
 
   propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH:
     - match: ';'
-      scope: punctuation.terminator.pair.rq
+      scope: punctuation.separator.pair.rq
       set: propertyListPathNotEmpty_AFTER_SEMICOLON
     - include: else_pop
 
