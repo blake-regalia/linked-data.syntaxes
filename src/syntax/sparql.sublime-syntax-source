@@ -435,15 +435,7 @@ contexts:
       set: [groupCondition_OPTIONAL, groupCondition_REQUIRED]
     - _throw: true
 
-  groupCondition_OPTIONAL:
-    - include: groupCondition
-    - include: else_pop
-
   groupCondition_REQUIRED:
-    - include: groupCondition
-    - _throw: true
-
-  groupCondition:
     - _open_paren: definition.arguments
       set: [groupCondition_TERMINATE_BINDING, groupCondition_AFTER_EXPRESSION, expression]
     - match: '{{var_LOOKAHEAD}}'
@@ -452,6 +444,18 @@ contexts:
       set: functionCall
     - match: '{{builtInCall_LOOKAHEAD}}'
       set: builtInCall
+    - _throw: true
+
+  groupCondition_OPTIONAL:
+    - _open_paren: definition.arguments
+      push: [groupCondition_TERMINATE_BINDING, groupCondition_AFTER_EXPRESSION, expression]
+    - match: '{{var_LOOKAHEAD}}'
+      push: var
+    - match: '{{namedNodeFunction_LOOKAHEAD}}'
+      push: functionCall
+    - match: '{{builtInCall_LOOKAHEAD}}'
+      push: builtInCall
+    - include: else_pop
 
   groupCondition_AFTER_EXPRESSION:
     - _case: as
