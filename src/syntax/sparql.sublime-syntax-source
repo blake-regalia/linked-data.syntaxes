@@ -53,7 +53,7 @@ variables:
         )\s*\(
       )
 
-  subject_LOOKAHEAD: >-
+  triplesBlock_LOOKAHEAD: >-
     (?x)
       (?=
         {{var_LOOKAHEAD}}
@@ -61,7 +61,6 @@ variables:
         |{{triplesNode_LOOKAHEAD}}
       )
 
-  triplesBlock_LOOKAHEAD: '{{subject_LOOKAHEAD}}'
   graphPatternNotTriples_LOOKAHEAD: >-
     (?xi)
       (?=
@@ -1072,15 +1071,56 @@ contexts:
     - include: else_pop
 
   triplesSameSubject:
-    - _open_bracket: definition.anonymous-blank-node
-      set: triplesSameSubject_AFTER_OPEN_BRACKET
     - _switch:
+        - hollowAnonymousBlankNode: [propertyListNotEmpty, hollowAnonymousBlankNode]
+        - anonymousBlankNode: anonymousBlankNode_LATENT_PL_PLNE
         - varOrTerm: [propertyListNotEmpty_REQUIRED, varOrTerm]
         - triplesNode: [propertyList, triplesNode]
     - _throw: true
 
+  anonymousBlankNode_LATENT:
+    - _open_bracket: definition.blank-node-property-list
+      set: anonymousBlankNode_LATENT_AFTER_BEGIN
+    - _throw: true
+
+  anonymousBlankNode_LATENT_AFTER_BEGIN:
+    - _close_bracket: definition.anonymous-blank-node.hack
+      pop: true
+    - _goto: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
+
+  anonymousBlankNodePath_LATENT:
+    - _open_bracket: definition.blank-node-property-list
+      set: anonymousBlankNodePath_LATENT_AFTER_BEGIN
+    - _throw: true
+
+  anonymousBlankNodePath_LATENT_AFTER_BEGIN:
+    - _close_bracket: definition.anonymous-blank-node.hack
+      pop: true
+    - _goto: [blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
+
+  blankNodePropertyList_LATENT:
+    - _open_bracket: definition.blank-node-property-list
+      set: blankNodePropertyList_LATENT_AFTER_BEGIN
+    - _throw: true
+
+  blankNodePropertyList_LATENT_AFTER_BEGIN:
+    - _close_bracket: definition.anonymous-blank-node.hack
+
+      set: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
+    - _throw: true
+
+  anonymousBlankNode_LATENT_PL_PLNE:
+    - _open_bracket: definition.blank-node-property-list
+      set: anonymousBlankNode_LATENT_PL_PLNE_AFTER_BEGIN
+    - _throw: true
+
+  anonymousBlankNode_LATENT_PL_PLNE_AFTER_BEGIN:
+    - _close_bracket: definition.anonymous-blank-node.hack
+      set: propertyListNotEmpty
+    - _goto: [propertyList, blankNodePropertyList_TERMINATE, propertyListNotEmpty]
+
   triplesSameSubject_AFTER_OPEN_BRACKET:
-    - _close_paren: definition.anonymous-blank-node
+    - _close_bracket: definition.anonymous-blank-node
       set: propertyListNotEmpty
     - _goto: [propertyList, triplesNode]
 
@@ -1122,17 +1162,22 @@ contexts:
     - _goto: graphNode
 
   triplesSameSubjectPath:
-    - _open_bracket: definition.anonymous-blank-node
-      set: triplesSameSubjectPath_AFTER_OPEN_BRACKET
     - _switch:
+        - hollowAnonymousBlankNode: [propertyListPathNotEmpty, hollowAnonymousBlankNode]
+        - anonymousBlankNode: anonymousBlankNode_LATENT_PLP_PLPNE
         - varOrTerm: [propertyListPathNotEmpty, varOrTerm]
         - triplesNode: [propertyListPath, triplesNodePath]
     - _throw: true
 
-  triplesSameSubjectPath_AFTER_OPEN_BRACKET:
-    - _close_bracket: definition.anonymous-blank-node
+  anonymousBlankNode_LATENT_PLP_PLPNE:
+    - _open_bracket: definition.blank-node-property-list
+      set: anonymousBlankNode_LATENT_PLP_PLPNE_AFTER_BEGIN
+    - _throw: true
+
+  anonymousBlankNode_LATENT_PLP_PLPNE_AFTER_BEGIN:
+    - _close_bracket: definition.anonymous-blank-node.hack
       set: propertyListPathNotEmpty
-    - _goto: [propertyListPath, triplesNodePath]
+    - _goto: [propertyListPath, blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
 
   propertyListPath:
     - match: '{{verbPathOrSimple_LOOKAHEAD}}'
@@ -1275,8 +1320,6 @@ contexts:
     - include: predicateData
     - _throw: true
 
-  # integer:
-
   triplesNode:
     - _switch:
         - collection
@@ -1318,28 +1361,20 @@ contexts:
     - _goto: [collectionPath_AFTER_GRAPH_NODE_PATH, graphNodePath]
 
   graphNode:
-    - _open_bracket: definition.blank-node-property-list
-      set: graphNode_AFTER_OPEN_BRACKET
-    - _switch: [varOrTerm, triplesNode]
+    - _switch:
+        - hollowAnonymousBlankNode
+        - anonymousBlankNode: anonymousBlankNode_LATENT
+        - varOrTerm
+        - triplesNode
     - _throw: true
 
-  graphNode_AFTER_OPEN_BRACKET:
-    - _close_bracket: definition.blank-node-property-list
-      pop: true
-    - _goto: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
-
   graphNodePath:
-    - _open_bracket: definition.blank-node-property-list
-      set: graphNodePath_AFTER_OPEN_BRACKET
     - _switch:
+        - hollowAnonymousBlankNode
+        - anonymousBlankNode: anonymousBlankNodePath_LATENT
         - varOrTerm
         - triplesNode: triplesNodePath
     - _throw: true
-
-  graphNodePath_AFTER_OPEN_BRACKET:
-    - _close_bracket: definition.blank-node-property-list
-      pop: true
-    - _goto: [blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
 
   varOrTerm:
     - _switch:
@@ -1744,7 +1779,7 @@ contexts:
   blankNode:
     - _switch:
         - labeledBlankNode
-        - anonymousBlankNode
+        - hollowAnonymousBlankNode
     - _throw: true
 
   integer:

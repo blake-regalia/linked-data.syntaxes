@@ -12,7 +12,6 @@ variables:
   triples_LOOKAHEAD: '(?:{{node_LOOKAHEAD}}|{{collection_LOOKAHEAD}})'
 
   verb_LOOKAHEAD: (?={{namedNode_LOOKAHEAD}}|{{a_LOOKAHEAD}})
-  hollowAnonymousBlankNode_LOOKAHEAD: '(?=\[[\s\n]*\])'
 
 contexts:
   prototype:
@@ -99,23 +98,16 @@ contexts:
     - _throw: true
 
   triples:
-    - match: '{{hollowAnonymousBlankNode_LOOKAHEAD}}'
-      set: [triples_AFTER_OPEN_BRACKET, hollowAnonymousBlankNode]
-    - _open_bracket: definition.blank-node-property-list
-      set: triples_AFTER_OPEN_BRACKET
     - _switch:
+        - hollowAnonymousBlankNode: [predicateObjectList_REQUIRED, hollowAnonymousBlankNode]
+        - anonymousBlankNode: [predicateObjectList_REQUIRED, blankNodePropertyList]
         - collection: [predicateObjectList_REQUIRED, collection]
         - namedNode: [predicateObjectList_REQUIRED, namedNode]
         - labeledBlankNode: [predicateObjectList_REQUIRED, labeledBlankNode]
     - _throw: false
 
-  hollowAnonymousBlankNode:
-    - _open_bracket: definition.anonymous-blank-node
-      pop: true
-    - include: else_pop
-
   triples_AFTER_OPEN_BRACKET:
-    - _close_bracket: definition.anonymous-blank-node
+    - _close_bracket: definition.blank-node-property-list
       set: predicateObjectList_REQUIRED
     - _switch:
         - verb:
@@ -147,21 +139,9 @@ contexts:
     - _switch: [a, namedNode]
     - _throw: true
 
-  subject:
-    - _switch:
-        - anonymousBlankNode: blankNodePropertyList
-        - collection
-        - namedNode
-
-  subject_META:
-    - meta_include_prototype: false
-    - meta_scope: meta.data.triple.subject.SYNTAX
-    - match: '{{PLA_anything}}'
-      pop: true
-
   object:
     - _switch:
-        - hollowAnonymousBlankNode: hollowAnonymousBlankNode
+        - hollowAnonymousBlankNode
         - anonymousBlankNode: blankNodePropertyList
     - include: objectData
 
@@ -178,7 +158,7 @@ contexts:
     - _throw: true
 
   blankNodePropertyList_AFTER_BEGIN:
-    - _close_bracket: definition.blank-node-property-list
+    - _close_bracket: definition.anonymous-blank-node.hack
       pop: true
     - _switch:
         - verb: [blankNodePropertyList_TERMINATE, predicateObjectList]

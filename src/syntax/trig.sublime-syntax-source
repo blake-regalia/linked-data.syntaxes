@@ -29,6 +29,7 @@ contexts:
     - _switch:
         - openBrace: wrappedGraph
         - openParen: triples2
+        - hollowAnonymousBlankNode: triplesOrGraph
         - anonymousBlankNode: triples2
         - node: triplesOrGraph
     - _throw: true
@@ -85,7 +86,7 @@ contexts:
   blankNode:
     - _switch:
         - labeledBlankNode
-        - anonymousBlankNode
+        - hollowAnonymousBlankNode
     - _throw: false
 
   # prefixId

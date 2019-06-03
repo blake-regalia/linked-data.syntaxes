@@ -86,6 +86,9 @@ variables:
   tripleTerminator_LOOKAHEAD: '(?=[.\])}#])'
   objectTerminator_LOOKAHEAD: '(?=[;,^@]|{{tripleTerminator_LOOKAHEAD}})'
 
+  hollowAnonymousBlankNode_LOOKAHEAD: '(?=\[[\s\n]*\])'
+
+
 contexts:
   baseDeclarationSparql:
     - meta_scope: meta.base-declaration.keyword.SYNTAX
@@ -367,12 +370,13 @@ contexts:
     - match: '{{PLA_anything}}'
       pop: true
 
-  anonymousBlankNode:
-    - _open_paren: definition.anonymous-blank-node
-      set: anonymousBlankNode_AFTER_BEGIN
+  hollowAnonymousBlankNode:
+    - _open_bracket: definition.anonymous-blank-node
+      set: hollowAnonymousBlankNode_AFTER_BEGIN
     - _throw: true
 
-  anonymousBlankNode_AFTER_BEGIN:
-    - _close_paren: definition.anonymous-blank-node
+  hollowAnonymousBlankNode_AFTER_BEGIN:
+    - _close_bracket: definition.anonymous-blank-node
       pop: true
     - _throw: true
+
