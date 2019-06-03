@@ -12,6 +12,7 @@ variables:
   triples_LOOKAHEAD: '(?:{{node_LOOKAHEAD}}|{{collection_LOOKAHEAD}})'
 
   verb_LOOKAHEAD: (?={{namedNode_LOOKAHEAD}}|{{a_LOOKAHEAD}})
+  hollowAnonymousBlankNode_LOOKAHEAD: '(?=\[[\s\n]*\])'
 
 contexts:
   prototype:
@@ -78,7 +79,7 @@ contexts:
   prefixDeclarationAt_AFTER_KEYWORD_SPACE:
     - _registeredPrefixDeclarations: at
     - match: '(({{PN_PREFIX}}?)(:))'
-      captures: 
+      captures:
         1: meta.prefix-declaration.at.namespace.SYNTAX
         2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.SYNTAX
         3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
@@ -98,13 +99,20 @@ contexts:
     - _throw: true
 
   triples:
-    - _open_bracket: definition.anonymous-blank-node
+    - match: '{{hollowAnonymousBlankNode_LOOKAHEAD}}'
+      set: [triples_AFTER_OPEN_BRACKET, hollowAnonymousBlankNode]
+    - _open_bracket: definition.blank-node-property-list
       set: triples_AFTER_OPEN_BRACKET
     - _switch:
         - collection: [predicateObjectList_REQUIRED, collection]
         - namedNode: [predicateObjectList_REQUIRED, namedNode]
         - labeledBlankNode: [predicateObjectList_REQUIRED, labeledBlankNode]
     - _throw: false
+
+  hollowAnonymousBlankNode:
+    - _open_bracket: definition.anonymous-blank-node
+      pop: true
+    - include: else_pop
 
   triples_AFTER_OPEN_BRACKET:
     - _close_bracket: definition.anonymous-blank-node
@@ -153,7 +161,8 @@ contexts:
 
   object:
     - _switch:
-        - anonymousBlankNode: anonymousBlankNodeOrPropertyList
+        - hollowAnonymousBlankNode: hollowAnonymousBlankNode
+        - anonymousBlankNode: blankNodePropertyList
     - include: objectData
 
   collection_AFTER_BEGIN:
@@ -163,12 +172,12 @@ contexts:
       pop: true
     - _throw: false
 
-  anonymousBlankNodeOrPropertyList:
+  blankNodePropertyList:
     - _open_bracket: definition.blank-node-property-list
-      set: anonymousBlankNodeOrPropertyList_AFTER_BEGIN
+      set: blankNodePropertyList_AFTER_BEGIN
     - _throw: true
 
-  anonymousBlankNodeOrPropertyList_AFTER_BEGIN:
+  blankNodePropertyList_AFTER_BEGIN:
     - _close_bracket: definition.blank-node-property-list
       pop: true
     - _switch:
