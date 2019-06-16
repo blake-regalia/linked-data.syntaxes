@@ -51,6 +51,8 @@ This will override the default color scheme when any of these syntaxes are loade
 
 #### *Planned langauage support*:
  - ShExC
+ - OWL Manchester
+ - OWL Functional-Style
  - RDFa
  - JSON-LD
 
