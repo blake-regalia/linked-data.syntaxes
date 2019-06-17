@@ -100,7 +100,7 @@ contexts:
   triples:
     - _switch:
         - hollowAnonymousBlankNode: [predicateObjectList_REQUIRED, hollowAnonymousBlankNode]
-        - anonymousBlankNode: [predicateObjectList_REQUIRED, blankNodePropertyList]
+        - anonymousBlankNode: [predicateObjectList_OPTIONAL, blankNodePropertyList]
         - collection: [predicateObjectList_REQUIRED, collection]
         - namedNode: [predicateObjectList_REQUIRED, namedNode]
         - labeledBlankNode: [predicateObjectList_REQUIRED, labeledBlankNode]
