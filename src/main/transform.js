@@ -295,6 +295,20 @@ const H_MODIFIERS = {
 		return i_rule;
 	},
 
+	_throw_meta: (h_env, k_context, k_rule, s_meta_scope) => {
+		// remove source rule from context
+		let i_rule = k_context.drop(k_rule);
+
+		// insert other illegal pop
+		k_context.insert(i_rule++, {
+			match: /* syntax: sublime-syntax.regex */ `'{{MAT_word_or_any_one_char}}'`.slice(1, -1),
+			scope: `meta.${s_meta_scope}.${h_env.syntax} invalid.illegal.token.expected.${k_context.id}.${h_env.syntax}`,
+			pop: true,
+		});
+
+		return i_rule;
+	},
+
 	_goto: (h_env, k_context, k_rule, w_context_goto) => {
 		// remove source rule from context
 		let i_rule = k_context.drop(k_rule);
@@ -379,6 +393,46 @@ const H_MODIFIERS = {
 
 		return i_rule;
 	},
+
+	_switch_push: (h_env, k_context, k_rule, a_cases) => {
+		// remove source rule from context
+		let i_rule = k_context.drop(k_rule);
+
+		// each case
+		for(let z_case of a_cases) {
+			// string
+			if('string' === typeof z_case) {
+				// cast to string
+				let s_case = z_case;
+
+				// insert rule
+				k_context.insert(i_rule++, {
+					match: /* syntax: sublime-syntax.regex */ `'{{${s_case}_LOOKAHEAD}}'`.slice(1, -1),
+					push: s_case,
+				});
+			}
+			// object
+			else if('object' === typeof z_case) {
+				// cast to object
+				let h_case = z_case;
+
+				// 0th key
+				let s_token = Object.keys(h_case)[0];
+
+				// insert rule
+				k_context.insert(i_rule++, {
+					match: /* syntax: sublime-syntax.regex */ `'{{${s_token}_LOOKAHEAD}}'`.slice(1, -1),
+					push: h_case[s_token],
+				});
+			}
+			// other?
+			else {
+				throw new TypeError(`unexpected type for _switch case: ${z_case}`);
+			}
+		}
+
+		return i_rule;
+	},
 };
 
 // 
@@ -405,6 +459,52 @@ const load_syntax_source = (p_yaml) => {
 	return k_syntax;
 };
 
+const H_MAGICS = {
+	pop(h_env, k_syntax, s_state) {
+		k_syntax.append(`${s_state}.POP`, [
+			{
+				include: s_state,
+			},
+			{
+				include: 'else_pop',
+			},
+		]);
+	},
+
+	star(h_env, k_syntax, s_state) {
+		k_syntax.append(`${s_state}.STAR`, [
+			{
+				match: `${s_state}_LOOKAHEAD`,
+				push: s_state,
+			},
+			{
+				include: 'else_pop',
+			},
+		]);
+	},
+
+	plus(h_env, k_syntax, s_state) {
+		k_syntax.append(`${s_state}.PLUS`, [
+			{
+				match: `${s_state}_LOOKAHEAD`,
+				set: [
+					`${s_state}.STAR`,
+					s_state,
+				],
+			},
+			{
+				match: /* syntax: sublime-syntax.regex */ `'{{MAT_word_or_any_one_char}}'`.slice(1, -1),
+				scope: `invalid.illegal.token.expected.${s_state}.STAR.${h_env.syntax}`,
+				...(b_pop? {pop:b_pop}: {}),
+			},
+		]);
+
+		if(!(`${s_state}.STAR` in k_syntax.contexts)) {
+			H_MAGICS.star(h_env, k_syntax, s_state);
+		}
+	},
+};
+
 
 // 
 const build_syntax = (h_env) => {
@@ -412,7 +512,7 @@ const build_syntax = (h_env) => {
 	let k_syntax = load_syntax_source(process.argv[2]);
 
 	// set env syntax
-	h_env.syntax = /\.([^.]+)$/.exec(k_syntax.other.scope)[1];
+	let s_syntax = h_env.syntax = /\.([^.]+)$/.exec(k_syntax.other.scope)[1];
 
 	// each rule in syntax
 	let a_rules = [...k_syntax.rules()];
@@ -436,11 +536,35 @@ const build_syntax = (h_env) => {
 		}
 	}
 
+	// magic states
+	{
+		let as_magic_states = new Set();
+
+		// each subrule in context
+		for(let [k_rule] of k_syntax.rules()) {
+			// each state
+			for(let s_state of k_rule.states()) {
+				// state name includes dot
+				if(s_state.includes('.')) {
+					as_magic_states.add(s_state);
+				}
+			}
+		}
+
+		// each magic state
+		for(let s_state_magic of as_magic_states) {
+			let [, s_state_src, s_magic] = /^(.+)\.(.+)$/.exec(s_state_magic);
+
+			// apply magic
+			H_MAGICS[s_magic.toLowerCase()](h_env, k_syntax, s_state_src);
+		}
+	}
+
 	// each rule (again)
 	a_rules = [...k_syntax.rules()];
 	for(let [k_rule] of a_rules) {
 		// replace placeholders
-		k_rule.scopes(s_scope => s_scope.replace(/\.SYNTAX/g, `.${h_env.syntax}`));
+		k_rule.scopes(s_scope => s_scope.replace(/\.SYNTAX/g, `.${s_syntax}`));
 	}
 
 	// validate
