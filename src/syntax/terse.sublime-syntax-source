@@ -14,24 +14,31 @@ variables:
         )?
       )
 
+  PN_LOCAL_ESC: '\\[-_~.!$&''()*+,;=/?#@%]'
+  PLX: '(?:%{{HEX}}{2}|{{PN_LOCAL_ESC}})'
+
+  PN_LOCAL_OPEN: '{{PN_CHARS_U}}|:|[0-9]'
+  PN_LOCAL_GROUP_2: '{{PN_CHARS}}|:'
+  PN_LOCAL_GROUP_1: '{{PN_LOCAL_GROUP_2}}|\.'
+
   PN_LOCAL: >-
     (?x)
       (?:
         (?:
-          {{PN_CHARS_U}}|:|[0-9]
+          {{PN_LOCAL_OPEN}}
+          |{{PLX}}
         )
         (?:
           (?:
-            {{PN_CHARS}}|\.|:
+            {{PN_LOCAL_GROUP_1}}
+            |{{PLX}}
           )*
           (?:
-            {{PN_CHARS}}|:
+            {{PN_LOCAL_GROUP_2}}
+            |{{PLX}}
           )
         )?
       )
-
-  PN_LOCAL_ESC: '\\[-_~.!$&''()*+,;=/?#@%]'
-  PLX: '(?:%{{HEX}}{2}|{{PN_LOCAL_ESC}})'
 
   EXPONENT: '([eE])([+-]?)([0-9]+)'
   STRING_SHORT_SINGLE: '[^\x{27}\x{5C}\x{0A}\x{0D}]'
@@ -49,23 +56,7 @@ variables:
   openParen_LOOKAHEAD: '(?=\()'
 
   prefixedNameNamespace: '{{PN_PREFIX}}?:'
-  prefixedNameLocal: >-
-    (?x)
-      (?:
-        (?:
-          {{PN_CHARS_U}}|:|[0-9]|{{PLX}}
-        )
-        (?:
-          (?:
-            {{PN_CHARS}}|\.|:|{{PLX}}
-          )*
-          (?:
-            {{PN_CHARS}}|:|{{PLX}}
-          )
-        )?
-      )?
-
-  prefixedName_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
+  prefixedNameNamespace_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
 
   numericLiteral: '[0-9+-]|\.[0-9]'
   numericLiteral_LOOKAHEAD: '(?={{numericLiteral}})'
@@ -77,7 +68,7 @@ variables:
 
   literal_LOOKAHEAD: '(?={{stringLiteral_LOOKAHEAD}}|{{numericLiteral_LOOKAHEAD}}|{{booleanLiteral_LOOKAHEAD}})'
 
-  namedNode_LOOKAHEAD: '(?:{{iriRef_LOOKAHEAD}}|{{prefixedName_LOOKAHEAD}})'
+  namedNode_LOOKAHEAD: '(?:{{iriRef_LOOKAHEAD}}|{{prefixedNameNamespace_LOOKAHEAD}})'
 
   node_LOOKAHEAD: '(?:{{namedNode_LOOKAHEAD}}|{{blankNode_LOOKAHEAD}})'
 
@@ -350,7 +341,7 @@ contexts:
   namedNode:
     - match: '{{iriRef_LOOKAHEAD}}'
       set: iriRef
-    - match: '{{prefixedName_LOOKAHEAD}}'
+    - match: '{{prefixedNameNamespace_LOOKAHEAD}}'
       set: prefixedName
     - _throw: true
 
@@ -359,16 +350,31 @@ contexts:
       captures:
         1: variable.other.readwrite.prefixed-name.namespace.SYNTAX
         2: punctuation.separator.prefixed-name.namespace.SYNTAX
-      set: prefixedName_AFTER_PREFIX_NAMESPACE
+      set: prefixedNameLocal
 
-  prefixedName_AFTER_PREFIX_NAMESPACE:
+  prefixedNameLocal:
     - meta_include_prototype: false
-    - match: '{{PN_LOCAL}}'
+    - match: '{{PN_LOCAL_OPEN}}'
       scope: variable.other.member.prefixed-name.local.SYNTAX
     - match: '{{PLX}}'
-      scope: constant.character.escape.prefixed-name.local.SYNTAX
-    - match: '{{PLA_anything}}'
-      pop: true
+      scope: variable.other.member.prefixed-name.local.SYNTAX constant.character.escape.prefixed-name.local.SYNTAX
+    - _goto: prefixedNameLocal_AFTER_OPEN
+
+  prefixedNameLocal_AFTER_OPEN:
+    - meta_include_prototype: false
+    - match: '{{PN_LOCAL_GROUP_1}}(?!{{KEYWORD_BOUNDARY}})'
+      scope: variable.other.member.prefixed-name.local.SYNTAX
+    - match: '{{PLX}}(?!{{KEYWORD_BOUNDARY}})'
+      scope: variable.other.member.prefixed-name.local.SYNTAX constant.character.escape.prefixed-name.local.SYNTAX
+    - _goto: prefixedNameLocal_AFTER_GROUP_1
+
+  prefixedNameLocal_AFTER_GROUP_1:
+    - meta_include_prototype: false
+    - match: '{{PN_LOCAL_GROUP_2}}'
+      scope: variable.other.member.prefixed-name.local.SYNTAX
+    - match: '{{PLX}}'
+      scope: variable.other.member.prefixed-name.local.SYNTAX constant.character.escape.prefixed-name.local.SYNTAX
+    - include: else_pop
 
   hollowAnonymousBlankNode:
     - _open_bracket: definition.anonymous-blank-node
