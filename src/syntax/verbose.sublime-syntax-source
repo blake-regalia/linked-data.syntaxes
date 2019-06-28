@@ -41,15 +41,13 @@ contexts:
     - match: '[^"\\\r\n]+'
       scope: string.quoted.double.literal.long.SYNTAX
     - match: '"'
-      scope: punctuation.definition.string.begin.literal.double.long.SYNTAX
+      scope: punctuation.definition.string.end.literal.double.long.SYNTAX
       pop: true
     - match: '{{ECHAR}}'
       scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.escape.long.SYNTAX
     - match: '{{UCHAR}}'
       scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.unicode.long.SYNTAX
-    - match: '[\\\r\n]'
-      scope: invalid.illegal.token.string-literal-contents.SYNTAX
-      pop: true
+    - _throw: true
 
   datatype:
     - meta_include_prototype: false
