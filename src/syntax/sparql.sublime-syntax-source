@@ -339,7 +339,7 @@ contexts:
 
   constructQuery_AFTER_CONSTRUCT:
     - match: '{{openBrace_LOOKAHEAD}}'
-      set: [solutionModifier, whereClause, datasetClause, constructTemplate]
+      set: [solutionModifier, whereClause, datasetClause, constructTemplate_AFTER_TRIPLES, constructTemplate]
     - match: '{{from_LOOKAHEAD}}'
       set: [constructQuery_ALTERNATE_AFTER_DATASET_CLAUSE, datasetClause]
 
@@ -1057,6 +1057,11 @@ contexts:
   constructTemplate:
     - _open_brace: section.triples
       set: constructTriples_OPTIONAL
+    - _throw: true
+
+  constructTemplate_AFTER_TRIPLES:
+    - _close_brace: section.triples
+      pop: true
     - _throw: true
 
   constructTriples_OPTIONAL:

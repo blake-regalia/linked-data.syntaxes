@@ -55,6 +55,7 @@ variables:
   openBrace_LOOKAHEAD: '(?=\{)'
   openParen_LOOKAHEAD: '(?=\()'
 
+  prefixedNameLocal: '{{PN_LOCAL}}'
   prefixedNameNamespace: '{{PN_PREFIX}}?:'
   prefixedNameNamespace_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
 

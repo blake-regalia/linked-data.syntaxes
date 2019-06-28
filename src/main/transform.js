@@ -51,7 +51,7 @@ const insert_prefixed_name = (h_env, k_context, i_rule, g_spec) => {
 
 	// prefix name
 	k_context.insert(i_rule++, {
-		match: /* syntax: sublime-syntax.regex */ `'{{prefixedName_LOOKAHEAD}}'`.slice(1, -1),
+		match: /* syntax: sublime-syntax.regex */ `'{{prefixedNameNamespace_LOOKAHEAD}}'`.slice(1, -1),
 		...h_stack_action,
 	});
 
