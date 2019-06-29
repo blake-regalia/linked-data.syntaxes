@@ -16,6 +16,7 @@ const H_CASES = {
 const H_CASES_EXTENDED = {
 	camel: s => s,
 	pascal: s => s[0].toUpperCase()+s.slice(1),
+	...H_CASES,
 };
 
 const normalize_insert_spec = (g_spec, a_stack=[]) => {
