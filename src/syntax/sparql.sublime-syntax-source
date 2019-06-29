@@ -147,7 +147,6 @@ variables:
   prefixDeclaration_LOOKAHEAD: '(?i)(?=prefix\b)'
 
   # query lookaheads
-  
   selectQuery_LOOKAHEAD: '(?i)(?=select{{KEYWORD_BOUNDARY}})'
   constructQuery_LOOKAHEAD: '(?i)(?=construct{{KEYWORD_BOUNDARY}})'
   describeQuery_LOOKAHEAD: '(?i)(?=describe{{KEYWORD_BOUNDARY}})'
