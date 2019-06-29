@@ -18,7 +18,7 @@ variables:
   HEX: '(?:[0-9A-Fa-f])'
   UCHAR: '(?:\\u{{HEX}}{4}|\\U{{HEX}}{8})'
 
-  IRI_CONTENTS: '(?:[^\x{00}-\x{20}<>"{}|^`\\]+)'
+  IRI_CONTENTS: '(?:[^\x{00}-\x{20}<>"{}|^`\\]*)'
 
   BLANK_NODE_LABEL: '(?:{{PN_CHARS_U}}|[0-9])(?:(?:{{PN_CHARS}}|\.)*{{PN_CHARS}})?'
 
