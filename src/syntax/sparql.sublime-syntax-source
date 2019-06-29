@@ -1025,6 +1025,8 @@ contexts:
     - include: else_pop
 
   argList_AFTER_BEGIN:
+    - match: '(?=\))'
+      pop: true
     - _case: distinct
       scope: keyword.operator.word.modifier.distinct.function-call.rq
       set: expression
