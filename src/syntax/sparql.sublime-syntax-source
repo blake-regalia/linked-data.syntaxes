@@ -147,6 +147,7 @@ variables:
   prefixDeclaration_LOOKAHEAD: '(?i)(?=prefix\b)'
 
   # query lookaheads
+  
   selectQuery_LOOKAHEAD: '(?i)(?=select{{KEYWORD_BOUNDARY}})'
   constructQuery_LOOKAHEAD: '(?i)(?=construct{{KEYWORD_BOUNDARY}})'
   describeQuery_LOOKAHEAD: '(?i)(?=describe{{KEYWORD_BOUNDARY}})'
@@ -342,6 +343,7 @@ contexts:
       set: [solutionModifier, whereClause, datasetClause, constructTemplate_AFTER_TRIPLES, constructTemplate]
     - match: '{{from_LOOKAHEAD}}'
       set: [constructQuery_ALTERNATE_AFTER_DATASET_CLAUSE, datasetClause]
+    - _throw: true
 
   constructQuery_ALTERNATE_AFTER_DATASET_CLAUSE:
     - _case: where
@@ -1023,6 +1025,8 @@ contexts:
     - include: else_pop
 
   argList_AFTER_BEGIN:
+    - match: '(?=\))'
+      pop: true
     - _case: distinct
       scope: keyword.operator.word.modifier.distinct.function-call.rq
       set: expression
