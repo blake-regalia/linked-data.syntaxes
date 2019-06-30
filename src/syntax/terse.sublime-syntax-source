@@ -285,6 +285,9 @@ contexts:
     - match: '\\.'
       scope: invalid.illegal.escape.SYNTAX
       pop: true
+    - match: '$'
+      scope: constant.character.escape.literal.endOfLine.short.SYNTAX
+      pop: true
     - _throw: true
 
   stringLiteralLongSingle:
@@ -329,6 +332,9 @@ contexts:
       scope: constant.character.escape.literal.unicode.short.SYNTAX
     - match: '\\.'
       scope: invalid.illegal.escape.SYNTAX
+      pop: true
+    - match: '$'
+      scope: constant.character.escape.literal.endOfLine.short.SYNTAX
       pop: true
     - _throw: true
 
