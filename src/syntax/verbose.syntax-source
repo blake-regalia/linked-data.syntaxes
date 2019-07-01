@@ -1,8 +1,6 @@
 %YAML 1.2
 ---
-_extends: human-readable.sublime-syntax-source
-
-variables:
+extends: human-readable.syntax-source
 
 contexts:
   prototype:
@@ -10,48 +8,41 @@ contexts:
     - include: comment
 
   subject:
-    - _iriRef:
-        scope: subject
-        pop: true
-    - _switch: [labeledBlankNode]
-    - _throw: false
+    - switch:
+        - iriRef
+        - labeledBlankNode
+      mask: meta.term.role.subject.SYNTAX
+    - retry
 
   predicate:
-    - _iriRef:
-        scope: predicate
-        pop: true
-    - _throw: true
+    - switch:
+        - iriRef
+      mask: meta.term.role.predicate.SYNTAX
 
   object:
-    - _iriRef:
-        scope: object
-        pop: true
-    - _switch:
+    - switch:
+        - iriRef
         - labeledBlankNode
         - stringLiteral: rdfLiteral
-    - _throw: false
+      mask: meta.term.role.object.SYNTAX
+    - retry
 
   stringLiteral:
-    - match: '"'
-      scope: punctuation.definition.string.begin.literal.double.long.SYNTAX
+    - open.dirk: literal.double.long
       set: stringLiteral_AFTER_QUOTE
-    - _throw: true
 
   stringLiteral_AFTER_QUOTE:
     - match: '[^"\\\r\n]+'
       scope: string.quoted.double.literal.long.SYNTAX
-    - match: '"'
-      scope: punctuation.definition.string.end.literal.double.long.SYNTAX
+    - close.dirk: literal.double.long
       pop: true
     - match: '{{ECHAR}}'
       scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.escape.long.SYNTAX
     - match: '{{UCHAR}}'
       scope: string.quoted.double.literal.long.SYNTAX constant.character.escape.literal.unicode.long.SYNTAX
-    - _throw: true
 
   datatype:
     - meta_include_prototype: false
-    - _iriRef:
-        scope: datatype
-        set: datatype_META
-    - _throw: true
+    - switch:
+        - iriRef
+      mask: meta.term.role.datatype.SYNTAX

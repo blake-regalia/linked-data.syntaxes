@@ -1,13 +1,17 @@
 %YAML 1.2
 ---
 
+lookaheads:
+
+  stringLiteral: '["'']'
+
+  anonymousBlankNode: '\['
+
+  blankNode:
+    - anonymousBlankNode
+    - labeledBlankNode
+
 variables:
-
-  # CONTEXT CONTROL PATTERNS ###################################################
-  MAT_word_or_any_one_char: '\w+|\S'
-  PLA_anything: '(?=[\S\s])'
-
-  whitespace: '\s+'
 
   KEYWORD_BOUNDARY: '[\s{(\[<*#$?^/="''>\])}]'
 
@@ -22,30 +26,10 @@ variables:
 
   BLANK_NODE_LABEL: '(?:{{PN_CHARS_U}}|[0-9])(?:(?:{{PN_CHARS}}|\.)*{{PN_CHARS}})?'
 
-
   ECHAR: '(?:\\[tbnrf"''\\])'
 
 
-  # lookaheads
-
-  iriRef_LOOKAHEAD: '(?=<)'
-
-  # COMMON GRAMMAR PRODUCTIONS #################################################
-
-  stringLiteral_LOOKAHEAD: '(?=["''])'
-
-  anonymousBlankNode_LOOKAHEAD: '(?=\[)'
-  labeledBlankNode_LOOKAHEAD: '(?=_:)'
-  blankNode_LOOKAHEAD: '(?={{anonymousBlankNode_LOOKAHEAD}}|{{labeledBlankNode_LOOKAHEAD}})'
-
 contexts:
-  # FUNCTIONAL CONTEXTS ########################################################
-
-  # no match has been made; pop from stack
-  else_pop:
-    - meta_include_prototype: false
-    - match: '{{PLA_anything}}'
-      pop: true
 
   whitespace:
     - meta_include_prototype: false
@@ -64,15 +48,16 @@ contexts:
     - include: whitespace
     - match: '$'
       pop: true
+    - match: '{{_SOMETHING}}'
 
   triple_TERMINATE:
     - match: '\.'
       scope: punctuation.terminator.triple.SYNTAX
       pop: true
-    - _throw: false
+    - retry
 
   rdfLiteral:
-    - _goto: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteral]
+    - goto: [rdfLiteral_AFTER_STRING_LITERAL?, stringLiteral]
 
   rdfLiteral_AFTER_STRING_LITERAL:
     - meta_include_prototype: false
@@ -83,7 +68,6 @@ contexts:
     - match: '\^\^'
       scope: punctuation.separator.datatype.symbol.SYNTAX
       set: datatype
-    - include: else_pop
 
   languageTag:
     - meta_include_prototype: false
@@ -91,15 +75,13 @@ contexts:
     - match: '[a-zA-Z]+'
       scope: meta.language-tag.primary.SYNTAX
       set: languageTag_AFTER_PRIMARY
-    - _throw: true
 
   languageTag_AFTER_PRIMARY:
     - meta_include_prototype: false
     - match: '-'
       scope: punctuation.separator.language-tag.hyphen.SYNTAX
       set: languageTag_AFTER_SEPARATOR
-    - match: '{{PLA_anything}}'
-      pop: true
+    - bail
 
   languageTag_AFTER_SEPARATOR:
     - meta_include_prototype: false
@@ -107,17 +89,11 @@ contexts:
     - match: '[a-zA-Z0-9]+'
       scope: meta.language-tag.subtag.SYNTAX
       set: languageTag_AFTER_PRIMARY
-    - _throw: true
-
-  datatype_META:
-    - meta_scope: meta.datatype.SYNTAX
-    - include: else_pop
 
   iriRef:
     - match: '<'
       scope: punctuation.definition.iri.begin.SYNTAX
       set: iriRef_AFTER_BEGIN
-    - _throw: true
 
   iriRef_AFTER_BEGIN:
     - meta_include_prototype: false
@@ -130,16 +106,14 @@ contexts:
       pop: true
     - match: '\s'
       scope: invalid.illegal.token.expected.iriRef_AFTER_BEGIN.SYNTAX
-    - _throw: false
+    - bail
 
   labeledBlankNode:
     - match: '_:'
       scope: variable.other.readwrite.blank-node.underscore.SYNTAX
       set: labeledBlankNode_AFTER_NAMESPACE
-    - _throw: true
 
   labeledBlankNode_AFTER_NAMESPACE:
     - match: '{{BLANK_NODE_LABEL}}'
       scope: variable.other.member.blank-node.label.SYNTAX
       pop: true
-    - _throw: true

@@ -1,0 +1,90 @@
+%YAML 1.2
+---
+name: TriG
+file_extensions:
+  - trig
+scope: source.trig
+extends: t-family.syntax-source
+
+lookaheads.i:
+  graph: 'graph{{KEYWORD_BOUNDARY}}'
+
+
+contexts:
+
+  main:
+    - switch.push:
+        - directive
+        - block
+    - retry
+
+  block:
+    - word: graph
+      scope: keyword.control.graph.trig
+      set: block_AFTER_GRAPH
+    - switch:
+        - wrappedGraph
+        - hollowAnonymousBlankNode: triplesOrGraph
+        - triples2
+        - triplesOrGraph
+
+  block_AFTER_GRAPH:
+    - goto: [wrappedGraph, graphTerm]
+
+  graphTerm:
+    - goto: labelOrSubject
+      mask: meta.term.role.graph.SYNTAX
+
+  triplesOrGraph:
+    - lookaheads: [labelOrSubject]
+    - goto: [triplesOrGraph_AFTER_LABEL_OR_SUBJECT, graphOrSubjectTerm]
+
+  graphOrSubjectTerm:
+    - goto: labelOrSubject
+      mask: meta.term.role.graph-or-subject.SYNTAX
+
+  triplesOrGraph_AFTER_LABEL_OR_SUBJECT:
+    - switch:
+        - wrappedGraph
+        - verb: [triplesOrGraph_AFTER_PREDICATE_OBJECT_LIST, predicateObjectList]
+    - retry
+
+  triplesOrGraph_AFTER_PREDICATE_OBJECT_LIST:
+    - goto: triple_TERMINATE
+
+  triples2:
+    - lookahead: '[\[\(]'
+    - switch:
+        - anonymousBlankNode: [triple_TERMINATE, predicateObjectList?, blankNodePropertyList]
+        - collection: [triple_TERMINATE, predicateObjectList^, collection]
+    - retry
+
+  wrappedGraph:
+    - open.brace: section.wrapped-graph
+      set: [wrappedGraph_TERMINATE, triplesBlock?]
+
+  wrappedGraph_TERMINATE:
+    - close.brace: section.wrapped-graph
+      pop: true
+
+  triplesBlock:
+    - switch:
+        - triples: [triplesBlock_AFTER_TRIPLES, triples]
+
+  triplesBlock_AFTER_TRIPLES:
+    - match: '\.'
+      scope: punctuation.terminator.triple.trig
+      set: triplesBlock?
+    - bail
+
+  labelOrSubject:
+    - switch:
+        - namedNode
+        - blankNode
+    - retry
+
+  blankNode:
+    - switch:
+        - labeledBlankNode
+        - hollowAnonymousBlankNode
+    - retry

@@ -1,0 +1,14 @@
+%YAML 1.2
+---
+name: N-Triples
+file_extensions:
+  - nt
+scope: source.nt
+extends: verbose.syntax-source
+
+contexts:
+  main:
+    - goto: triple
+
+  triple:
+    - goto: [triple_TERMINATE, object, predicate, subject]

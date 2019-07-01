@@ -1,0 +1,130 @@
+%YAML 1.2
+---
+extends: terse.syntax-source
+
+contexts:
+  prototype:
+    - include: whitespace
+    - include: comment
+
+  directive:
+    - switch:
+        - baseDeclaration
+        - prefixDeclaration
+    - retry
+
+  triple_TERMINATE:
+    - match: '\.'
+      scope: punctuation.terminator.triple.SYNTAX
+      pop: true
+
+  baseDeclaration:
+    - lookahead.i: '@?base\b'
+    - include: baseDeclarationSparql
+    - match: '@'
+      scope: punctuation.definition.storage.base.at.SYNTAX storage.type.base.at.SYNTAX
+      set: [baseDeclarationAt_TERMINATE, baseDeclarationAt_AFTER_AT]
+
+  baseDeclarationAt_AFTER_AT:
+    - word: base
+      scope: storage.type.base.at.SYNTAX
+      set: iriRef
+      mask: meta.term.role.base-declaration.SYNTAX
+    - retry
+
+  baseDeclarationAt_TERMINATE:
+    - meta_include_prototype: false
+    - match: '\n'
+      scope: invalid.illegal.token.expected.baseDeclarationAt_TERMINATE.SYNTAX
+    - match: '\.'
+      scope: punctuation.terminator.base-declaration.SYNTAX
+      pop: true
+    - include: comment
+
+  prefixDeclaration:
+    - lookahead.i: '@?prefix\b'
+    - include: prefixDeclarationSparql
+    - match: '@'
+      scope: punctuation.definition.storage.prefix.at.SYNTAX storage.type.prefix.at.SYNTAX
+      set: prefixDeclarationAt_AFTER_AT
+
+  prefixDeclarationAt_AFTER_AT:
+    - word: prefix
+      boundary: '(?:{{KEYWORD_BOUNDARY}}|:)'
+      scope: storage.type.prefix.at.SYNTAX
+      set: [prefixDeclarationAt_TERMINATE, prefixDeclarationAt_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD?]
+    - retry
+
+  prefixDeclaration_AFTER_KEYWORD:
+    - meta_include_prototype: false
+    - match: '\s+'
+      scope: meta.whitespace.SYNTAX
+      pop: true
+    - include: prototype
+
+  prefixDeclarationAt_AFTER_KEYWORD_SPACE:
+    - _registeredPrefixDeclarations: at
+    - match: '(({{PN_PREFIX}}?)(:))'
+      captures:
+        1: meta.prefix-declaration.at.namespace.SYNTAX
+        2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.SYNTAX
+        3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
+      set: iriRef
+      mask: meta.term.role.prefix-declaration.SYNTAX
+    - throw: true
+      add.front: meta.prefix-declaration.at.namespace.SYNTAX
+
+  prefixDeclarationAt_TERMINATE:
+    - meta_include_prototype: false
+    - match: '\n'
+      scope: invalid.illegal.token.expected.prefixDeclarationAt_TERMINATE.SYNTAX
+    - match: '\.'
+      scope: punctuation.terminator.prefix-declaration.SYNTAX
+      pop: true
+    - include: comment
+
+  triples:
+    - switch:
+        - hollowAnonymousBlankNode: [predicateObjectList^, hollowAnonymousBlankNode]
+        - anonymousBlankNode: [predicateObjectList?, blankNodePropertyList]
+        - collection: [predicateObjectList^, collection]
+        - namedNode: [predicateObjectList^, namedNode]
+        - labeledBlankNode: [predicateObjectList^, labeledBlankNode]
+    - retry
+
+  predicateObjectList:
+    - switch:
+        - verb: [predicateObjectList_AFTER_OBJECT_LIST, objectList, verb]
+
+  predicateObjectList_AFTER_OBJECT_LIST:
+    - match: ';'
+      scope: punctuation.separator.predicate-object-list.SYNTAX
+      set: predicateObjectList?
+    - bail
+
+  verb:
+    - switch:
+        - a
+        - namedNode
+      mask: meta.term.role.predicate.SYNTAX
+
+  object:
+    - switch:
+        - hollowAnonymousBlankNode
+        - anonymousBlankNode: blankNodePropertyList
+    - include: objectData
+
+  collection_AFTER_BEGIN:
+    - close.paren: section.collection
+      pop: true
+    - goto.push: object+
+
+  blankNodePropertyList:
+    - open.bracket: definition.blank-node-property-list
+      set: blankNodePropertyList_AFTER_BEGIN
+
+  blankNodePropertyList_AFTER_BEGIN:
+    - close.bracket: definition.anonymous-blank-node.hack
+      pop: true
+    - switch:
+        - verb: [blankNodePropertyList_TERMINATE, predicateObjectList]

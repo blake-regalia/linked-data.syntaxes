@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-_extends: human-readable.sublime-syntax-source
+extends: human-readable.syntax-source
 
 variables:
 
@@ -52,60 +52,55 @@ variables:
 
   # lookaheads
 
-  openBrace_LOOKAHEAD: '(?=\{)'
-  openParen_LOOKAHEAD: '(?=\()'
+  # openBrace_LOOKAHEAD: '(?=\{)'
+  # openParen_LOOKAHEAD: '(?=\()'
 
-  prefixedNameLocal: '{{PN_LOCAL}}'
-  prefixedNameNamespace: '{{PN_PREFIX}}?:'
-  prefixedNameNamespace_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
+  # prefixedNameLocal: '{{PN_LOCAL}}'
+  # prefixedNameNamespace: '{{PN_PREFIX}}?:'
+  # prefixedNameNamespace_LOOKAHEAD: '(?={{prefixedNameNamespace}})'
 
-  numericLiteral: '[0-9+-]|\.[0-9]'
-  numericLiteral_LOOKAHEAD: '(?={{numericLiteral}})'
-  booleanLiteral_LOOKAHEAD: '(?i)(?=(?:true|false){{KEYWORD_BOUNDARY}})'
+  # numericLiteral: '[0-9+-]|\.[0-9]'
+  # numericLiteral_LOOKAHEAD: '(?={{numericLiteral}})'
+  # booleanLiteral_LOOKAHEAD: '(?i)(?=(?:true|false){{KEYWORD_BOUNDARY}})'
 
-  a_LOOKAHEAD: '(?=a{{KEYWORD_BOUNDARY}})'
+  # a_LOOKAHEAD: '(?=a{{KEYWORD_BOUNDARY}})'
 
-  collection_LOOKAHEAD: '(?=\()'
+  # collection_LOOKAHEAD: '(?=\()'
 
-  literal_LOOKAHEAD: '(?={{stringLiteral_LOOKAHEAD}}|{{numericLiteral_LOOKAHEAD}}|{{booleanLiteral_LOOKAHEAD}})'
+  # literal_LOOKAHEAD: '(?={{stringLiteral_LOOKAHEAD}}|{{numericLiteral_LOOKAHEAD}}|{{booleanLiteral_LOOKAHEAD}})'
 
-  namedNode_LOOKAHEAD: '(?:{{iriRef_LOOKAHEAD}}|{{prefixedNameNamespace_LOOKAHEAD}})'
+  # namedNode_LOOKAHEAD: '(?:{{iriRef_LOOKAHEAD}}|{{prefixedNameNamespace_LOOKAHEAD}})'
 
-  node_LOOKAHEAD: '(?:{{namedNode_LOOKAHEAD}}|{{blankNode_LOOKAHEAD}})'
+  # node_LOOKAHEAD: '(?:{{namedNode_LOOKAHEAD}}|{{blankNode_LOOKAHEAD}})'
 
-  object_LOOKAHEAD: '{{node_LOOKAHEAD}}|{{literal_LOOKAHEAD}}|{{collection_LOOKAHEAD}}'
+  # object_LOOKAHEAD: '{{node_LOOKAHEAD}}|{{literal_LOOKAHEAD}}|{{collection_LOOKAHEAD}}'
 
   tripleTerminator_LOOKAHEAD: '(?=[.\])}#])'
   objectTerminator_LOOKAHEAD: '(?=[;,^@]|{{tripleTerminator_LOOKAHEAD}})'
 
-  hollowAnonymousBlankNode_LOOKAHEAD: '(?=\[[\s\n]*\])'
+  # hollowAnonymousBlankNode_LOOKAHEAD: '(?=\[[\s\n]*\])'
 
 
 contexts:
   baseDeclarationSparql:
     - meta_scope: meta.base-declaration.keyword.SYNTAX
-    - _case: base
+    - word: base
       scope: storage.type.base.sparql.SYNTAX
-      set: baseDeclaration_AFTER_KEYWORD
-
-  baseDeclaration_AFTER_KEYWORD:
-    - _iriRef:
-        scope: base-declaration
-        pop: true
-    - _throw: true
+      set: iriRef
+      mask: meta.term.role.base-declaration.SYNTAX
 
   prefixDeclarationSparql:
-    - _case: prefix
+    - word: prefix
       scope: storage.type.prefix.sparql.SYNTAX
       set: [prefixDeclarationSparql_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD]
 
   prefixDeclaration_AFTER_KEYWORD:
     - meta_include_prototype: false
-    - match: '\s+'
+    - match: '\s+|$'
       scope: meta.whitespace.SYNTAX
       pop: true
     - include: prototype
-    - _throw: false
+    - retry
 
   prefixDeclarationSparql_AFTER_KEYWORD_SPACE:
     - _registeredPrefixDeclarations: sparql
@@ -114,58 +109,49 @@ contexts:
         1: meta.prefix-declaration.sparql.namespace.SYNTAX
         2: variable.other.readwrite.prefixed-name.namespace.prefix-declaration.SYNTAX
         3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
-      set: prefixDeclaration_AFTER_NAME
-    - match: '{{MAT_word_or_any_one_char}}'
-      scope: meta.prefix-declaration.sparql.namespace.SYNTAX invalid.illegal.token.expected.prefixDeclarationSparql_AFTER_KEYWORD_SPACE.SYNTAX
-      pop: true
-
-  prefixDeclaration_AFTER_NAME:
-    - _iriRef:
-        scope: prefix-declaration
-        pop: true
-    - _throw: true
+      set: iriRef
+      mask: meta.term.role.prefix-declaration.SYNTAX
+    - throw: yes
+      add.front: meta.prefix-declaration.sparql.namespace.SYNTAX
 
   predicateData:
-    - match: '{{a_LOOKAHEAD}}'
-      set: a
-    - _namedNode:
-        scope: predicate
-        pop: true
+    - switch:
+        - a
+        - namedNode
+      mask: meta.term.role.predicate.SYNTAX
 
   a:
     - match: 'a(?={{KEYWORD_BOUNDARY}})'
       scope: support.constant.predicate.a.SYNTAX
       pop: true
-    - _throw: true
 
   objectData:
-    - _switch: [collection, labeledBlankNode]
-    - _namedNode:
-        scope: object
-        pop: true
-    - include: literal
-    - _throw: true
+    - switch:
+        - collection
+        - labeledBlankNode
+        - namedNode
+      mask: meta.term.role.object.SYNTAX
+    - goto: literal
+      mask: meta.term.role.object.SYNTAX
 
   literal:
-    - match: '{{stringLiteral_LOOKAHEAD}}'
-      set: rdfLiteral
-    - _cases: ['true', 'false']
+    - switch:
+        - stringLiteral: rdfLiteral
+    - words: ['true', 'false']
       scope: constant.language.boolean.WORD.SYNTAX
       pop: true
     - include: numericLiteral
 
   blankNodePropertyList:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: [blankNodePropertyList_TERMINATE, predicateObjectList]
-    - _throw: true
 
   blankNodePropertyList_TERMINATE:
-    - _close_bracket: definition.blank-node-property-list
+    - close.bracket: definition.blank-node-property-list
       pop: true
-    - _throw: true
 
   objectList:
-    - _goto: [objectList_AFTER_OBJECT, object]
+    - goto: [objectList_AFTER_OBJECT, object]
 
   objectList_AFTER_OBJECT:
     - match: ','
@@ -173,20 +159,19 @@ contexts:
       push: object
     - match: '{{objectTerminator_LOOKAHEAD}}'
       pop: true
-    - _throw: false
+    - retry
     # - include: else_pop
 
   collection:
-    - _open_paren: section.collection
+    - open.paren: section.collection
       set: collection_AFTER_BEGIN
-    - _throw: true
 
   collection_TERMINATE:
-    - _close_paren: section.collection
+    - close.paren: section.collection
       pop: true
-    - _throw: true
 
   numericLiteral:
+    - lookahead: '[0-9+-]|\.[0-9]'
     - match: '((?:(\+)|(-))?([0-9]+)(\.)([0-9]*){{EXPONENT}})'
       captures:
         1: constant.numeric.decimal.SYNTAX
@@ -231,16 +216,13 @@ contexts:
     - match: '"""'
       scope: punctuation.definition.string.begin.literal.double.long.SYNTAX
       set: stringLiteralLongDouble
-    - match: '"'
-      scope: punctuation.definition.string.begin.literal.double.short.SYNTAX
+    - open.dirk: literal.double.short
       set: stringLiteralShortDouble
     - match: ''''''''
       scope: punctuation.definition.string.begin.literal.single.long.SYNTAX
       set: stringLiteralLongSingle
-    - match: ''''
-      scope: punctuation.definition.string.begin.literal.single.short.SYNTAX
+    - open.irk: literal.single.short
       set: stringLiteralShortSingle
-    - _throw: true
 
   stringLiteralLongDouble:
     - meta_include_prototype: false
@@ -250,7 +232,6 @@ contexts:
       pop: true
     - match: '""?'
       scope: string.quoted.double.literal.long.SYNTAX
-    - _throw: true
 
   stringLiteralLongDouble_AFTER_INNER_QUOTE:
     - match: '[^"\\]'
@@ -273,8 +254,7 @@ contexts:
     - meta_include_prototype: false
     - meta_scope: string.quoted.double.literal.short.SYNTAX
     - match: '{{STRING_SHORT_DOUBLE}}+'
-    - match: '"'
-      scope: punctuation.definition.string.end.literal.double.short.SYNTAX
+    - close.dirk: literal.double.short
       pop: true
     - match: '{{ECHAR_DOUBLE}}'
       scope: constant.character.escape.literal.escape.short.SYNTAX
@@ -288,7 +268,6 @@ contexts:
     - match: '\n'
       scope: invalid.illegal.newline.literal.double.short.SYNTAX
       pop: true
-    - _throw: true
 
   stringLiteralLongSingle:
     - meta_include_prototype: false
@@ -298,7 +277,6 @@ contexts:
       pop: true
     - match: '''''?'
       scope: string.quoted.single.literal.long.SYNTAX
-    - _throw: true
 
   stringLiteralLongSingle_AFTER_INNER_QUOTE:
     - match: '[^''\\]'
@@ -336,21 +314,17 @@ contexts:
     - match: '\n'
       scope: invalid.illegal.newline.literal.single.short.SYNTAX
       pop: true
-    - _throw: true
 
   datatype:
     - meta_include_prototype: false
-    - _namedNode:
-        set: datatype_META
-        scope: datatype
-    - _throw: true
+    - switch:
+        - namedNode
+      mask: meta.term.role.datatype.SYNTAX
 
   namedNode:
-    - match: '{{iriRef_LOOKAHEAD}}'
-      set: iriRef
-    - match: '{{prefixedNameNamespace_LOOKAHEAD}}'
-      set: prefixedName
-    - _throw: true
+    - switch:
+        - iriRef
+        - prefixedName
 
   prefixedName:
     - match: '({{PN_PREFIX}}?)(:)'
@@ -365,7 +339,7 @@ contexts:
       scope: variable.other.member.prefixed-name.local.SYNTAX
     - match: '{{PLX}}'
       scope: variable.other.member.prefixed-name.local.SYNTAX constant.character.escape.prefixed-name.local.SYNTAX
-    - _goto: prefixedNameLocal_AFTER_OPEN
+    - goto: prefixedNameLocal_AFTER_OPEN
 
   prefixedNameLocal_AFTER_OPEN:
     - meta_include_prototype: false
@@ -373,7 +347,7 @@ contexts:
       scope: variable.other.member.prefixed-name.local.SYNTAX
     - match: '{{PLX}}(?!{{KEYWORD_BOUNDARY}})'
       scope: variable.other.member.prefixed-name.local.SYNTAX constant.character.escape.prefixed-name.local.SYNTAX
-    - _goto: prefixedNameLocal_AFTER_GROUP_1
+    - goto: prefixedNameLocal_AFTER_GROUP_1
 
   prefixedNameLocal_AFTER_GROUP_1:
     - meta_include_prototype: false
@@ -381,15 +355,14 @@ contexts:
       scope: variable.other.member.prefixed-name.local.SYNTAX
     - match: '{{PLX}}'
       scope: variable.other.member.prefixed-name.local.SYNTAX constant.character.escape.prefixed-name.local.SYNTAX
-    - include: else_pop
+    - bail
 
   hollowAnonymousBlankNode:
-    - _open_bracket: definition.anonymous-blank-node
+    - lookahead: '\[[\s\n]*\]'
+    - open.bracket: definition.anonymous-blank-node
       set: hollowAnonymousBlankNode_AFTER_BEGIN
-    - _throw: true
 
   hollowAnonymousBlankNode_AFTER_BEGIN:
-    - _close_bracket: definition.anonymous-blank-node
+    - close.bracket: definition.anonymous-blank-node
       pop: true
-    - _throw: true
 

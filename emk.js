@@ -14,25 +14,25 @@ const G_SYNTAX_DEPS = {
 	get human_readable() {
 		return [
 			...A_SYNTAX_DEPS_ALL,
-			`src/syntax/human-readable.sublime-syntax-source`,
+			`src/syntax/human-readable.syntax-source`,
 		];
 	},
 	get terse() {
 		return [
 			...this.human_readable,
-			'src/syntax/terse.sublime-syntax-source',
+			'src/syntax/terse.syntax-source',
 		];
 	},
 	get verbose() {
 		return [
 			...this.human_readable,
-			'src/syntax/verbose.sublime-syntax-source',
+			'src/syntax/verbose.syntax-source',
 		];
 	},
 	get t_family() {
 		return [
 			...this.terse,
-			'src/syntax/t-family.sublime-syntax-source',
+			'src/syntax/t-family.syntax-source',
 		];
 	},
 };
@@ -142,7 +142,7 @@ module.exports = {
 						[`${s_syntax}.sublime-syntax`]: () => ({
 							deps: [
 								'src/main/sublime-syntax.js',
-								`src/syntax/${s_syntax}.sublime-syntax-source`,
+								`src/syntax/${s_syntax}.syntax-source`,
 								...G_SYNTAXES[s_syntax].dependencies,
 							],
 
@@ -219,7 +219,7 @@ module.exports = {
 			// 		[`${s_syntax}_highlight_rules.js`]: () => ({
 			// 			deps: [
 			// 				'src/main/ace-syntax.js',
-			// 				`src/syntax/${s_syntax}.sublime-syntax-source`,
+			// 				`src/syntax/${s_syntax}.syntax-source`,
 			// 				...G_SYNTAXES[s_syntax].dependencies,
 			// 			],
 

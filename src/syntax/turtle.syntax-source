@@ -1,0 +1,14 @@
+%YAML 1.2
+---
+name: Turtle
+file_extensions:
+  - ttl
+scope: source.ttl
+extends: t-family.syntax-source
+
+contexts:
+  main:  # turtleDoc -> statement
+    - switch.push:
+      - directive
+      - triples: [triple_TERMINATE, triples]
+    - retry

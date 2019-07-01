@@ -1,0 +1,26 @@
+%YAML 1.2
+---
+name: N-Quads
+file_extensions:
+  - nq
+scope: source.nq
+extends: verbose.syntax-source
+
+contexts:
+  main:
+    - goto: quads
+
+  quads:
+    - goto: [quad_TERMINATE, graph?, object, predicate, subject]
+
+  graph:
+    - switch:
+        - iriRef
+        - labeledBlankNode
+      mask: meta.term.role.graph.SYNTAX
+
+  quad_TERMINATE:
+    - match: '\.'
+      scope: punctuation.terminator.quad.SYNTAX
+      pop: true
+    - retry
