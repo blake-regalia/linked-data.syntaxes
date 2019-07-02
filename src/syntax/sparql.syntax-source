@@ -998,8 +998,8 @@ contexts:
     - goto: [propertyListPath, blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
 
   propertyListPath:
-    - match: '{{verbPathOrSimple_LOOKAHEAD}}'
-      set: propertyListPathNotEmpty
+    - switch:
+        - verbPathOrSimple: propertyListPathNotEmpty
     - bail
 
   propertyListPathNotEmpty:
@@ -1008,19 +1008,18 @@ contexts:
   propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH:
     - match: ';'
       scope: punctuation.separator.pair.SYNTAX
-      set: propertyListPathNotEmpty_AFTER_SEMICOLON
+      push: propertyListPathNotEmpty_AFTER_SEMICOLON
     - bail
 
   propertyListPathNotEmpty_AFTER_SEMICOLON:
-    - match: '{{verb_LOOKAHEAD}}'
-      set: [propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH, objectList, verb]
+    - switch:
+        - verbPathOrSimple: [objectList, verbPathOrSimple]
     - bail
 
   verbPathOrSimple:
-    - match: '{{path_LOOKAHEAD}}'
-      set: path
-    - match: '{{var_LOOKAHEAD}}'
-      set: var
+    - switch:
+        - path
+        - var
 
   objectListPath:
     - goto: [objectListPath_MORE, objectPath]
@@ -1035,26 +1034,27 @@ contexts:
     - goto: graphNodePath
 
   path:
-    - goto: [pathAlternative_AFTER_SEQUENCE*, pathSequence]
+    - goto: pathAlternative
 
-  pathAlternative_AFTER_SEQUENCE:
-    # - alone
+  pathAlternative:
+    - goto: [pathAlternative_MORE, pathSequence]
+
+  pathAlternative_MORE:
     - match: '\|'
       scope: keyword.operator.path.alternative.SYNTAX
-      set: pathSequence
-    # - bail
+      set: pathAlternative
+    - bail
 
   pathSequence:
-    - goto: [pathSequence_AFTER_FRAGMENT*, pathEltOrInverse]
+    - goto: [pathSequence_MORE, pathEltOrInverse]
 
-  pathSequence_AFTER_FRAGMENT:
-    # - alone
+  pathSequence_MORE:
     - match: '\/'
       scope: keyword.operator.path.separator.SYNTAX
-      set: pathEltOrInverse
+      set: pathSequence
+    - bail
 
   pathEltOrInverse:
-    # - alone
     - match: '\^'
       scope: keyword.operator.path.inverse.SYNTAX meta.path.inverse.SYNTAX
       set: pathElt
@@ -1062,11 +1062,9 @@ contexts:
     - goto: pathElt
 
   pathElt:
-    # - alone
     - goto: [pathMod?, pathPrimary]
 
   pathMod:
-    # - alone
     - match: '\?{{KEYWORD_BOUNDARY}}'
       scope: keyword.operator.path.quantifier.zero-or-one.SYNTAX
       pop: true
@@ -1078,7 +1076,6 @@ contexts:
       pop: true
 
   pathPrimary:
-    # - alone
     - match: '!'
       scope: keyword.operator.path.logical.not.SYNTAX meta.path.negated.SYNTAX
       set: pathNegatedPropertySet
@@ -1088,43 +1085,36 @@ contexts:
     - include: predicateData
 
   pathPrimary_GROUP_TERMINATE:
-    # - alone
     - close.paren: section.path-group.sub
       pop: true
 
   pathNegatedPropertySet:
-    # - alone
     - open.paren: section.path
       set: [pathNegatedPropertySet_AFTER_GROUP_BEGIN]
     - goto: pathOneInPropertySet
 
   pathNegatedPropertySet_AFTER_GROUP_BEGIN:
-    # - alone
     - close.paren: section.path
       pop: true
     - goto: [pathNegatedPropertySet_GROUP_TERMINATE, pathNegatedPropertySet_AFTER_SET, pathOneInPropertySet]
 
   pathNegatedPropertySet_AFTER_SET:
-    # - alone
     - match: '\|'
       scope: keyword.operator.path.alternative.SYNTAX
       set: pathOneInPropertySet
     - bail
 
   pathNegatedPropertySet_GROUP_TERMINATE:
-    # - alone
     - close.paren: section.path
       pop: true
 
   pathOneInPropertySet:
-    # - alone
     - match: '\^'
       scope: keyword.operator.path.inverse.SYNTAX
       set: pathOneInPropertySet_AFTER_INVERSE
     - goto: pathOneInPropertySet_AFTER_INVERSE
 
   pathOneInPropertySet_AFTER_INVERSE:
-    # - alone
     - include: predicateData
 
   triplesNode:
