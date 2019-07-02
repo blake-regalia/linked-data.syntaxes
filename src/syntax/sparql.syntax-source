@@ -4,7 +4,24 @@ name: SPARQL
 file_extensions:
   - rq
 scope: source.rq
-_extends: terse.sublime-syntax-source
+extends: terse.syntax-source
+
+lookaheads:
+
+  prefixedNameNamespace: '{{PN_PREFIX}}?:'
+  prefixedNameLocal: '{{PN_LOCAL}}'
+
+  node: [namedNode, blankNode]
+
+  varOrTerm: [var, term]
+  namedNodeOrVar: [namedNode, var]
+  verb: [namedNodeOrVar, a]
+
+  triplesSameSubject: [varOrTerm, triplesNode]
+  triplesSameSubjectPath: [var, node, triplesNode]
+
+  term: [node, literal]
+
 
 variables:
 
@@ -16,25 +33,7 @@ variables:
   numericLiteralPositive_LOOKAHEAD: '(?=\+\.?[0-9])'
   numericLiteralNegative_LOOKAHEAD: '(?=\-\.?[0-9])'
 
-
-  limit_LOOKAHEAD: '(?i)(?=limit{{KEYWORD_BOUNDARY}})'
-  offset_LOOKAHEAD: '(?i)(?=offset{{KEYWORD_BOUNDARY}})'
-
-  namedNodeOrVar_LOOKAHEAD: '(?={{namedNode_LOOKAHEAD}}|{{var_LOOKAHEAD}})'
-
-  term_LOOKAHEAD: >-
-    (?x)(?=
-      {{node_LOOKAHEAD}}
-      |{{literal_LOOKAHEAD}}
-    )
-
-  varOrTerm_LOOKAHEAD: '(?={{var_LOOKAHEAD}}|{{term_LOOKAHEAD}})'
-  verb_LOOKAHEAD: (?={{namedNodeOrVar_LOOKAHEAD}}|{{a_LOOKAHEAD}})
-
-
   triplesNode_LOOKAHEAD: '(?={{collection_LOOKAHEAD}}|\[)'
-
-  triplesSameSubject_LOOKAHEAD: '(?={{varOrTerm_LOOKAHEAD}}|{{triplesNode_LOOKAHEAD}})'
 
   path_LOOKAHEAD: >-
     (?x)
@@ -49,16 +48,8 @@ variables:
       (?=
         (?:
           (?:<{{IRI_CONTENTS}}>)
-          |(?:{{prefixedNameNamespace}}{{prefixedNameLocal}})
+          |(?:{{prefixedNameNamespace_LOOKAHEAD}}{{prefixedNameLocal_LOOKAHEAD}})
         )\s*\(
-      )
-
-  triplesBlock_LOOKAHEAD: >-
-    (?x)
-      (?=
-        {{var_LOOKAHEAD}}
-        |{{node_LOOKAHEAD}}
-        |{{triplesNode_LOOKAHEAD}}
       )
 
   graphPatternNotTriples_LOOKAHEAD: >-
@@ -142,51 +133,6 @@ variables:
       |{{namedNodeFunction_LOOKAHEAD}}
     )
 
-  # prologue lookaheads
-  baseDeclaration_LOOKAHEAD: '(?i)(?=base\b)'
-  prefixDeclaration_LOOKAHEAD: '(?i)(?=prefix\b)'
-
-  # query lookaheads
-  selectQuery_LOOKAHEAD: '(?i)(?=select{{KEYWORD_BOUNDARY}})'
-  constructQuery_LOOKAHEAD: '(?i)(?=construct{{KEYWORD_BOUNDARY}})'
-  describeQuery_LOOKAHEAD: '(?i)(?=describe{{KEYWORD_BOUNDARY}})'
-  askQuery_LOOKAHEAD: '(?i)(?=ask{{KEYWORD_BOUNDARY}})'
-  query_LOOKAHEAD: >-
-    (?x)(?=
-      {{selectQuery_LOOKAHEAD}}
-      |{{constructQuery_LOOKAHEAD}}
-      |{{describeQuery_LOOKAHEAD}}
-      |{{askQuery_LOOKAHEAD}}
-    )
-
-  # update lookaheads
-  load_LOOKAHEAD: '(?i)(?=load{{KEYWORD_BOUNDARY}})'
-  clear_LOOKAHEAD: '(?i)(?=clear{{KEYWORD_BOUNDARY}})'
-  drop_LOOKAHEAD: '(?i)(?=drop{{KEYWORD_BOUNDARY}})'
-  create_LOOKAHEAD: '(?i)(?=create{{KEYWORD_BOUNDARY}})'
-  add_LOOKAHEAD: '(?i)(?=add{{KEYWORD_BOUNDARY}})'
-  move_LOOKAHEAD: '(?i)(?=move{{KEYWORD_BOUNDARY}})'
-  copy_LOOKAHEAD: '(?i)(?=copy{{KEYWORD_BOUNDARY}})'
-  insert_LOOKAHEAD: '(?i)(?=insert{{KEYWORD_BOUNDARY}})'
-  delete_LOOKAHEAD: '(?i)(?=delete{{KEYWORD_BOUNDARY}})'
-  with_LOOKAHEAD: '(?i)(?=with{{KEYWORD_BOUNDARY}})'
-  update_LOOKAHEAD: >-
-    (?x)(?=
-      {{load_LOOKAHEAD}}
-      |{{clear_LOOKAHEAD}}
-      |{{drop_LOOKAHEAD}}
-      |{{create_LOOKAHEAD}}
-      |{{add_LOOKAHEAD}}
-      |{{move_LOOKAHEAD}}
-      |{{copy_LOOKAHEAD}}
-      |{{insert_LOOKAHEAD}}
-      |{{delete_LOOKAHEAD}}
-      |{{with_LOOKAHEAD}}
-    )
-
-  graph_LOOKAHEAD: '(?=graph{{KEYWORD_BOUNDARY}})'
-  from_LOOKAHEAD: '(?=from{{KEYWORD_BOUNDARY}})'
-
   unitDirective_LOOKAHEAD: '(?=#\s*@unit\b)'
 
 contexts:
@@ -197,948 +143,815 @@ contexts:
     - include: comment
 
   main:
-    - meta_include_prototype: false
+    - alone
     - match: '(#(\s*)(@prologue)(\s*))'
       captures:
-        1: comment.line.rq
-        2: meta.whitespace.rq
-        3: meta.directive.prologue.rq
-        4: meta.whitespace.rq
+        1: comment.line.SYNTAX
+        2: meta.whitespace.SYNTAX
+        3: meta.directive.prologue.SYNTAX
+        4: meta.whitespace.SYNTAX
       push: line_comment
     - include: prototype
-    - match: '{{PLA_anything}}'
-      push: query
+    - goto.push: query
 
   query:
-    - meta_include_prototype: false
-    - _goto: [unit_AFTER_QUERY_UPDATE, unit_AFTER_PROLOGUE, prologue]
+    - alone
+    - lookaheads:
+      - selectQuery
+      - constructQuery
+      - describeQuery
+      - askQuery
+    - goto: [unit_AFTER_QUERY_UPDATE, unit_AFTER_PROLOGUE, prologue]
 
   prologue:
-    - meta_include_prototype: false
-    - meta_scope: meta.prologue.rq
-    - match: '{{baseDeclaration_LOOKAHEAD}}'
-      push: baseDeclaration
-    - match: '{{prefixDeclaration_LOOKAHEAD}}'
-      push: prefixDeclaration
+    - alone
+    - meta_scope: meta.prologue.SYNTAX
+    - switch.push:
+        - baseDeclaration
+        - prefixDeclaration
     - match: '(#(\s*)(@unit)(\s*))'
       captures:
-        1: comment.line.rq
-        2: meta.whitespace.rq
-        3: meta.directive.unit.rq
-        4: meta.whitespace.rq
+        1: comment.line.SYNTAX
+        2: meta.whitespace.SYNTAX
+        3: meta.directive.unit.SYNTAX
+        4: meta.whitespace.SYNTAX
       set: line_comment
     - include: prototype
-    - include: else_pop
+    - bail
 
   baseDeclaration:
     - include: baseDeclarationSparql
-    - _throw: true
 
   prefixDeclaration:
     - include: prefixDeclarationSparql
-    - _throw: true
 
   unit_AFTER_PROLOGUE:
     - match: '(#(\s*)(@unit)(\s*))'
       captures:
-        1: comment.line.rq
-        2: meta.whitespace.rq
-        3: meta.directive.prologue.rq
-        4: meta.whitespace.rq
+        1: comment.line.SYNTAX
+        2: meta.whitespace.SYNTAX
+        3: meta.directive.prologue.SYNTAX
+        4: meta.whitespace.SYNTAX
       set: [unit_AFTER_PROLOGUE, line_comment]
-    - match: '{{query_LOOKAHEAD}}'
-      set: [valuesClause, query_AFTER_PROLOGUE]
-    - match: '{{update_LOOKAHEAD}}'
-      set: update_AFTER_PROLOGUE
-    - _throw: false
+    - switch:
+        - query: [valuesClause, query_AFTER_PROLOGUE]
+        - update_AFTER_PROLOGUE
+    - retry
 
   unit_AFTER_QUERY_UPDATE:
-    - meta_include_prototype: false
+    - alone
     - match: '(#(\s*)(@unit)(\s*))'
       captures:
-        1: comment.line.rq
-        2: meta.whitespace.rq
-        3: meta.directive.prologue.rq
-        4: meta.whitespace.rq
+        1: comment.line.SYNTAX
+        2: meta.whitespace.SYNTAX
+        3: meta.directive.prologue.SYNTAX
+        4: meta.whitespace.SYNTAX
       set: [unit_AFTER_PROLOGUE, line_comment]
     - include: prototype
-    - include: else_pop
+    - bail
 
   query_AFTER_PROLOGUE:
-    - match: '{{selectQuery_LOOKAHEAD}}'
-      set: selectQuery
-    - match: '{{constructQuery_LOOKAHEAD}}'
-      set: constructQuery
-    - match: '{{describeQuery_LOOKAHEAD}}'
-      set: describeQuery
-    - match: '{{askQuery_LOOKAHEAD}}'
-      set: askQuery
-    - _throw: true
+    - switch:
+        - selectQuery
+        - constructQuery
+        - describeQuery
+        - askQuery
 
   selectQuery:
-    - _goto: [solutionModifier, whereClause, datasetClause, selectClause]
+    - lookahead.i: 'select{{KEYWORD_BOUNDARY}}'
+    - goto: [solutionModifier, whereClause, datasetClause, selectClause]
 
   subSelect:
-    - _goto: [valuesClause, solutionModifier, whereClause, selectClause]
+    - goto: [valuesClause, solutionModifier, whereClause, selectClause]
 
   selectClause:
-    - meta_content_scope: meta.clause.select.rq
-    - _case: select
+    - meta_content_scope: meta.clause.select.SYNTAX
+    - word: select
       type: qualifier
       set: selectClause_AFTER_SELECT
-    - _throw: false
+    - retry
 
   selectClause_AFTER_SELECT:
-    - _case: distinct
-      scope: storage.modifier.distinct.rq
+    - word: distinct
+      scope: storage.modifier.distinct.SYNTAX
       set: selectClause_AFTER_SELECT_MODIFIER
-    - _case: reduced
-      scope: storage.modifier.reduced.rq
+    - word: reduced
+      scope: storage.modifier.reduced.SYNTAX
       set: selectClause_AFTER_SELECT_MODIFIER
-    - _goto: selectClause_AFTER_SELECT_MODIFIER
+    - goto: selectClause_AFTER_SELECT_MODIFIER
 
   selectClause_AFTER_SELECT_MODIFIER:
     - match: '\*'
-      scope: keyword.operator.star.select-clause.rq
+      scope: keyword.operator.star.select-clause.SYNTAX
       pop: true
-    - _goto: selectClause_AFTER_NOT_STAR
+    - goto: selectClause_AFTER_NOT_STAR
 
   selectClause_AFTER_NOT_STAR:
-    - match: '{{openParen_LOOKAHEAD}}'
-      push: selectClauseExpressionBinding
-    - match: '{{var_LOOKAHEAD}}'
-      push: var
-    - include: else_pop
+    - switch.push:
+        - selectClauseExpressionBinding
+        - var
+    - bail
 
   selectClauseExpressionBinding:
-    - match: '{{openParen_LOOKAHEAD}}'
-      _meta: meta.group.expression-binding.select-clause.rq
-      set: selectClauseExpressionBinding_AFTER_META
+    - switch:
+        - selectClauseExpressionBinding_AFTER_META
+      mask: meta.group.expression-binding.select-clause.SYNTAX
 
   selectClauseExpressionBinding_AFTER_META:
-    - _open_paren: definition.expression
+    - open.paren: definition.expression
       set: [selectClauseExpressionBinding_TERMINATE, selectClauseExpressionBinding_AFTER_EXPRESSION, expression]
-    - _throw: true
 
   selectClauseExpressionBinding_AFTER_EXPRESSION:
-    - _case: as
-      scope: storage.type.variable.as.select-clause.rq
+    - word: as
+      scope: storage.type.variable.as.select-clause.SYNTAX
       set: var
-    - _throw: false
+    - retry
 
   selectClauseExpressionBinding_TERMINATE:
-    - _close_paren: definition.expression
+    - close.paren: definition.expression
       pop: true
-    - _throw: true
 
   constructQuery:
-    - _case: construct
+    - word: construct
       type: qualifier
       set: constructQuery_AFTER_CONSTRUCT
-    - _throw: true
 
   constructQuery_AFTER_CONSTRUCT:
-    - match: '{{openBrace_LOOKAHEAD}}'
-      set: [solutionModifier, whereClause, datasetClause, constructTemplate_AFTER_TRIPLES, constructTemplate]
-    - match: '{{from_LOOKAHEAD}}'
-      set: [constructQuery_ALTERNATE_AFTER_DATASET_CLAUSE, datasetClause]
-    - _throw: true
+    - switch:
+        - constructTemplate: [solutionModifier, whereClause, datasetClause, constructTemplate_AFTER_TRIPLES, constructTemplate]
+        - datasetClause: [constructQuery_ALTERNATE_AFTER_DATASET_CLAUSE, datasetClause]
 
   constructQuery_ALTERNATE_AFTER_DATASET_CLAUSE:
-    - _case: where
+    - word: where
       type: qualifier
       set: constructQuery_ALTERNATE_AFTER_WHERE
-    - _throw: true
 
   constructQuery_ALTERNATE_AFTER_WHERE:
-    - _open_brace: section.triples
+    - open.brace: section.triples
       set: [constructQuery_ALTERNATE_AFTER_TRIPLES_TEMPLATE, triplesTemplate]
-    - _throw: true
 
   constructQuery_ALTERNATE_AFTER_TRIPLES_TEMPLATE:
-    - _close_brace: section.triples
+    - close.brace: section.triples
       set: solutionModifier
-    - _throw: true
 
   describeQuery:
-    - _case: describe
+    - word: describe
       type: qualifier
       set: [solutionModifier, whereClause_OPTIONAL, datasetClause, describeQuery_AFTER_DESCRIBE]
-    - _throw: true
 
   describeQuery_AFTER_DESCRIBE:
     - include: describeQuery_TARGET
     - match: '\*'
-      scope: keyword.operator.star.describe.rq
+      scope: keyword.operator.star.describe.SYNTAX
       pop: true
-    - _throw: true
 
   describeQuery_AFTER_TARGET:
     - include: describeQuery_TARGET
-    - _throw: true
 
   describeQuery_TARGET:
-    - match: '{{namedNode_LOOKAHEAD}}'
-      set: [describeQuery_AFTER_TARGET, namedNode]
-    - match: '{{var_LOOKAHEAD}}'
-      set: [describeQuery_AFTER_TARGET, var]
+    - switch:
+        - namedNode: [describeQuery_AFTER_TARGET, namedNode]
+        - var: [describeQuery_AFTER_TARGET, var]
 
   askQuery:
-    - _case: ask
+    - word: ask
       type: qualifier
       set: [solutionModifier, whereClause, datasetClause]
-    - _throw: true
 
   datasetClause:
-    - meta_content_scope: meta.clause.dataset.rq
-    - _case: from
+    - meta_content_scope: meta.clause.dataset.SYNTAX
+    - word: from
       type: modifier
       push: datasetClause_AFTER_FROM
-    - include: else_pop
+    - bail
 
   datasetClause_AFTER_FROM:
-    - _case: named
+    - word: named
       type: modifier
-      set: datasetClause_AFTER_NAMED
-    - _namedNode:
-        scope: dataset-clause.from-default
-        pop: true
-    - _throw: true
-
-  datasetClause_AFTER_NAMED:
-    - _namedNode:
-        scope: dataset-clause.from-named
-        pop: true
-    - _throw: true
+      set: namedNode
+      mask: meta.term.role.dataset.from-named.SYNTAX
+    - goto: [namedNode]
+      mask: meta.term.role.dataset.from-default.SYNTAX
 
   whereClause_OPTIONAL:
     - match: '(?=\{|where{{KEYWORD_BOUNDARY}})'
       set: whereClause
-    - include: else_pop
+    - bail
 
   whereClause:
-    - _case: where
+    - word: where
       type: qualifier
       set: groupGraphPattern
-    - _goto: groupGraphPattern
+    - goto: groupGraphPattern
 
   solutionModifier:
-    - _goto: [limitOffsetClauses, orderClause, havingClause, groupClause]
+    - goto: [limitOffsetClauses, orderClause, havingClause, groupClause]
 
   groupClause:
-    - _case: group
+    - word: group
       set: groupClause_AFTER_GROUP
-    - include: else_pop
+    - bail
 
   groupClause_AFTER_GROUP:
-    - _case: by
-      set: [groupCondition_OPTIONAL, groupCondition_REQUIRED]
-    - _throw: true
+    - word: by
+      set: groupCondition+
 
-  groupCondition_REQUIRED:
-    - _open_paren: definition.arguments
+  groupCondition:
+    - open.paren: definition.arguments
       set: [groupCondition_TERMINATE_BINDING, groupCondition_AFTER_EXPRESSION, expression]
-    - match: '{{var_LOOKAHEAD}}'
-      set: var
-    - match: '{{namedNodeFunction_LOOKAHEAD}}'
-      set: functionCall
-    - match: '{{builtInCall_LOOKAHEAD}}'
-      set: builtInCall
-    - _throw: true
-
-  groupCondition_OPTIONAL:
-    - _open_paren: definition.arguments
-      push: [groupCondition_TERMINATE_BINDING, groupCondition_AFTER_EXPRESSION, expression]
-    - match: '{{var_LOOKAHEAD}}'
-      push: var
-    - match: '{{namedNodeFunction_LOOKAHEAD}}'
-      push: functionCall
-    - match: '{{builtInCall_LOOKAHEAD}}'
-      push: builtInCall
-    - include: else_pop
+    - switch:
+        - var
+        - namedNodeFunction: functionCall
+        - builtInCall
 
   groupCondition_AFTER_EXPRESSION:
-    - _case: as
+    - word: as
       type: modifier
       set: var
-    - include: else_pop
+    - bail
 
   groupCondition_TERMINATE_BINDING:
-    - _close_paren: definition.arguments
+    - close.paren: definition.arguments
       pop: true
-    - _throw: true
 
   havingClause:
-    - _case: having
+    - word: having
       type: modifier
       set: [havingCondition, constraint]
-    - include: else_pop
+    - bail
 
   havingCondition:
     - match: '{{constraint_LOOKAHEAD}}'
       push: constraint
-    - include: else_pop
+    - bail
 
   orderClause:
-    - _case: order
+    - word: order
       type: modifier
       set: orderClause_AFTER_ORDER
-    - include: else_pop
+    - bail
 
   orderClause_AFTER_ORDER:
-    - _case: by
+    - word: by
       type: modifier
       set: orderCondition
-    - _throw: true
 
   orderCondition:
-    - _case: asc
-      scope: support.function.built-in.sort.asc.rq
+    - word: asc
+      scope: support.function.built-in.sort.asc.SYNTAX
       set: [orderCondition_AFTER_CONDITION, brackettedExpression]
-    - _case: desc
-      scope: support.function.built-in.sort.desc.rq
+    - word: desc
+      scope: support.function.built-in.sort.desc.SYNTAX
       set: [orderCondition_AFTER_CONDITION, brackettedExpression]
-    - match: '{{constraint_LOOKAHEAD}}'
-      set: [orderCondition_AFTER_CONDITION, constraint]
-    - match: '{{var_LOOKAHEAD}}'
-      set: [orderCondition_AFTER_CONDITION, var]
-    - _throw: true
+    - switch:
+        - constraint: [orderCondition_AFTER_CONDITION, constraint]
+        - var: [orderCondition_AFTER_CONDITION, var]
 
   orderCondition_AFTER_CONDITION:
     - match: '{{constraint_LOOKAHEAD}}|{{var_LOOKAHEAD}}|(?i:(?=:asc|desc)\b)'
       set: orderCondition
-    - include: else_pop
+    - bail
 
   limitOffsetClauses:
-    - match: '{{limit_LOOKAHEAD}}'
-      set: [offsetClause_OPTIONAL, limitClause_REQUIRED]
-    - match: '{{offset_LOOKAHEAD}}'
-      set: [limitClause_OPTIONAL, offsetClause_REQUIRED]
-    - include: else_pop
-
-  limitClause_OPTIONAL:
-    - include: limitClause
-    - include: else_pop
-
-  limitClause_REQUIRED:
-    - include: limitClause
-    - _throw: true
+    - switch:
+        - limitClause: [offsetClause?, limitClause^]
+        - offsetClause: [limitClause?, offsetClause^]
+    - bail
 
   limitClause:
-    - _case: limit
+    - word: limit
       type: modifier
       set: integer
 
-  offsetClause_OPTIONAL:
-    - include: offsetClause
-    - include: else_pop
-
-  offsetClause_REQUIRED:
-    - include: offsetClause
-    - _throw: true
-
   offsetClause:
-    - _case: offset
+    - word: offset
       type: modifier
       set: integer
 
   valuesClause:
-    - _case: values
+    - word: values
       type: qualifier
       set: dataBlock
-    - include: else_pop
+    - bail
 
   update:
-    - _goto: [update_AFTER_PROLOGUE, prologue]
+    - goto: [update_AFTER_PROLOGUE, prologue]
 
   update_AFTER_PROLOGUE:
-    - match: '{{load_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, load]
-    - match: '{{clear_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, clear]
-    - match: '{{drop_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, drop]
-    - match: '{{add_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, add]
-    - match: '{{move_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, move]
-    - match: '{{copy_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, copy]
-    - match: '{{create_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, create]
-    - match: '{{insert_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, insert]
-    - match: '{{delete_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, delete]
-    - match: '{{with_LOOKAHEAD}}'
-      set: [update_AFTER_UPDATE_1, modify]
-    - _throw: true
+    - switch:
+        - load: [update_AFTER_UPDATE_1, load]
+        - clear: [update_AFTER_UPDATE_1, clear]
+        - drop: [update_AFTER_UPDATE_1, drop]
+        - add: [update_AFTER_UPDATE_1, add]
+        - move: [update_AFTER_UPDATE_1, move]
+        - copy: [update_AFTER_UPDATE_1, copy]
+        - create: [update_AFTER_UPDATE_1, create]
+        - insert: [update_AFTER_UPDATE_1, insert]
+        - delete: [update_AFTER_UPDATE_1, delete]
+        - modify: [update_AFTER_UPDATE_1, modify]
 
   update_AFTER_UPDATE_1:
     - match: ';'
-      scope: punctuation.terminator.update.rq
+      scope: punctuation.terminator.update.SYNTAX
       set: update
-    - include: else_pop
+    - bail
 
   load:
-    - _case: load
+    - word: load
       type: qualifier
       set: [load_AFTER_NAMED_NODE, namedNode, silent_OPTIONAL]
-    - _throw: true
 
   load_AFTER_NAMED_NODE:
-    - _case: into
+    - word: into
       type: modifier
       set: graphRef
-    - include: else_pop
+    - bail
 
   silent_OPTIONAL:
-    - _case: silent
+    - word: silent
       type: modifier
       pop: true
-    - include: else_pop
+    - bail
 
   clear:
-    - _case: clear
+    - word: clear
       type: qualifier
       set: [graphRefAll, silent_OPTIONAL]
-    - _throw: true
 
   drop:
-    - _case: drop
+    - word: drop
       type: qualifier
       set: [graphRefAll, silent_OPTIONAL]
-    - _throw: true
-
-  create:
-    - _case: create
-      type: qualifier
-      set: [graphRef, silent_OPTIONAL]
-    - _throw: true
 
   add:
-    - _case: add
+    - word: add
       type: qualifier
       set: addMoveCopy_AFTER_ACTION
-    - _throw: true
 
   move:
-    - _case: move
+    - word: move
       type: qualifier
       set: addMoveCopy_AFTER_ACTION
-    - _throw: true
-
-  copy:
-    - _case: copy
-      type: qualifier
-      set: addMoveCopy_AFTER_ACTION
-    - _throw: true
 
   addMoveCopy_AFTER_ACTION:
-    - _goto: [addMoveCopy_AFTER_GRAPH_OR_DEFAULT, graphOrDefault]
+    - goto: [addMoveCopy_AFTER_GRAPH_OR_DEFAULT, graphOrDefault]
 
   addMoveCopy_AFTER_GRAPH_OR_DEFAULT:
-    - _case: to
+    - word: to
       type: qualifier
       set: graphOrDefault
-    - _throw: true
+
+  copy:
+    - word: copy
+      type: qualifier
+      set: addMoveCopy_AFTER_ACTION
+
+  create:
+    - word: create
+      type: qualifier
+      set: [graphRef, silent_OPTIONAL]
 
   insert:
-    - _case: insert
+    - word: insert
       type: qualifier
       set: insert_AFTER_INSERT
-    - _throw: true
 
   insert_AFTER_INSERT:
     - include: insertDeleteData_AFTER_ACTION
-    - match: '{{openBrace_LOOKAHEAD}}'
-      set: [modify_AFTER_INSERT_CLAUSE, quadPatternData]
-    - _throw: true
+    - switch:
+        - quadPatternData: [modify_AFTER_INSERT_CLAUSE, quadPatternData]
 
   insertDeleteData_AFTER_ACTION:
-    - _case: data
+    - word: data
       type: qualifier
       set: quadPatternData
 
   delete:
-    - _case: delete
+    - word: delete
       type: qualifier
       set: delete_AFTER_DELETE
-    - _throw: true
 
   delete_AFTER_DELETE:
     - include: insertDeleteData_AFTER_ACTION
-    - _case: where
+    - word: where
       type: modifier
       set: quadPatternData
-    - match: '{{openBrace_LOOKAHEAD}}'
-      set: [modify_AFTER_INSERT_CLAUSE, insertClause_OPTIONAL, quadPatternData]
-    - _throw: true
+    - switch:
+        - quadPatternData: [modify_AFTER_INSERT_CLAUSE, insertClause_OPTIONAL, quadPatternData]
 
   modify:
-    - _case: with
+    - word: with
       type: modifier
       set: [modify_AFTER_NAMED_NODE, namedNode]
-    - _goto: modify_AFTER_NAMED_NODE
+    - goto: modify_AFTER_NAMED_NODE
 
   modify_AFTER_NAMED_NODE:
-    - match: '{{delete_LOOKAHEAD}}'
-      set: [modify_AFTER_INSERT_CLAUSE, insertClause_OPTIONAL, deleteClause]
-    - match: '{{insert_LOOKAHEAD}}'
-      set: [modify_AFTER_INSERT_CLAUSE, insertClause]
-    - _goto: modify_AFTER_INSERT_CLAUSE
+    - switch:
+        - delete: [modify_AFTER_INSERT_CLAUSE, insertClause_OPTIONAL, deleteClause]
+        - insert: [modify_AFTER_INSERT_CLAUSE, insertClause]
+    - goto: modify_AFTER_INSERT_CLAUSE
 
   modify_AFTER_INSERT_CLAUSE:
-    - _goto: [modify_AFTER_USING_CLAUSE, usingClause]
+    - goto: [modify_AFTER_USING_CLAUSE, usingClause]
 
   modify_AFTER_USING_CLAUSE:
-    - _case: where
+    - word: where
       type: modifier
       set: groupGraphPattern
-    - _throw: true
 
   deleteClause:
-    - _case: delete
+    - word: delete
       type: qualifier
       set: quadPatternData
-    - _throw: true
 
   insertClause_OPTIONAL:
     - match: '{{insert_LOOKAHEAD}}'
       set: insertClause
-    - include: else_pop
+    - bail
 
   insertClause:
-    - _case: insert
+    - word: insert
       type: qualifier
       set: quadPatternData
-    - _throw: true
 
   usingClause:
-    - _case: using
+    - word: using
       type: qualifier
       push: usingClause_AFTER_USING
-    - include: else_pop
+    - bail
 
   usingClause_AFTER_USING:
-    - _case: named
+    - word: named
       type: qualifier
       set: namedNode
-    - match: '{{namedNode_LOOKAHEAD}}'
-      set: namedNode
-    - _throw: true
+    - switch:
+        - namedNode
 
   graphOrDefault:
-    - _case: default
-      scope: support.constant.graph.default.rq
+    - word: default
+      scope: support.constant.graph.default.SYNTAX
       pop: true
-    - _case: graph
+    - word: graph
       type: qualifier
       set: namedNode
-    - match: '{{namedNode_LOOKAHEAD}}'
-      set: namedNode
-    - _throw: true
+    - switch:
+        - namedNode
 
   graphRef:
-    - _case: graph
+    - word: graph
       type: modifier
       set: namedNode
-    - _throw: true
 
   graphRefAll:
-    - match: '{{graph_LOOKAHEAD}}'
-      set: graphRef
-    - _case: default
-      scope: support.constant.graph.default.rq
+    - switch:
+        - graphRef
+    - word: default
+      scope: support.constant.graph.default.SYNTAX
       pop: true
-    - _case: named
-      scope: support.constant.graph.named.rq
+    - word: named
+      scope: support.constant.graph.named.SYNTAX
       pop: true
-    - _case: all
-      scope: support.constant.graph.all.rq
+    - word: all
+      scope: support.constant.graph.all.SYNTAX
       pop: true
-    - _throw: true
 
   quadPatternData:
-    - _open_brace: section.quads
+    - open.brace: section.quads
       set: [quadPatternData_AFTER_QUADS, quads]
-    - _throw: true
 
   quadPatternData_AFTER_QUADS:
-    - _close_brace: section.quads
+    - close.brace: section.quads
       pop: true
-    - _throw: true
 
   quads:
-    - _goto: [quads_AFTER_TRIPLES_TEMPLATE, triplesTemplate]
+    - goto: [quads_AFTER_TRIPLES_TEMPLATE, triplesTemplate]
 
   quads_AFTER_TRIPLES_TEMPLATE:
-    - match: '{{graph_LOOKAHEAD}}'
-      set: [quads_AFTER_QUADS_NOT_TRIPLES, quadsNotTriples]
-    - include: else_pop
+    - switch:
+        - quadsNotTriples: [quads_AFTER_QUADS_NOT_TRIPLES, quadsNotTriples]
+    - bail
 
   quads_AFTER_QUADS_NOT_TRIPLES:
     - match: '\.'
-      scope: punctuation.terminator.quad.rq
+      scope: punctuation.terminator.quad.SYNTAX
       set: triplesTemplate
-    - _goto: triplesTemplate
+    - goto: triplesTemplate
 
   quadsNotTriples:
-    - _case: graph
+    - word: graph
       type: modifier
       set: [quadsNotTriples_AFTER_VAR_OR_NAMED_NODE, varOrNamedNode]
-    - _throw: true
 
   quadsNotTriples_AFTER_VAR_OR_NAMED_NODE:
-    - _open_brace: section.quads
+    - open.brace: section.quads
       set: [quadsNotTriples_AFTER_TRIPLES_TEMPLATE, triplesTemplate]
-    - _throw: true
 
   quadsNotTriples_AFTER_TRIPLES_TEMPLATE:
-    - _close_brace: section.quads
+    - close.brace: section.quads
       pop: true
-    - _throw: true
 
   triplesTemplate:
-    - match: '{{triplesSameSubject_LOOKAHEAD}}'
-      set: [triplesTemplate_AFTER_TRIPLES_SAME_SUBJECT, triplesSameSubject]
-    - include: else_pop
+    - switch:
+        - triplesSameSubject: [triplesTemplate_AFTER_TRIPLES_SAME_SUBJECT, triplesSameSubject]
+    - bail
 
   triplesTemplate_AFTER_TRIPLES_SAME_SUBJECT:
     - match: '\.'
-      scope: punctuation.terminator.triple.rq
+      scope: punctuation.terminator.triple.SYNTAX
       set: triplesTemplate
-    - include: else_pop
+    - bail
 
   groupGraphPattern:
-    - meta_content_scope: meta.block.pattern.graph.group.rq
-    - _open_brace: section.group
+    - meta_content_scope: meta.block.pattern.graph.group.SYNTAX
+    - open.brace: section.group
       set: groupGraphPattern_AFTER_BEGIN
-    - _throw: true
 
   groupGraphPattern_AFTER_BEGIN:
-    - match: '{{selectQuery_LOOKAHEAD}}'
-      set: [groupGraphPattern_TERMINATE, subSelect]
-    - _goto: [groupGraphPattern_TERMINATE, groupGraphPatternSub]
+    - switch:
+        - selectQuery: [groupGraphPattern_TERMINATE, subSelect]
+    - goto: [groupGraphPattern_TERMINATE, groupGraphPatternSub]
 
   groupGraphPatternSub:
-    - _goto: [groupGraphPatternSub_AFTER_TRIPLES_BLOCK, triplesBlock_OPTIONAL]
+    - goto: [groupGraphPatternSub_AFTER_TRIPLES_BLOCK, triplesBlock]
 
   groupGraphPatternSub_AFTER_TRIPLES_BLOCK:
     - match: '{{graphPatternNotTriples_LOOKAHEAD}}'
       set:
         - groupGraphPatternSub_AFTER_TRIPLES_BLOCK
-        - triplesBlock_OPTIONAL
+        - triplesBlock
         - groupGraphPatternSub_AFTER_GRAPH_PATTERN_NOT_TRIPLES
         - graphPatternNotTriples
-    - include: else_pop
+    - bail
 
   groupGraphPatternSub_AFTER_GRAPH_PATTERN_NOT_TRIPLES:
     - match: '\.'
-      scope: punctuation.terminator.graph-pattern.rq
+      scope: punctuation.terminator.graph-pattern.SYNTAX
       pop: true
-    - include: else_pop
+    - bail
 
   groupGraphPattern_TERMINATE:
-    - _close_brace: section.group
+    - close.brace: section.group
       pop: true
-    - _throw: false
-
-
-  triplesBlock_OPTIONAL:
-    - match: '{{triplesBlock_LOOKAHEAD}}'
-      set: triplesBlock
-    - include: else_pop
-
-  triplesBlock_REQUIRED:
-    - match: '{{triplesBlock_LOOKAHEAD}}'
-      set: triplesBlock
-    - _throw: true
+    - retry
 
   triplesBlock:
-    - _goto: [triplesBlock_AFTER_TRIPLES_SAME_SUBJECT_PATH, triplesSameSubjectPath]
+    - switch:
+        - triplesSameSubjectPath: [triplesBlock_AFTER_TRIPLES_SAME_SUBJECT_PATH, triplesSameSubjectPath]
+    - bail
 
   triplesBlock_AFTER_TRIPLES_SAME_SUBJECT_PATH:
     - match: '\.'
-      scope: punctuation.terminator.triple.rq
-      set: triplesBlock_OPTIONAL
-    - include: else_pop
+      scope: punctuation.terminator.triple.SYNTAX
+      set: triplesBlock
+    - bail
 
   graphPatternNotTriples:
-    - match: '{{openBrace_LOOKAHEAD}}'
-      set: [groupOrUnionGraphPattern_AFTER_GROUP_GRAPH_PATTERN, groupGraphPattern]
-    - _case: optional
-      type: modifier
+    - switch:
+        - groupGraphPattern: groupOrUnionGraphPattern
+    - words:
+        - optional
+        - minus
       set: groupGraphPattern
-    - _case: minus
-      type: modifier
-      set: groupGraphPattern
-    - _case: graph
+      mask: meta.graph-pattern.WORD.SYNTAX
+    - word: graph
       type: modifier
       set: graphGraphPattern_AFTER_GRAPH
-    - _case: service
+    - word: service
       type: qualifier
       set: serviceGraphPattern_AFTER_SERVICE
-    - _case: filter
+    - word: filter
       type: modifier
       set: filter_AFTER_FILTER
-    - _case: bind
+    - word: bind
       type: modifier
       set: bind_AFTER_BIND
-    - _case: values
+    - word: values
       type: qualifier
       set: dataBlock
-    - _throw: true
 
   graphGraphPattern_AFTER_GRAPH:
-    - match: '{{var_LOOKAHEAD}}'
-      set: [groupGraphPattern, var]
-    - match: '{{namedNode_LOOKAHEAD}}'
-      set: [groupGraphPattern, namedNode]
-    - _throw: true
+    - switch:
+        - var: [groupGraphPattern, var]
+        - namedNode: [groupGraphPattern, namedNodeGraphPattern]
+
+  namedNodeGraphPattern:
+    - goto: [namedNode]
+      mask: meta.term.role.graph.pattern.SYNTAX
 
   serviceGraphPattern_AFTER_SERVICE:
-    - _case: silent
+    - word: silent
       type: modifier
       set: serviceGraphPattern_AFTER_SILENT
-    - _goto: serviceGraphPattern_AFTER_SILENT
+    - goto: serviceGraphPattern_AFTER_SILENT
 
   serviceGraphPattern_AFTER_SILENT:
-    - _goto: [groupGraphPattern, varOrNamedNode]
+    - goto: [groupGraphPattern, varOrNamedNode]
 
   bind_AFTER_BIND:
-    - _open_paren: section.bind
+    - open.paren: section.bind
       set: [bind_AFTER_EXPRESSION, expression]
-    - _throw: true
 
   bind_AFTER_EXPRESSION:
-    - _case: as
-      scope: storage.type.variable.as.select-clause.rq
+    - word: as
+      scope: storage.type.variable.as.select-clause.SYNTAX
       set: [bind_AFTER_VAR, var]
-    - _throw: true
 
   bind_AFTER_VAR:
-    - _close_paren: section.bind
+    - close.paren: section.bind
       pop: true
-    - _throw: true
 
   dataBlock:
-    - match: '{{var_LOOKAHEAD}}'
-      set: inlineDataOneVar
-    - match: '{{openParen_LOOKAHEAD}}'
-      set: inlineDataFull
-    - _throw: true
+    - switch:
+        - inlineDataOneVar
+        - inlineDataFull
 
   inlineDataOneVar:
-    - _goto: [inlineDataOneVar_AFTER_VAR, var]
+    - lookaheads: [var]
+    - goto: [inlineDataOneVar_AFTER_VAR, var]
 
   inlineDataOneVar_AFTER_VAR:
-    - _open_brace: section.block.values-data.one-var
+    - open.brace: section.block.values-data.one-var
       set: [inlineDataOneVar_AFTER_DATA_BLOCK_VALUE, dataBlockValue]
-    - _throw: true
 
   inlineDataOneVar_AFTER_DATA_BLOCK_VALUE:
-    - _close_brace: section.block.values-data.one-var
+    - close.brace: section.block.values-data.one-var
       pop: true
-    - _throw: true
 
   inlineDataFull:
-    - _open_paren: section.inline-data-vars
+    - open.paren: section.inline-data-vars
       set: inlineDataFull_AFTER_BEGIN
-    - _throw: true
 
   inlineDataFull_AFTER_BEGIN:
-    - _close_paren: section.inline-data-vars
+    - close.paren: section.inline-data-vars
       set: inlineDataFull_AFTER_VARS
     - match: '{{var_LOOKAHEAD}}'
       push: var
-    - _throw: true
 
   inlineDataFull_AFTER_VARS:
-    - _open_brace: section.block.values-data.full
+    - open.brace: section.block.values-data.full
       set: inlineDataFull_AFTER_BRACE
-    - _throw: true
 
   inlineDataFull_AFTER_BRACE:
-    - _open_paren: section.data
+    - open.paren: section.data
       set: [inlineDataFull_AFTER_DATA_BLOCK_VALUE, dataBlockValue]
-    - _close_brace: section.block.values-data.full
+    - close.brace: section.block.values-data.full
       pop: true
-    - _throw: true
 
   inlineDataFull_AFTER_DATA_BLOCK_VALUE:
-    - _close_paren: section.data
+    - close.paren: section.data
       set: inlineDataFull_AFTER_BRACE
-    - _throw: true
 
   dataBlockValue:
-    - _case: undef
-      scope: support.constant.undef.rq
+    - word: undef
+      scope: support.constant.undef.SYNTAX
     - match: '{{namedNode_LOOKAHEAD}}'
       push: namedNode
     - match: '{{literal_LOOKAHEAD}}'
       push: literal
-    - include: else_pop
+    - bail
 
-  # minusGraphPattern:
+  groupOrUnionGraphPattern:
+    - goto: [groupOrUnionGraphPattern_MORE, groupGraphPattern]
 
-  groupOrUnionGraphPattern_AFTER_GROUP_GRAPH_PATTERN:
-    - _case: union
+  groupOrUnionGraphPattern_MORE:
+    - word: union
       type: qualifier
-      push: groupGraphPattern
-    - include: else_pop
+      set: groupOrUnionGraphPattern
+    - bail
 
   filter_AFTER_FILTER:
-    - match: '{{openParen_LOOKAHEAD}}'
-      set: brackettedExpression
-    - match: '{{namedNodeFunction_LOOKAHEAD}}'
-      set: functionCall
-    - match: '{{builtInCall_LOOKAHEAD}}'
-      set: builtInCall
-    - _throw: true
+    - switch:
+        - brackettedExpression
+        - namedNodeFunction: functionCall
+        - builtInCall
 
   constraint:
-    - match: '{{openParen_LOOKAHEAD}}'
-      set: brackettedExpression
-    - match: '{{builtInCall_LOOKAHEAD}}'
-      set: builtInCall
-    - match: '{{namedNodeFunction_LOOKAHEAD}}'
-      set: functionCall
-    - _throw: true
+    - switch:
+        - brackettedExpression
+        - builtInCall
+        - namedNodeFunction: functionCall
 
   functionCall:
-    - meta_content_scope: meta.function-call.rq
-    - _namedNode:
-        scope: function-call
-        set: [functionCall_TERMINATE, argList]
-    - _throw: true
+    - meta_content_scope: meta.function-call.SYNTAX
+    - goto: [functionCall_TERMINATE, argList, namedNodeFunctionCall]
+
+  namedNodeFunctionCall:
+    - goto: [namedNode]
+      mask: meta.term.role.function-call.SYNTAX
 
   functionCall_TERMINATE:
-    - meta_content_scope: meta.function-call.rq
-    - match: '{{PLA_anything}}'
-      pop: true
+    - meta_content_scope: meta.function-call.SYNTAX
+    - bail
 
   argList:
-    - _open_paren: definition.arguments
+    - open.paren: definition.arguments
       set: [argList_AFTER_ARGUMENT, argList_AFTER_BEGIN]
-    - include: else_pop
+    - bail
 
   argList_AFTER_BEGIN:
     - match: '(?=\))'
       pop: true
-    - _case: distinct
-      scope: keyword.operator.word.modifier.distinct.function-call.rq
+    - word: distinct
+      scope: keyword.operator.word.modifier.distinct.function-call.SYNTAX
       set: expression
-    - _goto: expression
+    - goto: expression
 
   argList_AFTER_ARGUMENT:
     - match: ','
-      scope: punctuation.separator.argument.rq
+      scope: punctuation.separator.argument.SYNTAX
       push: expression
-    - _close_paren: definition.arguments
+    - close.paren: definition.arguments
       pop: true
-    - _throw: true
 
   expressionList:
-    - _open_paren: definition.expression
+    - open.paren: definition.expression
       set: expressionList_AFTER_BEGIN
-    - _throw: true
 
   expressionList_AFTER_BEGIN:
-    - _close_paren: definition.expression
+    - close.paren: definition.expression
       pop: true
-    - _goto: [expressionList_AFTER_EXPRESSION, expression]
+    - goto: [expressionList_AFTER_EXPRESSION, expression]
 
   expressionList_AFTER_EXPRESSION:
     - match: ','
-      scope: punctuation.separator.expression.rq
+      scope: punctuation.separator.expression.SYNTAX
       push: expression
-    - _close_paren: definition.expression
+    - close.paren: definition.expression
       pop: true
-    - _throw: true
 
   constructTemplate:
-    - _open_brace: section.triples
+    - open.brace: section.triples
       set: constructTriples_OPTIONAL
-    - _throw: true
 
   constructTemplate_AFTER_TRIPLES:
-    - _close_brace: section.triples
+    - close.brace: section.triples
       pop: true
-    - _throw: true
 
   constructTriples_OPTIONAL:
     - match: '{{triplesSameSubject_LOOKAHEAD}}'
       set: [constructTriples_AFTER_TRIPLES_SAME_SUBJECT, triplesSameSubject]
-    - include: else_pop
+    - bail
 
   constructTriples_AFTER_TRIPLES_SAME_SUBJECT:
     - match: '\.'
-      scope: punctuation.terminator.triple.rq
+      scope: punctuation.terminator.triple.SYNTAX
       set: constructTriples_OPTIONAL
-    - include: else_pop
+    - bail
 
   triplesSameSubject:
-    - _switch:
+    - switch:
         - hollowAnonymousBlankNode: [propertyListNotEmpty, hollowAnonymousBlankNode]
         - anonymousBlankNode: anonymousBlankNode_LATENT_PL_PLNE
         - varOrTerm: [propertyListNotEmpty_REQUIRED, varOrTerm]
         - triplesNode: [propertyList, triplesNode]
-    - _throw: true
 
   anonymousBlankNode_LATENT:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: anonymousBlankNode_LATENT_AFTER_BEGIN
-    - _throw: true
 
   anonymousBlankNode_LATENT_AFTER_BEGIN:
-    - _close_bracket: definition.anonymous-blank-node.hack
+    - close.bracket: definition.anonymous-blank-node.hack
       pop: true
-    - _goto: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
+    - goto: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
 
   anonymousBlankNodePath_LATENT:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: anonymousBlankNodePath_LATENT_AFTER_BEGIN
-    - _throw: true
 
   anonymousBlankNodePath_LATENT_AFTER_BEGIN:
-    - _close_bracket: definition.anonymous-blank-node.hack
+    - close.bracket: definition.anonymous-blank-node.hack
       pop: true
-    - _goto: [blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
+    - goto: [blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
 
   blankNodePropertyList_LATENT:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: blankNodePropertyList_LATENT_AFTER_BEGIN
-    - _throw: true
 
   blankNodePropertyList_LATENT_AFTER_BEGIN:
-    - _close_bracket: definition.anonymous-blank-node.hack
+    - close.bracket: definition.anonymous-blank-node.hack
 
       set: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
-    - _throw: true
 
   anonymousBlankNode_LATENT_PL_PLNE:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: anonymousBlankNode_LATENT_PL_PLNE_AFTER_BEGIN
-    - _throw: true
 
   anonymousBlankNode_LATENT_PL_PLNE_AFTER_BEGIN:
-    - _close_bracket: definition.anonymous-blank-node.hack
+    - close.bracket: definition.anonymous-blank-node.hack
       set: propertyListNotEmpty
-    - _goto: [propertyList, blankNodePropertyList_TERMINATE, propertyListNotEmpty]
+    - goto: [propertyList, blankNodePropertyList_TERMINATE, propertyListNotEmpty]
 
   triplesSameSubject_AFTER_OPEN_BRACKET:
-    - _close_bracket: definition.anonymous-blank-node
+    - close.bracket: definition.anonymous-blank-node
       set: propertyListNotEmpty
-    - _goto: [propertyList, triplesNode]
+    - goto: [propertyList, triplesNode]
 
   propertyList:
     - include: propertyListNotEmpty
-    - include: else_pop
+    - bail
 
   propertyListNotEmpty_REQUIRED:
     - include: propertyListNotEmpty
-    - _throw: true
 
   propertyListNotEmpty:
     - match: '{{verb_LOOKAHEAD}}'
@@ -1146,16 +959,16 @@ contexts:
 
   propertyListNotEmpty_AFTER_OBJECT_LIST:
     - match: ';'
-      scope: punctuation.separator.pair.rq
+      scope: punctuation.separator.pair.SYNTAX
       set: propertyListNotEmpty_AFTER_SEMICOLON
-    - include: else_pop
+    - bail
 
   propertyListNotEmpty_AFTER_SEMICOLON:
     - match: '{{verb_LOOKAHEAD}}'
       set: [propertyListNotEmpty_AFTER_OBJECT_LIST, objectList, verb]
     - match: '(?=;)'
       set: propertyListNotEmpty_AFTER_OBJECT_LIST
-    - include: else_pop
+    - bail
 
   verb:
     - match: '{{var_LOOKAHEAD}}'
@@ -1164,400 +977,369 @@ contexts:
       set: namedNode
     - match: '{{a_LOOKAHEAD}}'
       set: a
-    - _throw: true
 
   object:
-    - _goto: graphNode
+    - goto: graphNode
 
   triplesSameSubjectPath:
-    - _switch:
+    - switch:
         - hollowAnonymousBlankNode: [propertyListPathNotEmpty, hollowAnonymousBlankNode]
         - anonymousBlankNode: anonymousBlankNode_LATENT_PLP_PLPNE
         - varOrTerm: [propertyListPathNotEmpty, varOrTerm]
         - triplesNode: [propertyListPath, triplesNodePath]
-    - _throw: true
 
   anonymousBlankNode_LATENT_PLP_PLPNE:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: anonymousBlankNode_LATENT_PLP_PLPNE_AFTER_BEGIN
-    - _throw: true
 
   anonymousBlankNode_LATENT_PLP_PLPNE_AFTER_BEGIN:
-    - _close_bracket: definition.anonymous-blank-node.hack
+    - close.bracket: definition.anonymous-blank-node.hack
       set: propertyListPathNotEmpty
-    - _goto: [propertyListPath, blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
+    - goto: [propertyListPath, blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
 
   propertyListPath:
     - match: '{{verbPathOrSimple_LOOKAHEAD}}'
       set: propertyListPathNotEmpty
-    - include: else_pop
+    - bail
 
   propertyListPathNotEmpty:
-    - _goto: [propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH, objectListPath, verbPathOrSimple]
+    - goto: [propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH, objectListPath, verbPathOrSimple]
 
   propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH:
     - match: ';'
-      scope: punctuation.separator.pair.rq
+      scope: punctuation.separator.pair.SYNTAX
       set: propertyListPathNotEmpty_AFTER_SEMICOLON
-    - include: else_pop
+    - bail
 
   propertyListPathNotEmpty_AFTER_SEMICOLON:
     - match: '{{verb_LOOKAHEAD}}'
       set: [propertyListPathNotEmpty_AFTER_OBJECT_LIST_PATH, objectList, verb]
-    - include: else_pop
+    - bail
 
   verbPathOrSimple:
     - match: '{{path_LOOKAHEAD}}'
       set: path
     - match: '{{var_LOOKAHEAD}}'
       set: var
-    - _throw: true
 
   objectListPath:
-    - _goto: [objectListPath_AFTER_OBJECT_PATH, objectPath]
+    - goto: [objectListPath_MORE, objectPath]
 
-  objectListPath_AFTER_OBJECT_PATH:
+  objectListPath_MORE:
     - match: ','
-      scope: punctuation.separator.object.rq
-      push: objectPath
-    - include: else_pop
+      scope: punctuation.separator.object.SYNTAX
+      set: objectListPath
+    - bail
 
   objectPath:
-    - _goto: graphNodePath
+    - goto: graphNodePath
 
   path:
-    - _goto: [pathAlternative_AFTER_SEQUENCE, pathSequence]
+    - goto: [pathAlternative_AFTER_SEQUENCE*, pathSequence]
 
   pathAlternative_AFTER_SEQUENCE:
-    - meta_include_prototype: false
+    # - alone
     - match: '\|'
-      scope: keyword.operator.path.alternative.rq
+      scope: keyword.operator.path.alternative.SYNTAX
       set: pathSequence
-    - include: else_pop
+    # - bail
 
   pathSequence:
-    - _goto: [pathSequence_AFTER_FRAGMENT, pathEltOrInverse]
+    - goto: [pathSequence_AFTER_FRAGMENT*, pathEltOrInverse]
 
   pathSequence_AFTER_FRAGMENT:
-    - meta_include_prototype: false
+    # - alone
     - match: '\/'
-      scope: keyword.operator.path.separator.rq
-      push: pathEltOrInverse
-    - include: else_pop
+      scope: keyword.operator.path.separator.SYNTAX
+      set: pathEltOrInverse
 
   pathEltOrInverse:
-    - meta_include_prototype: false
+    # - alone
     - match: '\^'
-      scope: keyword.operator.path.inverse.rq meta.path.inverse.rq
-      set: [pathInverse_META, pathElt]
-    - _goto: pathElt
-
-  pathInverse_META:
-    - meta_content_scope: meta.path.inverse.rq
-    - match: '{{PLA_anything}}'
-      pop: true
+      scope: keyword.operator.path.inverse.SYNTAX meta.path.inverse.SYNTAX
+      set: pathElt
+      mask: meta.path.inverse.SYNTAX
+    - goto: pathElt
 
   pathElt:
-    - _goto: [pathMod, pathPrimary]
+    # - alone
+    - goto: [pathMod?, pathPrimary]
 
   pathMod:
-    - meta_include_prototype: false
-    - match: '\?'
-      scope: keyword.operator.path.quantifier.zero-or-one.rq
-    - match: '\*'
-      scope: keyword.operator.path.quantifier.zero-or-more.rq
-    - match: '\+'
-      scope: keyword.operator.path.quantifier.one-or-more.rq
-    - include: else_pop
+    # - alone
+    - match: '\?{{KEYWORD_BOUNDARY}}'
+      scope: keyword.operator.path.quantifier.zero-or-one.SYNTAX
+      pop: true
+    - match: '\*{{KEYWORD_BOUNDARY}}'
+      scope: keyword.operator.path.quantifier.zero-or-more.SYNTAX
+      pop: true
+    - match: '\+{{KEYWORD_BOUNDARY}}'
+      scope: keyword.operator.path.quantifier.one-or-more.SYNTAX
+      pop: true
 
   pathPrimary:
-    - meta_include_prototype: false
+    # - alone
     - match: '!'
-      scope: keyword.operator.path.logical.not.rq meta.path.negated.rq
-      set: [pathNegatedPropertySet_META, pathNegatedPropertySet]
-    - _open_paren: section.path-group.sub
+      scope: keyword.operator.path.logical.not.SYNTAX meta.path.negated.SYNTAX
+      set: pathNegatedPropertySet
+      mask: meta.path.negated.SYNTAX
+    - open.paren: section.path-group.sub
       set: [pathPrimary_GROUP_TERMINATE, path]
     - include: predicateData
-    - _throw: true
 
   pathPrimary_GROUP_TERMINATE:
-    - meta_include_prototype: false
-    - _close_paren: section.path-group.sub
-      pop: true
-    - _throw: true
-
-  pathNegatedPropertySet_META:
-    - meta_content_scope: meta.path.negated.rq
-    - match: '{{PLA_anything}}'
+    # - alone
+    - close.paren: section.path-group.sub
       pop: true
 
   pathNegatedPropertySet:
-    - meta_include_prototype: false
-    - _open_paren: section.path
+    # - alone
+    - open.paren: section.path
       set: [pathNegatedPropertySet_AFTER_GROUP_BEGIN]
-    - _goto: pathOneInPropertySet
+    - goto: pathOneInPropertySet
 
   pathNegatedPropertySet_AFTER_GROUP_BEGIN:
-    - meta_include_prototype: false
-    - _close_paren: section.path
+    # - alone
+    - close.paren: section.path
       pop: true
-    - _goto: [pathNegatedPropertySet_GROUP_TERMINATE, pathNegatedPropertySet_AFTER_SET, pathOneInPropertySet]
+    - goto: [pathNegatedPropertySet_GROUP_TERMINATE, pathNegatedPropertySet_AFTER_SET, pathOneInPropertySet]
 
   pathNegatedPropertySet_AFTER_SET:
-    - meta_include_prototype: false
+    # - alone
     - match: '\|'
-      scope: keyword.operator.path.alternative.rq
+      scope: keyword.operator.path.alternative.SYNTAX
       set: pathOneInPropertySet
-    - include: else_pop
+    - bail
 
   pathNegatedPropertySet_GROUP_TERMINATE:
-    - meta_include_prototype: false
-    - _close_paren: section.path
+    # - alone
+    - close.paren: section.path
       pop: true
-    - _throw: true
 
   pathOneInPropertySet:
-    - meta_include_prototype: false
+    # - alone
     - match: '\^'
-      scope: keyword.operator.path.inverse.rq
+      scope: keyword.operator.path.inverse.SYNTAX
       set: pathOneInPropertySet_AFTER_INVERSE
-    - _goto: pathOneInPropertySet_AFTER_INVERSE
+    - goto: pathOneInPropertySet_AFTER_INVERSE
 
   pathOneInPropertySet_AFTER_INVERSE:
-    - meta_include_prototype: false
+    # - alone
     - include: predicateData
-    - _throw: true
 
   triplesNode:
-    - _switch:
+    - switch:
         - collection
         - anonymousBlankNode: blankNodePropertyList
-    - _throw: true
 
   blankNodePropertyList:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: [blankNodePropertyList_TERMINATE, propertyListNotEmpty]
-    - _throw: true
 
   triplesNodePath:
-    - _switch:
+    - switch:
         - collection: collectionPath
         - anonymousBlankNode: blankNodePropertyListPath
-    - _throw: true
 
   blankNodePropertyListPath:
-    - _open_bracket: definition.blank-node-property-list
+    - open.bracket: definition.blank-node-property-list
       set: [blankNodePropertyList_TERMINATE, propertyListPathNotEmpty]
-    - _throw: true
 
   collection_AFTER_BEGIN:
-    - _goto: [collection_AFTER_GRAPH_NODE, graphNode]
+    - goto: [collection_AFTER_GRAPH_NODE, graphNode]
 
   collection_AFTER_GRAPH_NODE:
-    - _close_paren: section.collection
+    - close.paren: section.collection
       pop: true
-    - _goto: [collection_AFTER_GRAPH_NODE, graphNode]
+    - goto: [collection_AFTER_GRAPH_NODE, graphNode]
 
   collectionPath:
-    - _open_paren: section.collection
+    - open.paren: section.collection
       set: [collectionPath_AFTER_GRAPH_NODE_PATH, graphNodePath]
-    - _throw: true
 
   collectionPath_AFTER_GRAPH_NODE_PATH:
-    - _close_paren: section.collection
+    - close.paren: section.collection
       pop: true
-    - _goto: [collectionPath_AFTER_GRAPH_NODE_PATH, graphNodePath]
+    - goto: [collectionPath_AFTER_GRAPH_NODE_PATH, graphNodePath]
 
   graphNode:
-    - _switch:
+    - switch:
         - hollowAnonymousBlankNode
         - anonymousBlankNode: anonymousBlankNode_LATENT
         - varOrTerm
         - triplesNode
-    - _throw: true
 
   graphNodePath:
-    - _switch:
+    - switch:
         - hollowAnonymousBlankNode
         - anonymousBlankNode: anonymousBlankNodePath_LATENT
         - varOrTerm
         - triplesNode: triplesNodePath
-    - _throw: true
 
   varOrTerm:
-    - _switch:
+    - switch:
         - var
         - term: graphTerm
-    - _throw: true
 
   varOrNamedNode:
-    - _switch: [var, namedNode]
-    - _throw: true
+    - switch:
+        - var
+        - namedNode
 
   var:
     - match: '((\?){{varName}})'
       captures:
-        1: variable.other.readwrite.var.question-mark.rq
-        2: punctuation.definition.variable.var.question-mark.rq
+        1: variable.other.readwrite.var.question-mark.SYNTAX
+        2: punctuation.definition.variable.var.question-mark.SYNTAX
       pop: true
     - match: '((\$){{varName}})'
       captures:
-        1: variable.other.readwrite.var.dollar-sign.rq
-        2: punctuation.definition.variable.var.dollar-sign.rq
+        1: variable.other.readwrite.var.dollar-sign.SYNTAX
+        2: punctuation.definition.variable.var.dollar-sign.SYNTAX
       pop: true
-    - _throw: false
+    - retry
 
   graphTerm:
-    - _case: undef
-      scope: support.constant.undef.rq
+    - word: undef
+      scope: support.constant.undef.SYNTAX
       pop: true
-    - _switch:
+    - switch:
         - namedNode
         - literal
         - blankNode
-        - openParen: nil
-    - _throw: true
+        - nil
 
   expression:
-    - match: '{{PLA_anything}}'
-      _meta: expression
-      set:
-        - conditionalOrExpression
+    - goto: conditionalOrExpression
+      mask: meta.expression.SYNTAX
 
   conditionalOrExpression:
-    - _goto: [conditionalOrExpression_AFTER_CONDITIONAL_AND_EXPRESSION, conditionalAndExpression]
+    - goto: [conditionalOrExpression_MORE, conditionalAndExpression]
 
-  conditionalOrExpression_AFTER_CONDITIONAL_AND_EXPRESSION:
+  conditionalOrExpression_MORE:
     - match: '\|\|'
-      scope: keyword.operator.conditional.or.rq
-      set: [conditionalAndExpression, valueLogical]
-    - include: else_pop
+      scope: keyword.operator.conditional.or.SYNTAX
+      set: conditionalOrExpression
+    - bail
 
   conditionalAndExpression:
-    - _goto: [conditionalAndExpression_AFTER_VALUE_LOGICAL, valueLogical]
+    - goto: [conditionalAndExpression_MORE, valueLogical]
 
-  conditionalAndExpression_AFTER_VALUE_LOGICAL:
+  conditionalAndExpression_MORE:
     - match: '&&'
-      scope: keyword.operator.conditional.and.rq
-      push: valueLogical
-    - include: else_pop
+      scope: keyword.operator.conditional.and.SYNTAX
+      set: conditionalAndExpression
+    - bail
 
   valueLogical:
-    - _goto: relationalExpression
+    - goto: relationalExpression
 
   relationalExpression:
-    - _goto: [relationalExpression_AFTER_NUMERIC_EXPRESSION, numericExpression]
+    - goto: [relationalExpression_AFTER_NUMERIC_EXPRESSION, numericExpression]
 
   relationalExpression_AFTER_NUMERIC_EXPRESSION:
     - match: '='
-      scope: keyword.operator.relational.equality.rq
+      scope: keyword.operator.relational.equality.SYNTAX
       set: numericExpression
     - match: '!='
-      scope: keyword.operator.relational.non-equality.rq
+      scope: keyword.operator.relational.non-equality.SYNTAX
       set: numericExpression
     - match: '<='
-      scope: keyword.operator.relational.less-than-or-equal-to.rq
+      scope: keyword.operator.relational.less-than-or-equal-to.SYNTAX
       set: numericExpression
     - match: '>='
-      scope: keyword.operator.relational.greater-than-or-equal-to.rq
+      scope: keyword.operator.relational.greater-than-or-equal-to.SYNTAX
       set: numericExpression
     - match: '<'
-      scope: keyword.operator.relational.less-than.rq
+      scope: keyword.operator.relational.less-than.SYNTAX
       set: numericExpression
     - match: '>'
-      scope: keyword.operator.relational.greater-than.rq
+      scope: keyword.operator.relational.greater-than.SYNTAX
       set: numericExpression
-    - _case: in
-      scope: keyword.operator.word.modifier.relational.in.rq
+    - word: in
+      scope: keyword.operator.word.modifier.relational.in.SYNTAX
       set: expressionList
-    - _case: not
-      scope: keyword.operator.word.modifier.relational.not.rq
+    - word: not
+      scope: keyword.operator.word.modifier.relational.not.SYNTAX
       set: relationalExpression_AFTER_NOT
-    - include: else_pop
+    - bail
 
   relationalExpression_AFTER_NOT:
-    - _case: in
-      scope: keyword.operator.word.modifier.relational.in.rq
+    - word: in
+      scope: keyword.operator.word.modifier.relational.in.SYNTAX
       set: expressionList
-    - _throw: true
 
   numericExpression:
-    - _goto: additiveExpression
+    - goto: additiveExpression
 
   additiveExpression:
-    - _goto: [additiveExpression_AFTER_MULTIPLICATIVE_EXPRESSION, multiplicativeExpression]
+    - goto: [additiveExpression_MORE, multiplicativeExpression]
 
-  additiveExpression_AFTER_MULTIPLICATIVE_EXPRESSION:
+  additiveExpression_MORE:
     - match: '{{numericLiteralPositive_LOOKAHEAD}}|{{numericLiteralNegative_LOOKAHEAD}}'
       push: [additiveExpression_AFTER_SIGNED_NUMERIC_LITERAL, numericLiteral]
     - match: '\+'
-      scope: keyword.operator.arithmetic.addition.rq
-      push: multiplicativeExpression
+      scope: keyword.operator.arithmetic.addition.SYNTAX
+      set: additiveExpression
     - match: '\-'
-      scope: keyword.operator.arithmetic.subtraction.rq
-      push: multiplicativeExpression
-    - include: else_pop
+      scope: keyword.operator.arithmetic.subtraction.SYNTAX
+      set: additiveExpression
+    - bail
 
   additiveExpression_AFTER_SIGNED_NUMERIC_LITERAL:
     - match: '\*'
-      scope: keyword.operator.arithmetic.multiplication.rq
+      scope: keyword.operator.arithmetic.multiplication.SYNTAX
       push: unaryExpression
     - match: '/'
-      scope: keyword.operator.arithmetic.division.rq
+      scope: keyword.operator.arithmetic.division.SYNTAX
       push: unaryExpression
-    - include: else_pop
+    - bail
 
   multiplicativeExpression:
-    - _goto: [multiplicativeExpression_AFTER_UNARY_EXPRESSION, unaryExpression]
+    - goto: [multiplicativeExpression_MORE, unaryExpression]
 
-  multiplicativeExpression_AFTER_UNARY_EXPRESSION:
+  multiplicativeExpression_MORE:
     - match: '\*'
-      scope: keyword.operator.arithmetic.multiplication.rq
-      push: unaryExpression
+      scope: keyword.operator.arithmetic.multiplication.SYNTAX
+      set: multiplicativeExpression
     - match: '/'
-      scope: keyword.operator.arithmetic.division.rq
-      push: unaryExpression
-    - include: else_pop
+      scope: keyword.operator.arithmetic.division.SYNTAX
+      set: multiplicativeExpression
+    - bail
 
   unaryExpression:
     - match: '!'
-      scope: keyword.operator.logical.not.rq
+      scope: keyword.operator.logical.not.SYNTAX
       set: primaryExpression
     - match: '\+'
-      scope: keyword.operator.arithmetic.sign.positive.rq
+      scope: keyword.operator.arithmetic.sign.positive.SYNTAX
       set: primaryExpression
     - match: '-'
-      scope: keyword.operator.arithmetic.sign.negative.rq
+      scope: keyword.operator.arithmetic.sign.negative.SYNTAX
       set: primaryExpression
-    - _goto: primaryExpression
+    - goto: primaryExpression
 
   primaryExpression:
-    - match: '{{namedNodeFunction_LOOKAHEAD}}'
-      set: functionCall
-    - match: '{{var_LOOKAHEAD}}'
-      set: var
-    - match: '{{openParen_LOOKAHEAD}}'
-      set: brackettedExpression
+    - switch:
+        - namedNodeFunction: functionCall
+        - var
+        - brackettedExpression
     - include: builtInCall
     - include: literal
-    - _namedNode:
-        scope: expression
-        pop: true
-    - _throw: true
+    - goto: namedNode
+      mask: meta.term.role.expression.SYNTAX
 
   brackettedExpression:
-    - _open_paren: definition.expression
+    - open.paren: definition.expression
       set: [brackettedExpression_TERMINATE, expression]
-    - _throw: true
 
   brackettedExpression_TERMINATE:
-    - meta_content_scope: meta.group.bracketted-expression.rq
-    - _close_paren: definition.expression
+    - meta_content_scope: meta.group.bracketted-expression.SYNTAX
+    - close.paren: definition.expression
       pop: true
-    - _throw: true
 
   builtInCall:
-    - _cases:
+    - words:
         - str
         - lang
         - datatype
@@ -1585,12 +1367,12 @@ contexts:
         - sha256
         - sha384
         - sha512
-      scope: support.function.built-in.WORD.rq
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - expression
         - builtInCallArguments
-    - _cases_camel:
+    - words.camel:
         - langMatches
         - strStarts
         - strBefore
@@ -1598,54 +1380,56 @@ contexts:
         - strLang
         - strDt
         - sameTerm
-      scope: support.function.built-in.WORD.rq
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - expression
         - builtInCall_AFTER_ARGUMENT
         - expression
         - builtInCallArguments
-    - _case: bound
-      scope: support.function.built-in.WORD.rq
+    - word: bound
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - var
         - builtInCallArguments
-    - _case: bnode
-      scope: support.function.built-in.WORD.rq
+    - word: bnode
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - optionalArgumentExpression
         - builtInCallArguments
-    - _cases:
+    - words:
         - rand
         - now
         - uuid
-      scope: support.function.built-in.WORD.rq
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - builtInCallArguments
-    - _cases: [concat, coalesce]
-      scope: support.function.built-in.WORD.rq
+    - words:
+        - concat
+        - coalesce
+      scope: support.function.built-in.WORD.SYNTAX
       set: expressionList
-    - _cases_camel:
+    - words.camel:
         - isIri
         - isUri
         - isBlank
         - isLiteral
         - isNumeric
-      scope: support.function.built-in.WORD.rq
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - expression
         - builtInCallArguments
-    - _case_camel: struuid
-      scope: support.function.built-in.WORD.rq
+    - words.camel: struuid
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - builtInCallArguments
-    - _case: if
-      scope: support.function.built-in.WORD.rq
+    - word: if
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - expression
@@ -1654,89 +1438,87 @@ contexts:
         - builtInCall_AFTER_ARGUMENT
         - expression
         - builtInCallArguments
-    - _cases: [regex, substr]
-      scope: support.function.built-in.WORD.rq
-      set:
-        - builtInCall_TERMINATE
-        - builtInCall_OPTIONAL_ARGUMENT
-        - expression
-        - builtInCall_AFTER_ARGUMENT
-        - expression
-        - builtInCallArguments
-    - _case: replace
-      scope: support.function.built-in.WORD.rq
+    - words:
+        - regex
+        - substr
+      scope: support.function.built-in.WORD.SYNTAX
       set:
         - builtInCall_TERMINATE
         - builtInCall_OPTIONAL_ARGUMENT
         - expression
         - builtInCall_AFTER_ARGUMENT
         - expression
+        - builtInCallArguments
+    - word: replace
+      scope: support.function.built-in.WORD.SYNTAX
+      set:
+        - builtInCall_TERMINATE
+        - builtInCall_OPTIONAL_ARGUMENT
+        - expression
+        - builtInCall_AFTER_ARGUMENT
+        - expression
         - builtInCall_AFTER_ARGUMENT
         - expression
         - builtInCallArguments
-    - _case: exists
-      scope: support.function.built-in.WORD.rq
+    - word: exists
+      scope: support.function.built-in.WORD.SYNTAX
       set: groupGraphPattern
-    - _case: not
-      scope: support.function.built-in.WORD.rq
+    - word: not
+      scope: support.function.built-in.WORD.SYNTAX
       set: notExistsFunc_AFTER_NOT
     - include: aggregateFunction
 
   builtInCallArguments:
-    - _open_paren: definition.arguments
+    - open.paren: definition.arguments
       pop: true
-    - _throw: true
 
   builtInCall_OPTIONAL_ARGUMENT:
     - match: ','
-      scope: punctuation.separator.argument.rq
+      scope: punctuation.separator.argument.SYNTAX
       set: expression
-    - include: else_pop
+    - bail
 
   builtInCall_AFTER_ARGUMENT:
     - match: ','
-      scope: punctuation.separator.argument.rq
+      scope: punctuation.separator.argument.SYNTAX
       pop: true
-    - _throw: true
 
   builtInCall_TERMINATE:
-    - meta_content_scope: meta.invocation.built-in.rq
-    - _close_paren: definition.arguments
+    - meta_content_scope: meta.invocation.built-in.SYNTAX
+    - close.paren: definition.arguments
       pop: true
-    - _throw: true
 
   optionalArgumentExpression:
-    - _close_paren: definition.arguments
+    - close.paren: definition.arguments
       pop: true
-    - _goto: expression
+    - goto: expression
 
 
   notExistsFunc_AFTER_NOT:
-    - _case: exists
-      scope: support.function.built-in.WORD.rq
+    - word: exists
+      scope: support.function.built-in.WORD.SYNTAX
       set: groupGraphPattern
-    - _throw: true
 
   aggregateFunction:
-    - _cases:
+    - words:
         - sum
         - min
         - max
         - avg
         - sample
-      scope: support.function.built-in.aggregate.rq
+      scope: support.function.built-in.aggregate.SYNTAX
       set:
         - aggregateFunction_TERMINATE
         - expression
         - aggregateFunctionArguments
-    - _case: count
-      scope: support.function.built-in.aggregate.rq
+    - word: count
+      scope: support.function.built-in.aggregate.SYNTAX
       set:
         - aggregateFunction_TERMINATE
         - countExpression
         - aggregateFunctionArguments
-    - _case: group_concat
-      scope: support.function.built-in.aggregate.rq
+    - word: group_concat
+      scope: support.function.built-in.aggregate.SYNTAX
       set:
         - aggregateFunction_TERMINATE
         - groupConcatOption
@@ -1744,64 +1526,56 @@ contexts:
         - aggregateFunctionArguments
 
   aggregateFunction_TERMINATE:
-    - meta_content_scope: meta.invocation.function-call.aggregate.rq
-    - _goto: builtInCall_TERMINATE
+    - meta_content_scope: meta.invocation.function-call.aggregate.SYNTAX
+    - goto: builtInCall_TERMINATE
 
   aggregateFunctionArguments:
-    - _open_paren: definition.arguments
+    - open.paren: definition.arguments
       set: aggregateFunctionArguments_AFTER_BEGIN
-    - _throw: true
 
   aggregateFunctionArguments_AFTER_BEGIN:
-    - _case: distinct
-      scope: keyword.operator.word.modifier.distinct.function-call.rq
+    - word: distinct
+      scope: keyword.operator.word.modifier.distinct.function-call.SYNTAX
       pop: true
-    - match: '{{PLA_anything}}'
-      pop: true
+    - bail
 
   countExpression:
     - match: '\*'
-      scope: keyword.operator.star.count.rq
+      scope: keyword.operator.star.count.SYNTAX
       pop: true
     - include: expression
-    - _throw: true
 
   groupConcatOption:
     - match: ';'
-      scope: punctuation.separator.group-concat.rq
+      scope: punctuation.separator.group-concat.SYNTAX
       set: groupConcatOption_AFTER_SEMICOLON
-    - include: else_pop
+    - bail
 
   groupConcatOption_AFTER_SEMICOLON:
-    - _case: separator
+    - word: separator
       type: modifier
       set: groupConcatOption_AFTER_SEPARATOR
-    - _throw: true
 
   groupConcatOption_AFTER_SEPARATOR:
     - match: '='
-      scope: keyword.operator.assignment.group-concat.rq
+      scope: keyword.operator.assignment.group-concat.SYNTAX
       set: stringLiteral
-    - _throw: true
 
   blankNode:
-    - _switch:
+    - switch:
         - labeledBlankNode
         - hollowAnonymousBlankNode
-    - _throw: true
 
   integer:
     - match: '[0-9]+'
       scope: constant.numeric.integer.ttl
       pop: true
-    - _throw: true
 
   nil:
-    - _open_paren: section.collection
+    - open.paren: section.collection
       set: nil_AFTER_BEGIN
-    - _throw: true
 
   nil_AFTER_BEGIN:
-    - _close_paren: section.collection
+    - close.paren: section.collection
       pop: true
-    - include: else_pop
+    - bail
