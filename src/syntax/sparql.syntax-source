@@ -6,14 +6,17 @@ file_extensions:
 scope: source.rq
 extends: terse.syntax-source
 
+
 lookaheads:
 
   prefixedNameNamespace: '{{PN_PREFIX}}?:'
   prefixedNameLocal: '{{PN_LOCAL}}'
 
+  numericLiteralPositive: '\+\.?[0-9]'
+  numericLiteralNegative: '\-\.?[0-9]'
+
   node: [namedNode, blankNode]
 
-  varOrTerm: [var, term]
   namedNodeOrVar: [namedNode, var]
   verb: [namedNodeOrVar, a]
 
@@ -22,56 +25,26 @@ lookaheads:
 
   term: [node, literal]
 
+  unitDirective: '#\s*@unit{{KEYWORD_BOUNDARY}}'
 
-variables:
-
-  varNameStart: '(?:{{PN_CHARS_U}}|[0-9])'
-  varName: '{{varNameStart}}(?:{{varNameStart}}|\x{00b7}|\x{0300}-\x{036f}|\x{203f}-\x{2040})*'
-
-  var_LOOKAHEAD: '(?=[?$])'
-
-  numericLiteralPositive_LOOKAHEAD: '(?=\+\.?[0-9])'
-  numericLiteralNegative_LOOKAHEAD: '(?=\-\.?[0-9])'
-
-  triplesNode_LOOKAHEAD: '(?={{collection_LOOKAHEAD}}|\[)'
-
-  path_LOOKAHEAD: >-
+  path: >-
     (?x)
-      (?=
-        [!(^]
-        |{{namedNode_LOOKAHEAD}}
-        |a{{KEYWORD_BOUNDARY}}
-      )
+      [!(^]
+      |{{namedNode_LOOKAHEAD}}
+      |a{{KEYWORD_BOUNDARY}}
 
-  namedNodeFunction_LOOKAHEAD: >-
+  namedNodeFunction: >-
     (?x)
-      (?=
-        (?:
-          (?:<{{IRI_CONTENTS}}>)
-          |(?:{{prefixedNameNamespace_LOOKAHEAD}}{{prefixedNameLocal_LOOKAHEAD}})
-        )\s*\(
-      )
+      (?:
+        (?:<{{IRI_CONTENTS}}>)
+        |(?:{{prefixedNameNamespace_LOOKAHEAD}}{{prefixedNameLocal_LOOKAHEAD}})
+      )\s*\(
 
-  graphPatternNotTriples_LOOKAHEAD: >-
-    (?xi)
-      (?=
-        \{
-        |
-          (?:
-            optional
-            |graph
-            |service
-            |minus
-            |filter
-            |bind
-            |values
-          ){{KEYWORD_BOUNDARY}}
-      )
 
-  verbPathOrSimple_LOOKAHEAD: '(?={{var_LOOKAHEAD}}|{{path_LOOKAHEAD}})'
+lookaheads.i:
 
-  aggregateFunction_LOOKAHEAD: >-
-    (?xi)(?=
+  aggregateFunction: >-
+    (?x)
       (?:
         count
         |sum
@@ -82,10 +55,9 @@ variables:
         |group_concat
       )\s*\(
       |{{namedNodeFunction_LOOKAHEAD}}
-    )
 
-  builtInCall_LOOKAHEAD: >-
-    (?xi)(?=
+  builtInCall: >-
+    (?x)
       {{aggregateFunction_LOOKAHEAD}}
       |(?:
         str
@@ -124,16 +96,13 @@ variables:
         |regex
       )\s*\(
       |(?:not|exists){{KEYWORD_BOUNDARY}}
-    )
 
-  constraint_LOOKAHEAD: >-
-    (?x)(?=
-      \(\s*
-      |{{builtInCall_LOOKAHEAD}}
-      |{{namedNodeFunction_LOOKAHEAD}}
-    )
 
-  unitDirective_LOOKAHEAD: '(?=#\s*@unit\b)'
+variables:
+
+  varNameStart: '(?:{{PN_CHARS_U}}|[0-9])'
+  varName: '{{varNameStart}}(?:{{varNameStart}}|\x{00b7}|\x{0300}-\x{036f}|\x{203f}-\x{2040})*'
+
 
 contexts:
   prototype:
@@ -377,12 +346,7 @@ contexts:
   havingClause:
     - word: having
       type: modifier
-      set: [havingCondition, constraint]
-    - bail
-
-  havingCondition:
-    - match: '{{constraint_LOOKAHEAD}}'
-      push: constraint
+      set: [constraint+]
     - bail
 
   orderClause:
@@ -404,12 +368,12 @@ contexts:
       scope: support.function.built-in.sort.desc.SYNTAX
       set: [orderCondition_AFTER_CONDITION, brackettedExpression]
     - switch:
-        - constraint: [orderCondition_AFTER_CONDITION, constraint]
+        - constraint: [orderCondition_AFTER_CONDITION, constraint^]
         - var: [orderCondition_AFTER_CONDITION, var]
 
   orderCondition_AFTER_CONDITION:
-    - match: '{{constraint_LOOKAHEAD}}|{{var_LOOKAHEAD}}|(?i:(?=:asc|desc)\b)'
-      set: orderCondition
+    - switch:
+        - orderCondition
     - bail
 
   limitOffsetClauses:
@@ -565,8 +529,8 @@ contexts:
       set: quadPatternData
 
   insertClause_OPTIONAL:
-    - match: '{{insert_LOOKAHEAD}}'
-      set: insertClause
+    - switch:
+        - insertClause
     - bail
 
   insertClause:
@@ -675,12 +639,12 @@ contexts:
     - goto: [groupGraphPatternSub_AFTER_TRIPLES_BLOCK, triplesBlock]
 
   groupGraphPatternSub_AFTER_TRIPLES_BLOCK:
-    - match: '{{graphPatternNotTriples_LOOKAHEAD}}'
-      set:
-        - groupGraphPatternSub_AFTER_TRIPLES_BLOCK
-        - triplesBlock
-        - groupGraphPatternSub_AFTER_GRAPH_PATTERN_NOT_TRIPLES
-        - graphPatternNotTriples
+    - switch:
+        - graphPatternNotTriples:
+          - groupGraphPatternSub_AFTER_TRIPLES_BLOCK
+          - triplesBlock
+          - groupGraphPatternSub_AFTER_GRAPH_PATTERN_NOT_TRIPLES
+          - graphPatternNotTriples
     - bail
 
   groupGraphPatternSub_AFTER_GRAPH_PATTERN_NOT_TRIPLES:
@@ -784,8 +748,8 @@ contexts:
   inlineDataFull_AFTER_BEGIN:
     - close.paren: section.inline-data-vars
       set: inlineDataFull_AFTER_VARS
-    - match: '{{var_LOOKAHEAD}}'
-      push: var
+    - switch.push:
+        - var
 
   inlineDataFull_AFTER_VARS:
     - open.brace: section.block.values-data.full
@@ -804,10 +768,9 @@ contexts:
   dataBlockValue:
     - word: undef
       scope: support.constant.undef.SYNTAX
-    - match: '{{namedNode_LOOKAHEAD}}'
-      push: namedNode
-    - match: '{{literal_LOOKAHEAD}}'
-      push: literal
+    - switch.push:
+        - namedNode
+        - literal
     - bail
 
   groupOrUnionGraphPattern:
@@ -888,8 +851,8 @@ contexts:
       pop: true
 
   constructTriples_OPTIONAL:
-    - match: '{{triplesSameSubject_LOOKAHEAD}}'
-      set: [constructTriples_AFTER_TRIPLES_SAME_SUBJECT, triplesSameSubject]
+    - switch:
+        - triplesSameSubject: [constructTriples_AFTER_TRIPLES_SAME_SUBJECT, triplesSameSubject]
     - bail
 
   constructTriples_AFTER_TRIPLES_SAME_SUBJECT:
@@ -954,8 +917,8 @@ contexts:
     - include: propertyListNotEmpty
 
   propertyListNotEmpty:
-    - match: '{{verb_LOOKAHEAD}}'
-      set: [propertyListNotEmpty_AFTER_OBJECT_LIST, objectList, verb]
+    - switch:
+        - verb: [propertyListNotEmpty_AFTER_OBJECT_LIST, objectList, verb]
 
   propertyListNotEmpty_AFTER_OBJECT_LIST:
     - match: ';'
@@ -964,19 +927,16 @@ contexts:
     - bail
 
   propertyListNotEmpty_AFTER_SEMICOLON:
-    - match: '{{verb_LOOKAHEAD}}'
-      set: [propertyListNotEmpty_AFTER_OBJECT_LIST, objectList, verb]
-    - match: '(?=;)'
-      set: propertyListNotEmpty_AFTER_OBJECT_LIST
+    - switch:
+        - verb: [propertyListNotEmpty_AFTER_OBJECT_LIST, objectList, verb]
+        - propertyListNotEmpty_AFTER_OBJECT_LIST
     - bail
 
   verb:
-    - match: '{{var_LOOKAHEAD}}'
-      set: var
-    - match: '{{namedNode_LOOKAHEAD}}'
-      set: namedNode
-    - match: '{{a_LOOKAHEAD}}'
-      set: a
+    - switch:
+        - var
+        - namedNode
+        - a
 
   object:
     - goto: graphNode
@@ -1120,7 +1080,7 @@ contexts:
   triplesNode:
     - switch:
         - collection
-        - anonymousBlankNode: blankNodePropertyList
+        - blankNodePropertyList
 
   blankNodePropertyList:
     - open.bracket: definition.blank-node-property-list
@@ -1128,8 +1088,8 @@ contexts:
 
   triplesNodePath:
     - switch:
-        - collection: collectionPath
-        - anonymousBlankNode: blankNodePropertyListPath
+        - collectionPath
+        - blankNodePropertyListPath
 
   blankNodePropertyListPath:
     - open.bracket: definition.blank-node-property-list
@@ -1164,7 +1124,7 @@ contexts:
         - hollowAnonymousBlankNode
         - anonymousBlankNode: anonymousBlankNodePath_LATENT
         - varOrTerm
-        - triplesNode: triplesNodePath
+        - triplesNodePath
 
   varOrTerm:
     - switch:
@@ -1177,6 +1137,7 @@ contexts:
         - namedNode
 
   var:
+    - lookahead: '[?$]'
     - match: '((\?){{varName}})'
       captures:
         1: variable.other.readwrite.var.question-mark.SYNTAX
