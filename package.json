@@ -19,5 +19,6 @@
     "js-yaml": "^3.13.1",
     "plist": "^3.0.1",
     "syntax-source": "^0.1.1"
-  }
+  },
+  "dependencies": {}
 }
