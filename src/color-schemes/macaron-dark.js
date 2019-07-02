@@ -12,7 +12,7 @@ module.exports = {
 			chip: 'hsl(250, 48%, 92%)',
 
 			root_boost: 'hsl(199, 85%, 73%)',
-			scape_boost: 'hsl(344, 94%, 81%)',
+			scape_boost: 'hsl(314, 94%, 83%)',
 			flare_boost: 'hsl(42, 100%, 83%)',
 			echo_boost: 'hsl(175, 85%, 69%)',
 			chip_boost: 'hsl(250, 83%, 87%)',
@@ -115,7 +115,7 @@ module.exports = {
 		},
 
 		scape_boost: {
-
+			'variable.other.member.barename': 20,
 		},
 
 		flare: {
