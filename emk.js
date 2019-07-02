@@ -6,8 +6,6 @@ const p_package = 'development' === process.env.NODE_ENV? 'Packages/User/linked-
 
 const A_SYNTAX_DEPS_ALL = [
 	'build/context.jsonld',
-	'src/main/transform.js',
-	'src/class/syntax.js',
 ];
 
 const G_SYNTAX_DEPS = {

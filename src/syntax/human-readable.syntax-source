@@ -57,7 +57,7 @@ contexts:
     - retry
 
   rdfLiteral:
-    - goto: [rdfLiteral_AFTER_STRING_LITERAL?, stringLiteral]
+    - goto: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteral]
 
   rdfLiteral_AFTER_STRING_LITERAL:
     - meta_include_prototype: false
@@ -68,6 +68,7 @@ contexts:
     - match: '\^\^'
       scope: punctuation.separator.datatype.symbol.SYNTAX
       set: datatype
+    - bail
 
   languageTag:
     - meta_include_prototype: false

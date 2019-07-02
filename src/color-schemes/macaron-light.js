@@ -12,7 +12,7 @@ module.exports = {
 			chip: 'hsl(250, 48%, 69%)',
 
 			root_boost: 'hsl(199, 85%, 53%)',
-			scape_boost: 'hsl(344, 94%, 65%)',
+			scape_boost: 'hsl(316, 94%, 31%)',
 			flare_boost: 'hsl(42, 100%, 61%)',
 			echo_boost: 'hsl(175, 85%, 53%)',
 			chip_boost: 'hsl(250, 83%, 67%)',
@@ -34,10 +34,10 @@ module.exports = {
 			font_style: 'italic',
 		},
 
-		// inverse path
+		// negated path
 		{
 			scope: 'meta.path.negated',
-			background: 'hsla(290, 84%, 10%, 0.38)',
+			background: 'hsla(290, 84%, 70%, 0.38)',
 		},
 
 		// plus quantifier
@@ -50,12 +50,6 @@ module.exports = {
 		{
 			scope: 'storage.modifier',
 			font_style: 'italic',
-		},
-
-		// comments
-		{
-			scope: 'comment',
-			foreground: 'hsla(0, 0%, 11%, 0.6)',
 		},
 	],
 
@@ -116,7 +110,7 @@ module.exports = {
 		},
 
 		scape_boost: {
-
+			'variable.other.member.barename': 20,
 		},
 
 		flare: {
@@ -135,13 +129,16 @@ module.exports = {
 
 			// blank node property list
 			'punctuation.definition.blank-node-property-list': -30,
+			'punctuation.definition.property-list': -30,  // n3
 			'punctuation.definition.anonymous-blank-node': -45,
 
 			// terminators and separators
 			'punctuation.separator.object': -40,
 			'punctuation.separator.pair': -20,
 			'punctuation.separator.predicate-object-list': -40,
+			'punctuation.separator.property-list': -40,  // n3
 			'punctuation.terminator.triple': -100,
+			'punctuation.terminator.statement': -100,  // n3
 			'punctuation.terminator.graph-pattern': -60,
 			'punctuation.terminator.prefix-declaration': -60,
 		},

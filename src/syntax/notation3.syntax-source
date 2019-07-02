@@ -4,75 +4,50 @@ name: Notation3
 file_extensions:
   - n3
 scope: source.n3
-_extends: terse.sublime-syntax-source
+extends: terse.syntax-source
+
+
+lookaheads:
+  qName: ':|{{leadChar}}'
+  symbol: '<|{{qName_LOOKAHEAD}}'
+
+  statement_LOOKAHEAD:
+    - declaration
+    - existential
+    - universal
+    - pathItem
+
+  pathItem: '[(\[{"<]|{{boolean}}|{{numericLiteral}}|{{quickVariable}}|{{prefix}}|{{qName}}'
+
+  predicate: 'a{{KEYWORD_BOUNDARY}}|@(?:(?:a|has|is){{KEYWORD_BOUNDARY}})|<?=|=>|{{pathItem_LOOKAHEAD}}'
+
 
 variables:
-  barename: >-
-    (?x)
-      [A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
-      [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
+  leadChar: '[A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]'
+  followChar: '[\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]'
 
-  prefix: >-
-    (?x)(
-      [A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
-      [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
-    )?(:)
+  barename: '({{leadChar}}{{followChar}}*)'
 
-  quickVariable: >-
-    (?x)
-      \?[A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
-      [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
+  prefix: '{{barename}}?(:)'
 
-  quickVariable_LOOKAHEAD: '(?={{quickVariable}})'
+  quickVariable: '\?{{barename}}'
 
-  qName: >-
-    (?x)(?:{{prefix}})?
-      (
-        [A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]
-        [\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*
-      )
-
-  qName_LOOKAHEAD: '(?=[:A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}])'
+  qName: '(?:{{prefix}}){{barename}}|{{barename}}'
 
   symbol: '<|{{qName}}'
-  symbol_LOOKAHEAD: '(?=[<:A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}])'
 
   boolean: '@(true|false){{KEYWORD_BOUNDARY}}'
-  boolean_LOOKAHEAD: '(?={{boolean}})'
 
   baseDeclaration: '@base{{KEYWORD_BOUNDARY}}'
   keywordsDeclaration: '@keywords{{KEYWORD_BOUNDARY}}'
   prefixDeclaration: '@prefix{{KEYWORD_BOUNDARY}}'
 
-  baseDeclaration_LOOKAHEAD: '(?={{baseDeclaration}})'
-  keywordsDeclaration_LOOKAHEAD: '(?={{keywordsDeclaration}})'
-  prefixDeclaration_LOOKAHEAD: '(?={{prefixDeclaration}})'
-
-  declaration: '{{baseDeclaration}}|{{keywordsDeclaration}}|{{prefixDeclaration}}'
-  declaration_LOOKAHEAD: '(?={{declaration}})'
-
   existential: '@forSome{{KEYWORD_BOUNDARY}}'
-  existential_LOOKAHEAD: '(?={{existential}})'
-
   universal: '@forAll{{KEYWORD_BOUNDARY}}'
-  universal_LOOKAHEAD: '(?={{universal}})'
 
   numericLiteral: '[-+]?[0-9]'
-  # numericLiteral_LOOKAHEAD: '(?={{numericLiteral}})'
 
-  pathItem: '[(\[{"<]|{{boolean}}|{{numericLiteral}}|{{quickVariable}}|{{prefix}}|{{qName}}'
-  pathItem_LOOKAHEAD: '(?={{pathItem}})'
 
-  predicate: 'a{{KEYWORD_BOUNDARY}}|@(?:(?:a|has|is){{KEYWORD_BOUNDARY}})|<?=|=>|{{pathItem}}'
-  predicate_LOOKAHEAD: '(?={{predicate}})'
-
-  statement_LOOKAHEAD: >-
-    (?x)(?=
-      {{declaration}}
-      |{{existential}}
-      |{{universal}}
-      |{{pathItem}}
-    )
 
 contexts:
   prototype:
@@ -80,8 +55,7 @@ contexts:
     - include: comment
 
   main:
-    - match: '{{PLA_anything}}'
-      push: [statement_TERMINATE, statement]
+    - goto.push: [statement_TERMINATE, statement]
 
   iriRef:
     - match: '(<)([^>]*)(>)'
@@ -90,7 +64,6 @@ contexts:
         2: string.unquoted.iri.SYNTAX
         3: punctuation.definition.iri.end.n3
       pop: true
-    - _throw: true
 
   boolean:
     - match: '((@)true)'
@@ -103,11 +76,12 @@ contexts:
         1: constant.language.boolean.false.n3
         2: punctuation.definition.keyword.boolean.n3
       pop: true
-    - _throw: true
 
   declaration:
-    - _switch: [baseDeclaration, keywordsDeclaration, prefixDeclaration]
-    - _throw: true
+    - switch:
+        - baseDeclaration
+        - keywordsDeclaration
+        - prefixDeclaration
 
   baseDeclaration:
     - match: '((@)base)\b'
@@ -115,7 +89,6 @@ contexts:
         1: storage.type.base.n3
         2: punctuation.definition.keyword.base.n3
       set: iriRef
-    - _throw: true
 
   keywordsDeclaration:
     - match: '((@)keywords)\b'
@@ -123,7 +96,6 @@ contexts:
         1: storage.type.keywords.n3
         2: punctuation.definition.keyword.keywords.n3
       set: barenameCsl
-    - _throw: true
 
   prefixDeclaration:
     - match: '((@)prefix)\b'
@@ -131,25 +103,23 @@ contexts:
         1: storage.type.prefix.n3
         2: punctuation.definition.keyword.prefix.n3
       set: [iriRef, prefix]
-    - _throw: true
 
   barename:
     - match: '{{barename}}'
       scope: string.unquoted.barename.n3
       pop: true
-    - _throw: true
 
   barenameCsl:
     - match: '{{barename}}'
       scope: string.unquoted.barename.n3
       set: barenameCslTail
-    - include: else_pop
+    - bail
 
   barenameCslTail:
     - match: ','
       scope: punctuation.separator.barename.n3
       push: barename
-    - include: else_pop
+    - bail
 
   prefix:
     - match: '(({{PN_PREFIX}}?)(:))'
@@ -160,75 +130,74 @@ contexts:
       pop: true
 
   statement:
-    - _switch:
+    - switch:
         - declaration
-        - existential
-        - pathItem: simpleStatement
         - universal
-    - _throw: false
+        - existential
+        - simpleStatement
+    - retry
 
   statement_TERMINATE:
     - match: '\.'
       scope: punctuation.terminator.statement.n3
       pop: true
-    - _throw: false
+    - retry
 
   statementList:
-    - _switch:
+    - switch:
         - statement: [statementTail, statement]
-    - include: else_pop
+    - bail
 
   statementTail:
     - match: '(?=\.)'
       set: [statementList, statement_TERMINATE]
-    - include: else_pop
+    - bail
 
   expression:
-    - _goto: [pathTail, pathItem]
+    - goto: [pathTail, pathItem]
 
   quickVariable:
     - match: '{{quickVariable}}'
       scope: variable.other.readwrite.quick-variable.n3
       pop: true
-    - _throw: true
 
   formulaContent:
-    - _goto: [statementList]
+    - goto: [statementList]
 
   pathItem:
-    - _open_paren: section.path
+    - open.paren: section.path
       set: [pathItem_AFTER_PATH_LIST, pathList]
-    - _open_bracket: definition.property-list
+    - open.bracket: definition.property-list
       set: [pathItem_AFTER_PROPERTY_LIST, propertyList]
-    - _open_brace: section.formula
+    - open.brace: section.formula
       set: [pathItem_AFTER_FORMULA_CONTENT, formulaContent]
-    - _switch:
+    - switch:
         - boolean
-        - literal: rdfLiteral
+        - rdfLiteral
         - numericLiteral
         - quickVariable
         - symbol
-    - _throw: false
+    - retry
 
   pathItem_AFTER_PATH_LIST:
-    - _close_paren: section.path
+    - close.paren: section.path
       pop: true
-    - _throw: false
+    - retry
 
   pathItem_AFTER_PROPERTY_LIST:
-    - _close_bracket: definition.property-list
+    - close.bracket: definition.property-list
       pop: true
-    - _throw: false
+    - retry
 
   pathItem_AFTER_FORMULA_CONTENT:
-    - _close_brace: section.formula
+    - close.brace: section.formula
       pop: true
-    - _throw: false
+    - retry
 
   pathList:
-    - _switch:
+    - switch:
         - pathItem: [pathList, expression]
-    - include: else_pop
+    - bail
 
   pathTail:
     - match: '!'
@@ -237,7 +206,7 @@ contexts:
     - match: '\^'
       scope: keyword.operator.path.inverse.rq meta.path.inverse.rq
       set: expression
-    - include: else_pop
+    - bail
 
   predicate:
     - match: '<='
@@ -274,37 +243,38 @@ contexts:
         1: support.constant.predicate.of.n3
         2: punctuation.definition.keyword.predicate.of.n3
       pop: true
-    - _throw: true
 
   propertyList:
-    - _switch:
-        - predicate: [propertyListTail, objectTail, expression, predicate]
-    - include: else_pop
+    - switch:
+        - predicate: [propertyList_MORE, objectList, predicate]
+    - bail
 
-  propertyListTail:
+  propertyList_MORE:
     - match: ';'
       scope: punctuation.separator.property-list.n3
       set: propertyList
-    - include: else_pop
+    - bail
 
-  objectTail:
+  objectList:
+    - goto: [objectList_MORE, expression]
+
+  objectList_MORE:
     - match: ','
       scope: punctuation.separator.object-list.n3
-      push: expression
-    - include: else_pop
+      set: objectList
+    - bail
 
 
   simpleStatement:
-    - _goto: [propertyList, expression]
+    - goto: [propertyList, expression]
 
   symbol:
-    - _switch:
-        - iriRef: iriRef
+    - switch:
+        - iriRef
         - qName
     - match: '[A-Za-z]+'
       scope: word
       pop: true
-    - _throw: true
 
   qName:
     - match: '{{qName}}'
@@ -312,19 +282,19 @@ contexts:
         1: variable.other.readwrite.prefixed-name.namespace.n3
         2: punctuation.separator.prefixed-name.namespace.SYNTAX
         3: variable.other.member.prefixed-name.local.SYNTAX
+        4: variable.other.member.barename.SYNTAX
       pop: true
-    - _throw: true
 
   symbolCsl:
-    - _switch:
+    - switch:
         - symbol: [symbolCslTail, symbol]
-    - include: else_pop
+    - bail
 
   symbolCslTail:
     - match: ','
       scope: punctuation.separator.symbol.n3
       push: symbol
-    - include: else_pop
+    - bail
 
   stringLiteral:
     - match: '"""'
@@ -333,13 +303,12 @@ contexts:
     - match: '"'
       scope: punctuation.definition.string.begin.literal.double.short.n3
       set: [rdfLiteral_AFTER_STRING_LITERAL, stringLiteralShortDouble]
-    - _throw: false
+    - retry
 
   datatype:
     - meta_include_prototype: false
-    - _switch:
-        - symbol: [symbol]
-    - _throw: true
+    - switch:
+        - symbol
 
   numericLiteral:
     # decimal
@@ -373,19 +342,18 @@ contexts:
         3: keyword.operator.arithmetic.sign.negative.n3
         4: meta.numeric.decimal.integer.n3
       set: rational_AFTER_INTEGER
-    - _throw: true
 
   rational_AFTER_INTEGER:
     - match: '/'
       scope: keyword.operator.arithmetic.division.n3
       set: rational_AFTER_DIVISION
-    - include: else_pop
+    - bail
 
   rational_AFTER_DIVISION:
     - match: '[0-9]+'
       scope: constant.numeric.integer.n3
       pop: true
-    - _throw: false
+    - retry
 
   existential:
     - match: '((@)forSome)'
@@ -393,7 +361,7 @@ contexts:
         1: support.function.built-in.for-some.n3
         2: punctuation.definition.keyword.for-some.n3
       set: symbolCsl
-    - _throw: true
+    - retry
 
   universal:
     - match: '((@)forAll)'
@@ -401,8 +369,5 @@ contexts:
         1: support.function.built-in.for-all.n3
         2: punctuation.definition.keyword.all.n3
       set: symbolCsl
-    - _throw: true
-
-
 
 

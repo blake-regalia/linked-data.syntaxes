@@ -34,7 +34,7 @@ module.exports = {
 			font_style: 'italic',
 		},
 
-		// inverse path
+		// negated path
 		{
 			scope: 'meta.path.negated',
 			background: 'hsla(290, 84%, 10%, 0.38)',
@@ -133,13 +133,16 @@ module.exports = {
 
 			// blank node property list
 			'punctuation.definition.blank-node-property-list': 5,
+			'punctuation.definition.property-list': 5,  // n3
 			'punctuation.definition.anonymous-blank-node': -45,
 
 			// terminators and separators
 			'punctuation.separator.object': -40,
 			'punctuation.separator.pair': -20,
 			'punctuation.separator.predicate-object-list': -40,
+			'punctuation.separator.property-list': -40,  // n3
 			'punctuation.terminator.triple': 100,
+			'punctuation.terminator.statement': 100,  // n3
 			'punctuation.terminator.graph-pattern': -60,
 			'punctuation.terminator.prefix-declaration': 40,
 		},

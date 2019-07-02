@@ -18,6 +18,6 @@
     "jmacs": "^1.2.7",
     "js-yaml": "^3.13.1",
     "plist": "^3.0.1",
-    "syntax-source": "^0.1.0"
+    "syntax-source": "^0.1.1"
   }
 }

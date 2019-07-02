@@ -1,36 +1,36 @@
 module.exports = {
 	globals: {
-		foreground: '#BEBBB0',
+		foreground: '#bebbb0',
 		background: '#252525',
 		gutter: '#323232',
-		caret: '#C9C9C3',
+		caret: '#c9c9c3',
 		accent: '#ff00ff',
 
 		bracket_contents_options: 'stippled_underline',
 		brackets_options: 'stippled_underline',
 
 		guide: '#323334',
-		stack_guide: '#3B3C3D',
-		active_guide: '#48494A',
+		stack_guide: '#3b3c3d',
+		active_guide: '#48494a',
 
-		line_highlight: '#3E3E3E',
-		multi_edit_highlight: '#A5EB5144',
-		find_highlight: '#E9EE5F99',
+		line_highlight: '#3e3e3e',
+		multi_edit_highlight: '#a5eb5144',
+		find_highlight: '#e9ee5f99',
 		selection: '#575757',
 	},
 
 	rules: [
 		// comment
 		{
-			foreground: '#758B99',
+			foreground: '#758b99',
 			font_style: 'italic',
 			scope: 'comment',
 		},
 
 		// invalid
 		{
-			background: '#7F225A',
-			foreground: '#BD5393',
+			background: '#7f225a',
+			foreground: '#bd5393',
 			scope: 'invalid',
 		},
 	],
