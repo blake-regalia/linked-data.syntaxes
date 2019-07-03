@@ -171,6 +171,11 @@ contexts:
       pop: true
 
   numericLiteral:
+    - include: double
+    - include: decimal
+    - include: integer
+
+  double:
     - match: '((?:(\+)|(-))?([0-9]+)(\.)([0-9]*){{EXPONENT}})'
       captures:
         1: constant.numeric.decimal.SYNTAX
@@ -194,6 +199,8 @@ contexts:
         7: meta.numeric.exponent.sign.SYNTAX
         8: meta.numeric.exponent.digit.SYNTAX
       pop: true
+
+  decimal:
     - match: '((?:(\+)|(-))?([0-9]*)(\.)([0-9]+))'
       captures:
         1: constant.numeric.decimal.SYNTAX
@@ -203,6 +210,8 @@ contexts:
         5: punctuation.decimal.SYNTAX
         6: meta.numeric.decimal.mantissa.SYNTAX
       pop: true
+
+  integer:
     - match: '((?:(\+)|(-))?([0-9]+))'
       captures:
         1: constant.numeric.integer.SYNTAX
@@ -313,6 +322,12 @@ contexts:
     - match: '\n'
       scope: invalid.illegal.newline.literal.single.short.SYNTAX
       pop: true
+
+  verb:
+    - switch:
+        - a
+        - namedNode
+      mask: meta.term.role.predicate.SYNTAX
 
   datatype:
     - meta_include_prototype: false

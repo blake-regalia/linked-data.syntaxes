@@ -1,0 +1,580 @@
+%YAML 1.2
+---
+name: ShExC
+file_extensions:
+  - shex
+scope: source.shex
+extends: terse.syntax-source
+
+variables:
+
+  # start_LOOKAHEAD: '(?i)(?=start\b)'
+
+  # shapeExprDecl_LOOKAHEAD: '{{node_LOOKAHEAD}}'
+  # notStartAction_LOOKAHEAD: '(?i)(?=start\b|{{node_LOOKAHEAD}})'
+
+  # codeDecl_LOOKAHEAD: '(?=%{{node_LOOKAHEAD}})'
+  # startActions_LOOKAHEAD: '{{codeDecl_LOOKAHEAD}}'
+
+  # statement_LOOKAHEAD: '{{directive_LOOKAHEAD}}|{{notStartAction_LOOKAHEAD}}'
+
+  # regexp_LOOKAHEAD: '(?=/[^/\n])'
+  # stringLength_LOOKAHEAD: '(?i)(?=(min|max)?length\b)'
+  # nonLiteralKind_LOOKAHEAD: '(?i)(?=iri|bnode|nonliteral)\b'
+  # stringFacet_LOOKAHEAD: '{{stringLength_LOOKAHEAD}}|'
+
+  # litNodeConstraint_LOOKAHEAD: '(?i)(?=literal\b)'
+  # nonLitNodeConstraint_LOOKAHEAD: '{{nonLiteralKind_LOOKAHEAD}}|{{stringFacet_LOOKAHEAD}}'
+
+  # shapeDefinition_LOOKAHEAD: '(?i)(?=extra\b|closed\b|\{)'
+  # shapeRef_LOOKAHEAD: '(?=@)'
+  # shapeOrRef_LOOKAHEAD: '{{shapeDefinition_LOOKAHEAD}}|{{shapeRef_LOOKAHEAD}}'
+  # shapeAtom_LOOKAHEAD: '(?={{nonLitNodeConstraint_LOOKAHEAD}}|{{litNodeConstraint_LOOKAHEAD}}|{{shapeOrRef_LOOKAHEAD}}|[(.])'
+  # shapeExpression_LOOKAHEAD: '(?i)(?=not|{{shapeAtom_LOOKAHEAD}})\b'
+
+  UNICODE: '[^%\\]|\\[%\\]|{{UCHAR}}'
+
+  # borrowed from <https://github.com/bathos/Ecmascript-Sublime>
+  ID_Continue: '{{ID_Start}}\p{Mn}\p{Mc}\p{Nd}\p{Pc}{{Other_ID_Continue}}'
+  ID_Start: '\p{L}\p{Nl}{{Other_ID_Start}}'
+  Other_ID_Continue: '··፩-፱᧚'
+  Other_ID_Start: '℘℮゛゜'
+
+  identifierName: '{{identifierStart}}{{identifierPart}}'
+  identifierPart: '(?:[\$_‍‍{{ID_Continue}}]|{{unicodeEscape}})*' # ZWN?J after _
+  identifierStart: '(?:[\$_{{ID_Start}}]|{{unicodeEscape}})'
+  unicodeEscape: '\\u(?:\h{4}|\{\h+\})'
+
+contexts:
+  prototype:
+    - include: whitespace
+    - include: comment
+
+  main:
+    - goto: shexDoc
+
+  shexDoc:
+    - goto: [shexDoc_AFTER_DIRECTIVE, directive*]
+
+  shexDoc_AFTER_DIRECTIVE:
+    - goto: [statement*, shexDoc_ACTIONS]
+    - bail
+
+  shexDoc_ACTIONS:
+    - switch:
+        - notStartAction
+        - startActions
+
+  directive:
+    - include: prefixDeclarationSparql
+    - include: baseDeclarationSparql
+    - word: import
+      scope: support.function.directive.import.SYNTAX
+      set: iriRef
+
+  notStartAction:
+    - switch:
+        - start
+        - shapeExprDecl
+
+  start:
+    - word: start
+      scope: keyword.control.start.SYNTAX
+      set: start_AFTER_START
+
+  start_AFTER_START:
+    - match: '='
+      scope: keyword.operator.assignment.start.SYNTAX
+      set: inlineShapeExpression
+
+  startActions:
+    - goto: codeDecl+
+
+  statement:
+    - switch:
+      - directive
+      - notStartAction
+
+  shapeExprDecl:
+    - goto: [shapeExprDecl_AFTER_LABEL, shapeExprLabel]
+
+  shapeExprDecl_AFTER_LABEL:
+    - switch:
+        - shapeExpression
+    - word: external
+      scope: storage.modifier.shape-expr.external.SYNTAX
+
+  shapeExpressionGroup:
+    - open.paren: shape-expression
+      set: [shapeExpressionGroup_CLOSE, shapeExpression]
+
+  shapeExpressionGroup_CLOSE:
+    - close.paren: shape-expression
+      pop: true
+
+  # [10]
+  shapeExpression:
+    - goto: shapeOr
+
+  inlineShapeExpression:
+    - goto: inlineShapeOr
+
+  shapeOr:
+    - goto: [shapeOr_MORE, shapeAnd]
+
+  shapeOr_MORE:
+    - word: or
+      scope: keyword.operator.word.or.SYNTAX
+      set: shapeOr
+    - bail
+
+  inlineShapeOr:
+    - goto: [inlineShapeOr_MORE, inlineShapeAnd]
+
+  inlineShapeOr_MORE:
+    - word: or
+      scope: keyword.operator.word.or.SYNTAX
+      set: inlineShapeOr
+    - bail
+
+  shapeAnd:
+    - goto: [shapeAnd_MORE, shapeNot]
+
+  shapeAnd_MORE:
+    - word: and
+      scope: keyword.operator.word.and.SYNTAX
+      set: shapeAnd
+    - bail
+
+  inlineShapeAnd:
+    - goto: [inlineShapeAnd_MORE, inlineShapeNot]
+
+  inlineShapeAnd_MORE:
+    - word: and
+      scope: keyword.operator.word.and.SYNTAX
+      set: inlineShapeAnd
+    - bail
+
+  shapeNot:
+    - goto: [shapeAtom, not]
+
+  inlineShapeNot:
+    - goto: [inlineShapeAtom, not]
+
+  not:
+    - word: not
+      scope: keyword.operator.word.not.SYNTAX
+      pop: true
+    - bail
+
+  shapeAtom:
+    - switch:
+        - nonLitNodeConstraint: [shapeOrRef?, nonLitNodeConstraint^]
+        - litNodeConstraint
+        - shapeOrRef: [nonLitNodeConstraint?, shapeOrRef^]
+        - shapeExpressionGroup
+        - shapeAtom_CLOSE
+
+  shapeAtom_CLOSE:
+    - match: \.
+      scope: punctuation.terminator.shape-atom.SYNTAX
+      pop: true
+
+  shapeAtomNoRef:
+    - switch:
+        - nonLitNodeConstraint: [shapeOrRef?, nonLitNodeConstraint^]
+        - litNodeConstraint
+        - shapeDefinition: [nonLitNodeConstraint?, shapeDefinition]
+        - shapeExpressionGroup
+        - shapeAtom_CLOSE
+
+  # [20]
+  inlineShapeAtom:
+    - switch:
+        - nonLitNodeConstraint: [inlineShapeOrRef?, nonLitNodeConstraint^]
+        - litNodeConstraint
+        - inlineShapeOrRef: [nonLitNodeConstraint?, inlineShapeOrRef^]
+        - shapeExpressionGroup
+        - shapeAtom_CLOSE
+
+  shapeOrRef:
+    - switch:
+        - shapeDefinition
+        - shapeRef
+
+  inlineShapeOrRef:
+    - switch:
+        - inlineShapeDefinition
+        - shapeRef
+
+  shapeRef:
+    - match: '@'
+      scope: punctuation.definition.shape-reference.SYNTAX
+      set: shapeExprLabel
+      mask: meta.term.role.reference.shape.SYNTAX
+
+  litNodeConstraint:
+    - word: literal
+      scope: storage.type.constraint.WORD.SYNTAX
+      set: xsFacet*
+    - switch:
+        - datatype: [xsFacet*, datatype]
+        - valueSet: [xsFacet*, valueSet]
+        - numericFacet: numericFacet+
+
+  # [25]
+  nonLitNodeConstraint:
+    - switch:
+        - nonLiteralKind: [stringFacet*, nonLiteralKind]
+        - stringFacet: stringFacet+
+
+  nonLiteralKind:
+    - words:
+        - iri
+      scope: storage.type.constraint.kind.WORD.SYNTAX
+      pop: true
+    - words.camel:
+        - bNode
+        - nonLiteral
+      scope: storage.type.constraint.kind.WORD.SYNTAX
+      pop: true
+
+  xsFacet:
+    - switch:
+        - stringFacet
+        - numericFacet
+
+  stringFacet:
+    - switch:
+        - stringLength: [integer, stringLength]
+        - regexp
+
+  stringLength:
+    - words.camel:
+        - length
+        - minLength
+        - maxLength
+      scope: support.function.constraint.string.WORD.SYNTAX
+      pop: true
+
+  numericFacet:
+    - switch:
+      - numericRange: [numericLiteral, numericRange]
+      - numericLength: [integer, numericLength]
+
+  numericRange:
+    - words.camel:
+        - minInclusive
+        - minExclusive
+        - maxInclusive
+        - maxExclusive
+      scope: support.function.constraint.numeric.range.WORD.SYNTAX
+
+  numericLength:
+    - words.camel:
+        - totalDigits
+        - fractionDigits
+      scope: support.function.constraint.numeric.length.WORD.SYNTAX
+
+  # [33]
+  shapeDefinition:
+    - goto: [semanticActions, annotation*, inlineShapeDefinition]
+
+  inlineShapeDefinition:
+    - switch.push:
+        - extraPropertySet
+    - word: closed
+      scope: storage.modifier.shape.WORD.SYNTAX
+    - goto: inlineShapeDefinition_AFTER_PROPERTY_SET
+
+  inlineShapeDefinition_AFTER_PROPERTY_SET:
+    - open.brace: triple-expression
+      goto: [inlineShapeDefinition_CLOSE, tripleExpression?]
+
+  inlineShapeDefinition_CLOSE:
+    - close.brace: triple-expression
+      pop: true
+
+  extraPropertySet:
+    - word: extra
+      scope: storage.type.property-set.extra.SYNTAX
+      set: predicate+
+
+  annotation:
+    - match: '//'
+      scope: punctuation.definition.annotation.begin.SYNTAX
+      set: [object, predicate]
+      mask: meta.annotation.SYNTAX
+
+  semanticActions:
+    - goto: codeDecl*
+
+  valueSet:
+    - open.bracket: value-set
+      set: [valueSet_END, valueSetValue*]
+
+  valueSet_END:
+    - close.bracket: value-set
+      pop: true
+
+  valueSetValue:
+    - match: 'later'
+    # - switch:
+    #     - iriRange
+    #     - literalRange
+    #     - languageRange
+    #     - exclusion: exclusion+
+
+  exclusion:
+    - match: '-'
+
+  # [60]
+  codeDecl:
+    - match: '%'
+      scope: punctuation.section.code.begin.SYNTAX
+      set: [codeDecl_AFTER_IRI, codeDecl_AFTER_OPEN]
+
+  codeDecl_AFTER_OPEN:
+    - goto: namedNode
+      mask: meta.term.role.name.code.SYNTAX
+
+  codeDecl_AFTER_IRI:
+    - switch:
+        - code
+    - match: '%'
+      scope: punctuation.section.code.end.SYNTAX
+      pop: true
+
+  predicate:
+    - goto: verb
+
+  object:
+    - switch:
+      - namedNode
+      - literal
+
+  node:
+    - switch:
+        - namedNode
+        - labeledBlankNode
+
+  # [63]
+  shapeExprLabel:
+    - goto: node
+      mask: meta.term.role.label.shape-expr.SYNTAX
+
+  tripleExprLabel:
+    - goto: node
+      mask: meta.term.role.label.triple-expr.SYNTAX
+
+  code:
+    - open.brace: section.code-block
+      set: [code_END, codeContent]
+
+  codeContent:
+    - match: '{{UNICODE}}*'
+      scope: text.plain
+    - bail
+
+  code_END:
+    - match: '%'
+      scope: punctuation.section.code.end.SYNTAX
+      set: code_END_1
+
+  code_END_1:
+    - close.brace: section.code-block
+
+
+  regexp:
+    - match: '/'
+      scope: punctuation.definition.string.regexp.begin.SYNTAX
+      set: regex_AFTER_OPEN
+
+  regex_AFTER_OPEN:
+    - meta_scope: string.regexp.SYNTAX
+    - meta_include_prototype: false
+    # It’s okay to put this here; comments are always matched first.
+    - include: regex_COMMON_NOT_IN_CLASS_SET
+
+  regex_ANY_CHILD_CONTEXT:
+    # Child contexts are tricky here because we need to be able to terminate
+    # the parent context from anywhere. Since the conditions of termination are
+    # simple enough, we can just include this lookahead in any child context.
+    # The regex root context will then handle the ‘actual’ termination.
+    - match: '(?=[\n\/])'
+      pop: true
+
+  regex_COMMON_NOT_IN_CLASS_SET:
+    - include: regex_COMMON
+    # DISJUNCTION
+    - match: '\|'
+      scope: keyword.operator.or.regexp
+    # QUANTIFIERS
+    - match: '[\?\*\+]|\{\d+\s*(?:,\s*\d*\s*)?\}'
+      scope: keyword.operator.quantifier.regexp
+    # CHARACTER CLASSES
+    - match: '\['
+      scope: punctuation.definition.character-class.begin.regexp
+      push: regexp_AFTER_BRACKET
+    # ASSERTIONS
+    - match: '\(\?<?!'
+      scope: punctuation.definition.assertion.negative.begin.regexp
+      push: regex_AFTER_ASSERTION_NEGATIVE_OPEN
+    - match: '\(\?<?='
+      scope: punctuation.definition.assertion.positive.begin.regexp
+      push: regex_AFTER_ASSERTION_POSITIVE_OPEN
+    # GROUPS
+    - match: '(\(\?<)({{identifierName}})(>)' # technically slightly off
+      captures:
+        1: punctuation.definition.group.capturing.begin.regexp
+        2: variable.other.named-capture.regexp
+        3: punctuation.definition.group.capturing.begin.regexp
+      push: regex_AFTER_CAPTURE_OPEN
+    - match: '\(\?:'
+      scope: punctuation.definition.group.non-capturing.begin.regexp
+      push: regex_AFTER_NON_CAPTURE_OPEN
+    - match: '\('
+      scope: punctuation.definition.group.capturing.begin.regexp
+      push: regex_AFTER_CAPTURE_OPEN
+
+  regex_COMMON:
+    - match: '\/'
+      scope: punctuation.definition.string.regexp.end.SYNTAX
+      set: regex_AFTER_PATTERN
+    - match: '\n'
+      scope: invalid.illegal.newline.SYNTAX
+      pop: true
+    # ASSERTIONS
+    - match: '\\[Bb]|[\$\^]'
+      scope: keyword.control.anchor.regexp
+    # CHARACTER CLASSES
+    - match: '\.|\\[DdSsWw]'
+      scope: constant.other.character-class.predefined.regexp
+    # PROPERTY CLASSES
+    - match: '\\[Pp]\{'
+      scope: punctuation.definition.character-property.regexp.begin.SYNTAX
+      push:
+        - - meta_scope: meta.character-property.regexp
+          - match: '([A-Za-z_]+)(=)([A-Za-z\d]+)'
+            captures:
+              1: constant.other.character-class.unicode-property-name.regexp
+              2: punctuation.separator.character-property-name-value.regexp
+              3: constant.other.character-class.unicode-property-value.regexp
+            set:
+              - - meta_scope: meta.character-property.regexp
+                - match: '\}'
+                  scope: punctuation.definition.character-property.regexp.end.SYNTAX
+                  pop: true
+                - include: other_illegal_pop
+          - match: '[A-Za-z_\d]+'
+            scope: constant.other.character-class.unicode-property-value.regexp
+            set:
+              - - meta_scope: meta.character-property.regexp
+                - match: '\}'
+                  scope: punctuation.definition.character-property.regexp.end.SYNTAX
+                  pop: true
+                - include: other_illegal_pop
+          - match: '\}'
+            scope: invalid.illegal.token
+            pop: true
+          - include: other_illegal_pop
+    # BACKREFERENCE
+    - match: '\\k<({{identifierName}})>'
+      scope: keyword.other.back-reference.regexp
+      captures:
+        1: variable.other.named-capture.regexp
+    - match: '\\[1-9]\d*'
+      scope: keyword.other.back-reference.regexp
+    # ESCAPES
+    - match: '\\(c[A-Za-z]|[tnvfr])'
+      scope: constant.character.escape.control-char.regexp
+    - match: '\\x\h\h'
+      scope: constant.character.escape.hexadecimal.regexp
+    - match: '\\0(?!\d)'
+      scope: constant.character.escape.null.regexp
+    - match: '{{unicodeEscape}}'
+      scope: constant.character.escape.unicode.regexp
+    - match: '\\\/'
+      scope: constant.character.escape.regexp
+    - match: '\\.'
+      scope: constant.character.escape.pointless.regexp
+
+  regexp_AFTER_BRACKET:
+    - meta_scope: constant.other.character-class.set.regexp
+    - meta_include_prototype: false
+    - match: '(?<=\[)\^'
+      scope: keyword.operator.negation.regexp
+    - match: '(?<!\[\^|\[)-(?!\])'
+      scope: punctuation.definition.character-class.dash.regexp
+    - match: '\]'
+      scope: punctuation.definition.character-class.end.regexp
+      pop: true
+    - match: '[/$.^]'
+    - include: regex_ANY_CHILD_CONTEXT
+    - include: regex_COMMON
+
+  regex_AFTER_ASSERTION_NEGATIVE_OPEN:
+    - meta_scope: meta.group.assertion.negative.regexp
+    - meta_include_prototype: false
+    - match: '\)'
+      scope: punctuation.definition.assertion.negative.end.regexp
+      pop: true
+    - include: regex_ANY_CHILD_CONTEXT
+    - include: regex_COMMON_NOT_IN_CLASS_SET
+
+  regex_AFTER_ASSERTION_POSITIVE_OPEN:
+    - meta_scope: meta.group.assertion.positive.regexp
+    - meta_include_prototype: false
+    - match: '\)'
+      scope: punctuation.definition.assertion.positive.end.regexp
+      pop: true
+    - include: regex_ANY_CHILD_CONTEXT
+    - include: regex_COMMON_NOT_IN_CLASS_SET
+
+  regex_AFTER_NON_CAPTURE_OPEN:
+    - meta_scope: meta.group.non-capturing.regexp
+    - meta_include_prototype: false
+    - match: '\)'
+      scope: punctuation.definition.group.non-capturing.end.regexp
+      pop: true
+    - include: regex_ANY_CHILD_CONTEXT
+    - include: regex_COMMON_NOT_IN_CLASS_SET
+
+  regex_AFTER_CAPTURE_OPEN:
+    - meta_scope: meta.group.capturing.regexp
+    - meta_include_prototype: false
+    - match: '\)'
+      scope: punctuation.definition.group.capturing.end.regexp
+      pop: true
+    - include: regex_ANY_CHILD_CONTEXT
+    - include: regex_COMMON_NOT_IN_CLASS_SET
+
+  regex_AFTER_PATTERN:
+    - meta_include_prototype: false
+    - match: >-
+        (?x) ((
+          ([smix])
+          (?:
+            (?!\3) ([smix])
+            (?:
+              (?!\3|\4) ([smix])
+              (?:
+                (?!\3|\4|\5) ([smix])
+                (?:
+                  (?!\3|\4|\5|\6) ([smix])
+                  (
+                    (?!\3|\4|\5|\6\7) ([smix])
+                  )?
+                )?
+              )?
+            )?
+          )?
+          ))
+          {{_WORD_BOUNDARY}}
+      scope: string.regexp.flags.SYNTAX
+      pop: true
+    - match: '\w+'
+      scope: invalid.illegal.regex-flags.SYNTAX
+      pop: true
+    - bail
+

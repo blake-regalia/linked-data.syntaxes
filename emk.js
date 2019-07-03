@@ -60,6 +60,10 @@ const G_SYNTAXES = {
 		supplementals: {},
 		dependencies: G_SYNTAX_DEPS.t_family,
 	},
+	shex: {
+		supplementals: {},
+		dependencies: G_SYNTAX_DEPS.terse,
+	},
 };
 
 const A_COLOR_SCHEMES = [
