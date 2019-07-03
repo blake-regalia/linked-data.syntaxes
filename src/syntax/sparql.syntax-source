@@ -358,23 +358,18 @@ contexts:
   orderClause_AFTER_ORDER:
     - word: by
       type: modifier
-      set: orderCondition
+      set: orderCondition+
 
   orderCondition:
     - word: asc
       scope: support.function.built-in.sort.asc.SYNTAX
-      set: [orderCondition_AFTER_CONDITION, brackettedExpression]
+      set: brackettedExpression
     - word: desc
       scope: support.function.built-in.sort.desc.SYNTAX
-      set: [orderCondition_AFTER_CONDITION, brackettedExpression]
+      set: brackettedExpression
     - switch:
-        - constraint: [orderCondition_AFTER_CONDITION, constraint^]
-        - var: [orderCondition_AFTER_CONDITION, var]
-
-  orderCondition_AFTER_CONDITION:
-    - switch:
-        - orderCondition
-    - bail
+        - constraint: constraint^
+        - var
 
   limitOffsetClauses:
     - switch:
