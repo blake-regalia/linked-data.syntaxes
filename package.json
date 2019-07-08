@@ -13,12 +13,12 @@
   },
   "repository": "blake-regalia/linked-data.syntaxes",
   "devDependencies": {
-    "emk": "^1.6.0",
-    "eslint": "^5.16.0",
+    "emk": "^1.7.2",
+    "eslint": "^6.0.1",
     "jmacs": "^1.2.7",
     "js-yaml": "^3.13.1",
     "plist": "^3.0.1",
-    "syntax-source": "^0.1.1"
+    "syntax-source": "^0.2.0"
   },
   "dependencies": {}
 }

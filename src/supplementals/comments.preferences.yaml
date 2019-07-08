@@ -1,5 +1,5 @@
 name: Comments
-scope: source.rq, source.ttl, source.trig, source.nt, source.nq, source.n3
+scope: source.rq, source.ttl, source.trig, source.nt, source.nq, source.n3, source.shex
 settings:
   shellVariables:
   - name: TM_COMMENT_START

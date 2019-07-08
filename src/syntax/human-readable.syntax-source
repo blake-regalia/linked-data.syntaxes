@@ -62,15 +62,19 @@ contexts:
   rdfLiteral_AFTER_STRING_LITERAL:
     - meta_include_prototype: false
     - include: comment
-    - match: '@'
-      scope: punctuation.separator.language-tag.symbol.SYNTAX
-      set: languageTag
+    - switch:
+        - languageTag
     - match: '\^\^'
       scope: punctuation.separator.datatype.symbol.SYNTAX
       set: datatype
     - bail
 
   languageTag:
+    - match: '@'
+      scope: punctuation.separator.language-tag.symbol.SYNTAX
+      set: languageTag_AFTER_AT
+
+  languageTag_AFTER_AT:
     - meta_include_prototype: false
     - meta_scope: string.unquoted.language-tag.SYNTAX
     - match: '[a-zA-Z]+'

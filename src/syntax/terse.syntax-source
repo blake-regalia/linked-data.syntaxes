@@ -341,11 +341,14 @@ contexts:
         - prefixedName
 
   prefixedName:
+    - goto: [prefixedNameLocal, prefixedNameNamespace]
+
+  prefixedNameNamespace:
     - match: '({{PN_PREFIX}}?)(:)'
       captures:
         1: variable.other.readwrite.prefixed-name.namespace.SYNTAX
         2: punctuation.separator.prefixed-name.namespace.SYNTAX
-      set: prefixedNameLocal
+      pop: true
 
   prefixedNameLocal:
     - meta_include_prototype: false

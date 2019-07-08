@@ -9,8 +9,6 @@ extends: terse.syntax-source
 
 lookaheads:
 
-  prefixedNameNamespace: '{{PN_PREFIX}}?:'
-  prefixedNameLocal: '{{PN_LOCAL}}'
 
   numericLiteralPositive: '\+\.?[0-9]'
   numericLiteralNegative: '\-\.?[0-9]'
@@ -33,13 +31,6 @@ lookaheads:
       |{{namedNode_LOOKAHEAD}}
       |a{{KEYWORD_BOUNDARY}}
 
-  namedNodeFunction: >-
-    (?x)
-      (?:
-        (?:<{{IRI_CONTENTS}}>)
-        |(?:{{prefixedNameNamespace_LOOKAHEAD}}{{prefixedNameLocal_LOOKAHEAD}})
-      )\s*\(
-
 
 lookaheads.i:
 
@@ -54,7 +45,7 @@ lookaheads.i:
         |sample
         |group_concat
       )\s*\(
-      |{{namedNodeFunction_LOOKAHEAD}}
+      |{{functionCall_LOOKAHEAD}}
 
   builtInCall: >-
     (?x)
@@ -330,7 +321,7 @@ contexts:
       set: [groupCondition_TERMINATE_BINDING, groupCondition_AFTER_EXPRESSION, expression]
     - switch:
         - var
-        - namedNodeFunction: functionCall
+        - functionCall
         - builtInCall
 
   groupCondition_AFTER_EXPRESSION:
@@ -780,16 +771,22 @@ contexts:
   filter_AFTER_FILTER:
     - switch:
         - brackettedExpression
-        - namedNodeFunction: functionCall
+        - functionCall
         - builtInCall
 
   constraint:
     - switch:
         - brackettedExpression
         - builtInCall
-        - namedNodeFunction: functionCall
+        - functionCall
 
   functionCall:
+    - lookahead: |-
+        (?x)
+          (?:
+            (?:<{{IRI_CONTENTS}}>)
+            |(?:{{PN_PREFIX}}?:{{PN_LOCAL}})
+          )\s*\(
     - meta_content_scope: meta.function-call.SYNTAX
     - goto: [functionCall_TERMINATE, argList, namedNodeFunctionCall]
 
@@ -1267,7 +1264,7 @@ contexts:
 
   primaryExpression:
     - switch:
-        - namedNodeFunction: functionCall
+        - functionCall
         - var
         - brackettedExpression
     - include: builtInCall

@@ -1,3 +1,5 @@
+const a_regex_scopes = require('./shared/regex-scopes.js');
+
 /* eslint-disable global-require */
 module.exports = {
 	// base color scheme def
@@ -51,6 +53,9 @@ module.exports = {
 			scope: 'storage.modifier',
 			font_style: 'italic',
 		},
+
+		// shared regex scopes
+		...a_regex_scopes,
 	],
 
 	// blends
@@ -154,6 +159,9 @@ module.exports = {
 			'string.quoted.double.literal, string.quoted.single.literal': -15,
 			'punctuation.definition.string': -35,
 			'constant.character.escape.literal': -40,
+
+			// regex
+			'string.regexp': -10,
 
 			// language-tags
 			'string.unquoted.language-tag': -5,
