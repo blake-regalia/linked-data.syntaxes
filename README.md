@@ -41,6 +41,7 @@ This will override the default color scheme when any of these syntaxes are loade
  - N-Triples (NT)
  - N-Quads (NQ)
  - Notation3 (N3)
+ - ShExC
 
 #### Currently supported platforms:
  - Sublime Text 3
@@ -50,7 +51,6 @@ This will override the default color scheme when any of these syntaxes are loade
  - Macaron Light (in beta)
 
 #### *Planned langauage support*:
- - ShExC
  - OWL Manchester
  - OWL Functional-Style
  - RDFa
