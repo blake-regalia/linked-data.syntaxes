@@ -18,7 +18,7 @@
     "jmacs": "^1.2.7",
     "js-yaml": "^3.13.1",
     "plist": "^3.0.1",
-    "syntax-source": "^0.2.0"
+    "syntax-source": "^0.3.0"
   },
   "dependencies": {}
 }

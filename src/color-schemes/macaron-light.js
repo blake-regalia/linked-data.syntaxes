@@ -54,6 +54,34 @@ module.exports = {
 			font_style: 'italic',
 		},
 
+		// annotation
+		{
+			scope: 'meta.annotation',
+			font_style: 'italic',
+			background: 'hsla(0, 20%, 50%, 0.1)',
+			foreground_adjust: 'saturation(20%)',
+		},
+
+		{
+			scope: 'meta.term.role.label.triple-expression',
+			background: 'hsla(120, 80%, 50%, 0.1)',
+			foreground_adjust: 'saturation(55%)',
+		},
+
+		// shape-definition inclusion
+		{
+			scope: 'meta.term.role.include',
+			background: 'hsla(52, 74%, 76%, 0.38)',
+			// background: 'hsla(252, 24%, 50%, 0.1)',
+		},
+
+		// value-set exclusion
+		{
+			scope: 'meta.term.role.exclusion',
+			background: 'hsla(342, 74%, 84%, 0.35)',
+			// background: 'hsla(252, 24%, 50%, 0.1)',
+		},
+
 		// shared regex scopes
 		...a_regex_scopes,
 	],
@@ -100,6 +128,12 @@ module.exports = {
 
 			// constants `true` and `false`
 			'constant.language': -5,
+
+			// n3 predicates
+			'keyword.operator.predicate': 0,
+
+			// shex
+			'keyword.operator.unary.label': 15,
 		},
 
 		scape: {
@@ -112,10 +146,22 @@ module.exports = {
 
 			// `a`
 			'support.constant.predicate.a': -50,
+
+			'keyword.operator.unary.exclusion': -30,
+			'punctuation.terminator.exclusion': 15,
 		},
 
 		scape_boost: {
 			'variable.other.member.barename': 20,
+
+			'keyword.operator.unary.reference.shape': -5,
+
+			'meta.term.role.include punctuation.definition.iri': -60,
+			'meta.term.role.include string.unquoted.iri': 15,
+
+			'meta.term.role.label.shape-expression.declaration variable.other.readwrite.prefixed-name.namespace': -20,
+			'meta.term.role.label.shape-expression.declaration variable.other.member.prefixed-name.local': 45,
+
 		},
 
 		flare: {
@@ -146,12 +192,15 @@ module.exports = {
 			'punctuation.terminator.statement': -100,  // n3
 			'punctuation.terminator.graph-pattern': -60,
 			'punctuation.terminator.prefix-declaration': -60,
+			'punctuation.terminator.shape-atom': -20,
 		},
 
 		flare_boost: {
 			// variables
 			'variable.other.readwrite.var': -15,
 
+			'meta.term.role.include variable.other.readwrite.prefixed-name.namespace': -40,
+			'meta.term.role.include variable.other.member.prefixed-name.local':-20,
 		},
 
 		echo: {
@@ -171,10 +220,16 @@ module.exports = {
 			'keyword.operator.arithmetic': -0,
 			'constant.numeric': -15,
 			'meta.numeric.exponent': -40,
+
+			// shex
+			'punctuation.definition.repeat-range': -45,
+			'punctuation.separator.repeat-range': -55,
 		},
 
 		echo_boost: {
 			'support.constant': -15,
+
+			'text.plain': -25,
 		},
 
 		chip: {
@@ -193,6 +248,14 @@ module.exports = {
 
 		chip_boost: {
 			'meta.directive': -45,
+
+			'punctuation.definition.annotation': -30,
+
+			'keyword.operator.unary.include': -15,
+
+			'meta.term.role.label.shape-expression.declaration punctuation.definition.iri': -60,
+			'meta.term.role.label.shape-expression.declaration string.unquoted.iri': 20,
+
 		},
 
 	},
