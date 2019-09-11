@@ -1,6 +1,6 @@
-# Syntax highlighting definitions for various Linked Data languages
+# Syntax highlighting for Linked Data developers
 
-Each syntax highlighter reflects a complete implementation of the grammar specification for its language. This provides highly-specific scoping and instant feedback on malformed code (i.e., invalid or misplaced tokens are easily identified).
+Each syntax highlighter in this package covers the entire grammar specification for its corresponding language, providing users with high-resolution scopes and instant feedback if malformed syntax is detected (i.e., invalid or misplaced tokens are easily identified).
 
 ### Install:
 Available on [Package Control](https://packagecontrol.io/packages/LinkedData) as `LinkedData` .
@@ -30,8 +30,8 @@ This will override the default color scheme when any of these syntaxes are loade
 
 
 #### Features:
- - Highly-specific scoping allows for very detailed color schemes.
- - Malformed syntax detection. Expected token(s) are inspectable via scope name.
+ - Highly-resolution scoping allows for very detailed color schemes.
+ - Malformed syntax detection. Expected token(s) are [inspectable via scope name](https://superuser.com/questions/848836/how-do-i-see-what-the-current-scope-is-in-sublimetext).
  - Auto-completion and validation for prefix mappings registered on [prefix.cc](http://prefix.cc).
 
 #### Currently supported languages:
