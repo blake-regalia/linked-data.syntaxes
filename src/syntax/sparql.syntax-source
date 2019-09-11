@@ -260,18 +260,15 @@ contexts:
       set: [solutionModifier, whereClause_OPTIONAL, datasetClause, describeQuery_AFTER_DESCRIBE]
 
   describeQuery_AFTER_DESCRIBE:
-    - include: describeQuery_TARGET
     - match: '\*'
       scope: keyword.operator.star.describe.SYNTAX
       pop: true
-
-  describeQuery_AFTER_TARGET:
-    - include: describeQuery_TARGET
+    - goto: describeQuery_TARGET+
 
   describeQuery_TARGET:
     - switch:
-        - namedNode: [describeQuery_AFTER_TARGET, namedNode]
-        - var: [describeQuery_AFTER_TARGET, var]
+        - namedNode
+        - var
 
   askQuery:
     - word: ask
@@ -294,7 +291,7 @@ contexts:
       mask: meta.term.role.dataset.from-default.SYNTAX
 
   whereClause_OPTIONAL:
-    - match: '(?=\{|where{{KEYWORD_BOUNDARY}})'
+    - match: '(?=\{|(?i:where{{KEYWORD_BOUNDARY}}))'
       set: whereClause
     - bail
 
