@@ -1014,13 +1014,13 @@ contexts:
     - goto: [pathMod?, pathPrimary]
 
   pathMod:
-    - match: '\?{{KEYWORD_BOUNDARY}}'
+    - match: '\?(?={{KEYWORD_BOUNDARY}})'
       scope: keyword.operator.path.quantifier.zero-or-one.SYNTAX
       pop: true
-    - match: '\*{{KEYWORD_BOUNDARY}}'
+    - match: '\*(?={{KEYWORD_BOUNDARY}})'
       scope: keyword.operator.path.quantifier.zero-or-more.SYNTAX
       pop: true
-    - match: '\+{{KEYWORD_BOUNDARY}}'
+    - match: '\+(?={{KEYWORD_BOUNDARY}})'
       scope: keyword.operator.path.quantifier.one-or-more.SYNTAX
       pop: true
 
