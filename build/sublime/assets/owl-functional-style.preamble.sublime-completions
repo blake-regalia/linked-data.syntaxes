@@ -1,0 +1,9 @@
+{
+	"scope": "meta.preamble.ofn",
+	"completions": [
+		{
+			"trigger": "Prefix(...)",
+			"contents": "Prefix($0)"
+		}
+	]
+}

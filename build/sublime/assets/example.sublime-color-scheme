@@ -1,0 +1,20 @@
+{
+    "name": "Example",
+    "variables": {
+        "root": "hsl(199, 56%, 73%)"
+    },
+    "globals": {
+        "foreground": "#bebbb0",
+        "background": "#252525"
+    },
+    "rules": [
+        {
+            "scope": "storage.type",
+            "foreground": "color(var(root) blend(#000 20% hsl))"
+        },
+        {
+            "scope": "constant",
+            "foreground": "#22dd00"
+        }
+    ]
+}

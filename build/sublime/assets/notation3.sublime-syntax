@@ -1,0 +1,605 @@
+%YAML 1.2
+---
+name: Notation3 (LinkedData)
+file_extensions:
+  - n3
+scope: source.n3
+variables:
+  KEYWORD_BOUNDARY: '[\s{(\[<*#$?^/="''>\])}]'
+  PN_CHARS_BASE: '[A-Za-z\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{02FF}\x{0370}-\x{037D}\x{037F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]'
+  PN_CHARS_U: '(?:{{PN_CHARS_BASE}}|_)'
+  PN_CHARS: '(?:{{PN_CHARS_U}}|\-|[0-9\x{00B7}\x{0300}-\x{036F}\x{203F}\x{2040}])'
+  HEX: '(?:[0-9A-Fa-f])'
+  UCHAR: '(?:\\u{{HEX}}{4}|\\U{{HEX}}{8})'
+  _SOMETHING: \w+|\S
+  _ANYTHING_LOOKAHEAD: '(?=[\S\s])'
+  PN_PREFIX: |-
+    (?x)
+      (?:
+        {{PN_CHARS_BASE}}
+        (?:
+          (?:{{PN_CHARS}}|\.)*
+          {{PN_CHARS}}
+        )?
+      )
+  EXPONENT: '([eE])([+-]?)([0-9]+)'
+  STRING_SHORT_DOUBLE: '[^\x{22}\x{5C}\x{0A}\x{0D}]'
+  ECHAR_DOUBLE: '(?:\\[tbnrf"\\])'
+  leadChar: '[A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]'
+  followChar: '[\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]'
+  barename: '([A-Z_a-z\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{02ff}\x{0370}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}][\-0-9A-Z_a-z\x{00b7}\x{00c0}-\x{00d6}\x{00d8}-\x{00f6}\x{00f8}-\x{037d}\x{037f}-\x{1fff}\x{200c}-\x{200d}\x{203f}-\x{2040}\x{2070}-\x{218f}\x{2c00}-\x{2fef}\x{3001}-\x{d7ff}\x{f900}-\x{fdcf}\x{fdf0}-\x{fffd}\x{00010000}-\x{000effff}]*)'
+  prefix: '{{barename}}?(:)'
+  quickVariable: '\?{{barename}}'
+  qName: '(?:{{prefix}}){{barename}}|{{barename}}'
+  boolean: '@(true|false){{KEYWORD_BOUNDARY}}'
+  numericLiteral: '[-+]?[0-9]'
+  stringLiteral_LOOKAHEAD: '(?=["''])'
+  qName_LOOKAHEAD: '(?=:|{{leadChar}})'
+  symbol_LOOKAHEAD: '(?=<|{{qName_LOOKAHEAD}})'
+  pathItem_LOOKAHEAD: '(?=[(\[{"<]|{{boolean}}|{{numericLiteral}}|{{quickVariable}}|{{prefix}}|{{qName}})'
+  predicate_LOOKAHEAD: '(?=a{{KEYWORD_BOUNDARY}}|@(?:(?:a|has|is){{KEYWORD_BOUNDARY}})|<?=|=>|{{pathItem_LOOKAHEAD}})'
+  languageTag_LOOKAHEAD: '(?=@[a-zA-Z])'
+  declaration_LOOKAHEAD: '(?=(?:{{baseDeclaration_LOOKAHEAD}}|{{keywordsDeclaration_LOOKAHEAD}}|{{prefixDeclaration_LOOKAHEAD}}))'
+  baseDeclaration_LOOKAHEAD: (?=((@)base)\b)
+  keywordsDeclaration_LOOKAHEAD: (?=((@)keywords)\b)
+  prefixDeclaration_LOOKAHEAD: (?=((@)prefix)\b)
+  universal_LOOKAHEAD: (?=((@)forAll))
+  existential_LOOKAHEAD: (?=((@)forSome))
+  simpleStatement_LOOKAHEAD: '(?={{expression_LOOKAHEAD}})'
+  expression_LOOKAHEAD: '(?={{pathItem_LOOKAHEAD}})'
+  iriRef_LOOKAHEAD: '(?=(<)([^>]*)(>))'
+  boolean_LOOKAHEAD: '(?=(?:((@)true)|((@)false)))'
+  rdfLiteral_LOOKAHEAD: '(?={{stringLiteral_LOOKAHEAD}})'
+  numericLiteral_LOOKAHEAD: '(?=(?:(?:((?:(\+)|(-))?([0-9]+)(?:(\.)([0-9]+))?))|(?:((?:(\+)|(-))?([0-9]+)(?:(\.)([0-9]+)){{EXPONENT}}))|(?:((?:(\+)|(-))?([0-9]+)))))'
+  quickVariable_LOOKAHEAD: '(?={{quickVariable}})'
+  statement_LOOKAHEAD: '(?=(?:{{declaration_LOOKAHEAD}}|{{universal_LOOKAHEAD}}|{{existential_LOOKAHEAD}}|{{simpleStatement_LOOKAHEAD}}))'
+contexts:
+  whitespace:
+    - meta_include_prototype: false
+    - match: \s+
+      scope: meta.whitespace.n3
+  comment:
+    - meta_include_prototype: false
+    - match: '#'
+      scope: punctuation.definition.comment.n3
+      push:
+        - line_comment
+  line_comment:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.n3
+    - include: whitespace
+    - match: $
+      pop: true
+    - match: '{{_SOMETHING}}'
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.line_comment.n3
+      pop: true
+  rdfLiteral:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - rdfLiteral_AFTER_STRING_LITERAL
+        - stringLiteral
+  rdfLiteral_AFTER_STRING_LITERAL:
+    - meta_include_prototype: false
+    - include: comment
+    - match: '{{languageTag_LOOKAHEAD}}'
+      set:
+        - languageTag
+    - match: \^\^
+      scope: punctuation.separator.datatype.symbol.n3
+      set:
+        - datatype
+    - include: _OTHERWISE_POP
+  languageTag:
+    - match: '@'
+      scope: punctuation.separator.language-tag.symbol.n3
+      set:
+        - languageTag_AFTER_AT
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.languageTag.n3
+      pop: true
+  languageTag_AFTER_AT:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.n3
+    - match: '[a-zA-Z]+'
+      scope: meta.language-tag.primary.n3
+      set:
+        - languageTag_AFTER_PRIMARY
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.languageTag_AFTER_AT.n3
+      pop: true
+  languageTag_AFTER_PRIMARY:
+    - meta_include_prototype: false
+    - match: '-'
+      scope: punctuation.separator.language-tag.hyphen.n3
+      set:
+        - languageTag_AFTER_SEPARATOR
+    - include: _OTHERWISE_POP
+  languageTag_AFTER_SEPARATOR:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.n3
+    - match: '[a-zA-Z0-9]+'
+      scope: meta.language-tag.subtag.n3
+      set:
+        - languageTag_AFTER_PRIMARY
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.languageTag_AFTER_SEPARATOR.n3
+      pop: true
+  iriRef:
+    - match: '(<)([^>]*)(>)'
+      captures:
+        '1': punctuation.definition.iri.begin.n3
+        '2': string.unquoted.iri.n3
+        '3': punctuation.definition.iri.end.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.iriRef.n3
+      pop: true
+  _OTHERWISE_POP:
+    - meta_include_prototype: false
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  objectList:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - objectList_MORE
+        - expression^
+  numericLiteral:
+    - match: '((?:(\+)|(-))?([0-9]+)(?:(\.)([0-9]+))?)'
+      captures:
+        '1': constant.numeric.decimal.n3
+        '2': keyword.operator.arithmetic.sign.positive.n3
+        '3': keyword.operator.arithmetic.sign.negative.n3
+        '4': meta.numeric.decimal.characteristic.n3
+        '5': punctuation.decimal.n3
+        '6': meta.numeric.decimal.mantissa.n3
+      pop: true
+    - match: '((?:(\+)|(-))?([0-9]+)(?:(\.)([0-9]+)){{EXPONENT}})'
+      captures:
+        '1': constant.numeric.decimal.n3
+        '2': keyword.operator.arithmetic.sign.positive.n3
+        '3': keyword.operator.arithmetic.sign.negative.n3
+        '4': meta.numeric.decimal.characteristic.n3
+        '5': punctuation.decimal.n3
+        '6': meta.numeric.decimal.mantissa.n3
+        '7': meta.numeric.exponent.e.n3
+        '8': meta.numeric.exponent.sign.n3
+        '9': meta.numeric.exponent.digit.n3
+      pop: true
+    - match: '((?:(\+)|(-))?([0-9]+))'
+      captures:
+        '1': constant.numeric.integer.n3
+        '2': keyword.operator.arithmetic.sign.positive.n3
+        '3': keyword.operator.arithmetic.sign.negative.n3
+        '4': meta.numeric.decimal.integer.n3
+      set:
+        - rational_AFTER_INTEGER
+  stringLiteral:
+    - match: '"""'
+      scope: punctuation.definition.string.begin.literal.double.long.n3
+      set:
+        - rdfLiteral_AFTER_STRING_LITERAL
+        - stringLiteralLongDouble
+    - match: '"'
+      scope: punctuation.definition.string.begin.literal.double.short.n3
+      set:
+        - rdfLiteral_AFTER_STRING_LITERAL
+        - stringLiteralShortDouble
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.stringLiteral.n3
+  stringLiteralLongDouble:
+    - meta_include_prototype: false
+    - include: stringLiteralLongDouble_AFTER_INNER_QUOTE
+    - match: '"""'
+      scope: punctuation.definition.string.end.literal.double.long.n3
+      pop: true
+    - match: '""?'
+      scope: string.quoted.double.literal.long.n3
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.stringLiteralLongDouble.n3
+      pop: true
+  stringLiteralLongDouble_AFTER_INNER_QUOTE:
+    - match: '[^"\\]'
+      scope: string.quoted.double.literal.long.n3
+      set:
+        - stringLiteralLongDouble
+    - match: '{{ECHAR_DOUBLE}}'
+      scope: string.quoted.double.literal.long.n3 constant.character.escape.literal.escape.long.n3
+      set:
+        - stringLiteralLongDouble
+    - match: \\'
+      scope: string.quoted.double.literal.long.n3 constant.character.escape.literal.escape.pointless.long.n3
+      set:
+        - stringLiteralLongDouble
+    - match: '{{UCHAR}}'
+      scope: string.quoted.double.literal.long.n3 constant.character.escape.literal.unicode.long.n3
+      set:
+        - stringLiteralLongDouble
+    - match: \\.
+      scope: string.quoted.double.literal.long.n3 invalid.illegal.escape.n3
+      pop: true
+  stringLiteralShortDouble:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.literal.short.n3
+    - match: '{{STRING_SHORT_DOUBLE}}+'
+    - match: '"'
+      pop: true
+      scope: punctuation.literal.double.short.end.n3
+    - match: '{{ECHAR_DOUBLE}}'
+      scope: constant.character.escape.literal.escape.short.n3
+    - match: \\'
+      scope: constant.character.escape.literal.escape.pointless.short.n3
+    - match: '{{UCHAR}}'
+      scope: constant.character.escape.literal.unicode.short.n3
+    - match: \\.
+      scope: invalid.illegal.escape.n3
+      pop: true
+    - match: \n
+      scope: invalid.illegal.newline.literal.double.short.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.stringLiteralShortDouble.n3
+      pop: true
+  datatype:
+    - meta_include_prototype: false
+    - match: '{{symbol_LOOKAHEAD}}'
+      set:
+        - symbol
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.datatype.n3
+      pop: true
+  prototype:
+    - include: whitespace
+    - include: comment
+  main:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      push:
+        - statement_TERMINATE
+        - statement
+  boolean:
+    - match: ((@)true)
+      captures:
+        '1': constant.language.boolean.true.n3
+        '2': punctuation.definition.keyword.boolean.n3
+      pop: true
+    - match: ((@)false)
+      captures:
+        '1': constant.language.boolean.false.n3
+        '2': punctuation.definition.keyword.boolean.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.boolean.n3
+      pop: true
+  declaration:
+    - match: '{{baseDeclaration_LOOKAHEAD}}'
+      set:
+        - baseDeclaration
+    - match: '{{keywordsDeclaration_LOOKAHEAD}}'
+      set:
+        - keywordsDeclaration
+    - match: '{{prefixDeclaration_LOOKAHEAD}}'
+      set:
+        - prefixDeclaration
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.declaration.n3
+      pop: true
+  baseDeclaration:
+    - match: ((@)base)\b
+      captures:
+        '1': storage.type.base.n3
+        '2': punctuation.definition.keyword.base.n3
+      set:
+        - iriRef
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.baseDeclaration.n3
+      pop: true
+  keywordsDeclaration:
+    - match: ((@)keywords)\b
+      captures:
+        '1': storage.type.keywords.n3
+        '2': punctuation.definition.keyword.keywords.n3
+      set:
+        - barenameCsl
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.keywordsDeclaration.n3
+      pop: true
+  prefixDeclaration:
+    - match: ((@)prefix)\b
+      captures:
+        '1': storage.type.prefix.n3
+        '2': punctuation.definition.keyword.prefix.n3
+      set:
+        - iriRef
+        - prefix
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.prefixDeclaration.n3
+      pop: true
+  barename:
+    - match: '{{barename}}'
+      scope: string.unquoted.barename.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.barename.n3
+      pop: true
+  barenameCsl:
+    - match: '{{barename}}'
+      scope: string.unquoted.barename.n3
+      set:
+        - barenameCslTail
+    - include: _OTHERWISE_POP
+  barenameCslTail:
+    - match: ','
+      scope: punctuation.separator.barename.n3
+      push:
+        - barename
+    - include: _OTHERWISE_POP
+  prefix:
+    - match: '(({{PN_PREFIX}}?)(:))'
+      captures:
+        '1': meta.prefix-declaration.at.namespace.n3
+        '2': variable.other.readwrite.prefixed-name.namespace.prefix-declaration.n3
+        '3': punctuation.separator.prefixed-name.namespace.prefix-declaration.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.prefix.n3
+      pop: true
+  statement:
+    - match: '{{declaration_LOOKAHEAD}}'
+      set:
+        - declaration
+    - match: '{{universal_LOOKAHEAD}}'
+      set:
+        - universal
+    - match: '{{existential_LOOKAHEAD}}'
+      set:
+        - existential
+    - match: '{{simpleStatement_LOOKAHEAD}}'
+      set:
+        - simpleStatement
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.statement.n3
+  statement_TERMINATE:
+    - match: \.
+      scope: punctuation.terminator.statement.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.statement_TERMINATE.n3
+  statementList:
+    - match: '{{statement_LOOKAHEAD}}'
+      set:
+        - statementTail
+        - statement
+    - include: _OTHERWISE_POP
+  statementTail:
+    - match: (?=\.)
+      set:
+        - statementList
+        - statement_TERMINATE
+    - include: _OTHERWISE_POP
+  expression:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - pathTail
+        - pathItem
+  quickVariable:
+    - match: '{{quickVariable}}'
+      scope: variable.other.readwrite.quick-variable.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.quickVariable.n3
+      pop: true
+  formulaContent:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - statementList
+  pathItem:
+    - match: \(
+      set:
+        - pathItem_AFTER_PATH_LIST
+        - pathList
+      scope: punctuation.section.path.begin.n3
+    - match: '\['
+      set:
+        - pathItem_AFTER_PROPERTY_LIST
+        - propertyList
+      scope: punctuation.definition.property-list.begin.n3
+    - match: '\{'
+      set:
+        - pathItem_AFTER_FORMULA_CONTENT
+        - formulaContent
+      scope: punctuation.section.formula.begin.n3
+    - match: '{{boolean_LOOKAHEAD}}'
+      set:
+        - boolean
+    - match: '{{rdfLiteral_LOOKAHEAD}}'
+      set:
+        - rdfLiteral
+    - match: '{{numericLiteral_LOOKAHEAD}}'
+      set:
+        - numericLiteral^
+    - match: '{{quickVariable_LOOKAHEAD}}'
+      set:
+        - quickVariable
+    - match: '{{symbol_LOOKAHEAD}}'
+      set:
+        - symbol
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.pathItem.n3
+  pathItem_AFTER_PATH_LIST:
+    - match: \)
+      pop: true
+      scope: punctuation.section.path.end.n3
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.pathItem_AFTER_PATH_LIST.n3
+  pathItem_AFTER_PROPERTY_LIST:
+    - match: '\]'
+      pop: true
+      scope: punctuation.definition.property-list.end.n3
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.pathItem_AFTER_PROPERTY_LIST.n3
+  pathItem_AFTER_FORMULA_CONTENT:
+    - match: '\}'
+      pop: true
+      scope: punctuation.section.formula.end.n3
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.pathItem_AFTER_FORMULA_CONTENT.n3
+  pathList:
+    - match: '{{pathItem_LOOKAHEAD}}'
+      set:
+        - pathList
+        - expression^
+    - include: _OTHERWISE_POP
+  pathTail:
+    - match: '!'
+      scope: keyword.operator.path.logical.not.rq meta.path.negated.rq
+      set:
+        - expression^
+    - match: \^
+      scope: keyword.operator.path.inverse.rq meta.path.inverse.rq
+      set:
+        - expression^
+    - include: _OTHERWISE_POP
+  predicate:
+    - match: <=
+      scope: keyword.operator.predicate.is-implied-by.n3
+      pop: true
+    - match: =>
+      scope: keyword.operator.predicate.implies.n3
+      pop: true
+    - match: =
+      scope: keyword.operator.predicate.same-as.n3
+      pop: true
+    - match: ((@)?a)\b
+      captures:
+        '1': support.constant.predicate.a.n3
+        '2': punctuation.definition.keyword.predicate.a.n3
+      pop: true
+    - match: ((@)has)\b
+      captures:
+        '1': support.function.built-in.has.n3
+        '2': punctuation.definition.keyword.predicate.has.n3
+      set:
+        - expression^
+      pop: true
+    - match: ((@)?is)\b
+      captures:
+        '1': support.function.built-in.is.n3
+        '2': punctuation.definition.keyword.predicate.is.n3
+      set:
+        - predicate_EXPECT_OF
+        - expression^
+      pop: true
+    - include: expression
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.predicate.n3
+      pop: true
+  predicate_EXPECT_OF:
+    - match: ((@)?of)\b
+      captures:
+        '1': support.constant.predicate.of.n3
+        '2': punctuation.definition.keyword.predicate.of.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.predicate_EXPECT_OF.n3
+      pop: true
+  propertyList:
+    - match: '{{predicate_LOOKAHEAD}}'
+      set:
+        - propertyList_MORE
+        - objectList
+        - predicate
+    - include: _OTHERWISE_POP
+  propertyList_MORE:
+    - match: ;
+      scope: punctuation.separator.property-list.n3
+      set:
+        - propertyList
+    - include: _OTHERWISE_POP
+  objectList_MORE:
+    - match: ','
+      scope: punctuation.separator.object-list.n3
+      set:
+        - objectList
+    - include: _OTHERWISE_POP
+  simpleStatement:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - propertyList
+        - expression^
+  symbol:
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set:
+        - iriRef
+    - match: '{{qName_LOOKAHEAD}}'
+      set:
+        - qName
+    - match: '[A-Za-z]+'
+      scope: word
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.symbol.n3
+      pop: true
+  qName:
+    - match: '{{qName}}'
+      captures:
+        '1': variable.other.readwrite.prefixed-name.namespace.n3
+        '2': punctuation.separator.prefixed-name.namespace.n3
+        '3': variable.other.member.prefixed-name.local.n3
+        '4': variable.other.member.barename.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.qName.n3
+      pop: true
+  symbolCsl:
+    - match: '{{symbol_LOOKAHEAD}}'
+      set:
+        - symbolCslTail
+        - symbol
+    - include: _OTHERWISE_POP
+  symbolCslTail:
+    - match: ','
+      scope: punctuation.separator.symbol.n3
+      push:
+        - symbol
+    - include: _OTHERWISE_POP
+  rational_AFTER_INTEGER:
+    - match: /
+      scope: keyword.operator.arithmetic.division.n3
+      set:
+        - rational_AFTER_DIVISION
+    - include: _OTHERWISE_POP
+  rational_AFTER_DIVISION:
+    - match: '[0-9]+'
+      scope: constant.numeric.integer.n3
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.rational_AFTER_DIVISION.n3
+  existential:
+    - match: ((@)forSome)
+      captures:
+        '1': support.function.built-in.for-some.n3
+        '2': punctuation.definition.keyword.for-some.n3
+      set:
+        - symbolCsl
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.existential.n3
+  universal:
+    - match: ((@)forAll)
+      captures:
+        '1': support.function.built-in.for-all.n3
+        '2': punctuation.definition.keyword.all.n3
+      set:
+        - symbolCsl
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.universal.n3
+      pop: true
+  expression^:
+    - include: expression
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.expression.n3
+      pop: true
+  numericLiteral^:
+    - include: numericLiteral
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.numericLiteral.n3
+      pop: true

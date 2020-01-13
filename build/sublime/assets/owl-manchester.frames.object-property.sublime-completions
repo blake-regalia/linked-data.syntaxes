@@ -1,0 +1,41 @@
+{
+	"scope": "meta.frames.object-property.omn",
+	"completions": [
+		{
+			"trigger": "Annotations: ",
+			"contents": "Annotations: $1 $0"
+		},
+		{
+			"trigger": "Domain: ",
+			"contents": "Domain: $0"
+		},
+		{
+			"trigger": "Range: ",
+			"contents": "Range: $0"
+		},
+		{
+			"trigger": "Characteristics: ",
+			"contents": "Characteristics: $0"
+		},
+		{
+			"trigger": "SubPropertyOf: ",
+			"contents": "SubPropertyOf: $0"
+		},
+		{
+			"trigger": "EquivalentTo: ",
+			"contents": "EquivalentTo: $0"
+		},
+		{
+			"trigger": "DisjointWith: ",
+			"contents": "DisjointWith: $0"
+		},
+		{
+			"trigger": "InverseOf: ",
+			"contents": "InverseOf: $0"
+		},
+		{
+			"trigger": "SubPropertyChain: ",
+			"contents": "SubPropertyChain: $0"
+		}
+	]
+}

@@ -1,0 +1,254 @@
+%YAML 1.2
+---
+name: N-Quads (LinkedData)
+file_extensions:
+  - nq
+scope: source.nq
+variables:
+  PN_CHARS_BASE: '[A-Za-z\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{02FF}\x{0370}-\x{037D}\x{037F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]'
+  PN_CHARS_U: '(?:{{PN_CHARS_BASE}}|_)'
+  PN_CHARS: '(?:{{PN_CHARS_U}}|\-|[0-9\x{00B7}\x{0300}-\x{036F}\x{203F}\x{2040}])'
+  HEX: '(?:[0-9A-Fa-f])'
+  UCHAR: '(?:\\u{{HEX}}{4}|\\U{{HEX}}{8})'
+  IRI_CONTENTS: '(?:[^\x{00}-\x{20}<>"{}|^`\\]*)'
+  BLANK_NODE_LABEL: '(?:{{PN_CHARS_U}}|[0-9])(?:(?:{{PN_CHARS}}|\.)*{{PN_CHARS}})?'
+  ECHAR: '(?:\\[tbnrf"''\\])'
+  _SOMETHING: \w+|\S
+  _ANYTHING_LOOKAHEAD: '(?=[\S\s])'
+  stringLiteral_LOOKAHEAD: '(?=["''])'
+  languageTag_LOOKAHEAD: '(?=@[a-zA-Z])'
+  iriRef_LOOKAHEAD: (?=<)
+  labeledBlankNode_LOOKAHEAD: '(?=_:)'
+contexts:
+  whitespace:
+    - meta_include_prototype: false
+    - match: \s+
+      scope: meta.whitespace.nq
+  comment:
+    - meta_include_prototype: false
+    - match: '#'
+      scope: punctuation.definition.comment.nq
+      push:
+        - line_comment
+  line_comment:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.nq
+    - include: whitespace
+    - match: $
+      pop: true
+    - match: '{{_SOMETHING}}'
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.line_comment.nq
+      pop: true
+  rdfLiteral:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - rdfLiteral_AFTER_STRING_LITERAL
+        - stringLiteral
+  rdfLiteral_AFTER_STRING_LITERAL:
+    - meta_include_prototype: false
+    - include: comment
+    - match: '{{languageTag_LOOKAHEAD}}'
+      set:
+        - languageTag
+    - match: \^\^
+      scope: punctuation.separator.datatype.symbol.nq
+      set:
+        - datatype
+    - include: _OTHERWISE_POP
+  languageTag:
+    - match: '@'
+      scope: punctuation.separator.language-tag.symbol.nq
+      set:
+        - languageTag_AFTER_AT
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.languageTag.nq
+      pop: true
+  languageTag_AFTER_AT:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.nq
+    - match: '[a-zA-Z]+'
+      scope: meta.language-tag.primary.nq
+      set:
+        - languageTag_AFTER_PRIMARY
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.languageTag_AFTER_AT.nq
+      pop: true
+  languageTag_AFTER_PRIMARY:
+    - meta_include_prototype: false
+    - match: '-'
+      scope: punctuation.separator.language-tag.hyphen.nq
+      set:
+        - languageTag_AFTER_SEPARATOR
+    - include: _OTHERWISE_POP
+  languageTag_AFTER_SEPARATOR:
+    - meta_include_prototype: false
+    - meta_scope: string.unquoted.language-tag.nq
+    - match: '[a-zA-Z0-9]+'
+      scope: meta.language-tag.subtag.nq
+      set:
+        - languageTag_AFTER_PRIMARY
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.languageTag_AFTER_SEPARATOR.nq
+      pop: true
+  iriRef:
+    - match: <
+      scope: punctuation.definition.iri.begin.nq
+      set:
+        - iriRef_AFTER_BEGIN
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.iriRef.nq
+      pop: true
+  iriRef_AFTER_BEGIN:
+    - meta_include_prototype: false
+    - match: '{{IRI_CONTENTS}}'
+      scope: string.unquoted.iri.nq
+    - match: '{{UCHAR}}'
+      scope: constant.character.escape.iri.nq
+    - match: '>'
+      scope: punctuation.definition.iri.end.nq
+      pop: true
+    - match: \s
+      scope: invalid.illegal.token.expected.iriRef_AFTER_BEGIN.nq
+    - include: _OTHERWISE_POP
+  labeledBlankNode:
+    - match: '_:'
+      scope: variable.other.readwrite.blank-node.underscore.nq
+      set:
+        - labeledBlankNode_AFTER_NAMESPACE
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.labeledBlankNode.nq
+      pop: true
+  labeledBlankNode_AFTER_NAMESPACE:
+    - match: '{{BLANK_NODE_LABEL}}'
+      scope: variable.other.member.blank-node.label.nq
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.labeledBlankNode_AFTER_NAMESPACE.nq
+      pop: true
+  _OTHERWISE_POP:
+    - meta_include_prototype: false
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  prototype:
+    - include: whitespace
+    - include: comment
+  subject:
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set:
+        - meta_term_role_subject_nq_MASK
+        - iriRef
+    - match: '{{labeledBlankNode_LOOKAHEAD}}'
+      set:
+        - meta_term_role_subject_nq_MASK
+        - labeledBlankNode
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.subject.nq
+  predicate:
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set:
+        - meta_term_role_predicate_nq_MASK
+        - iriRef
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.predicate.nq
+      pop: true
+  object:
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set:
+        - meta_term_role_object_nq_MASK
+        - iriRef
+    - match: '{{labeledBlankNode_LOOKAHEAD}}'
+      set:
+        - meta_term_role_object_nq_MASK
+        - labeledBlankNode
+    - match: '{{stringLiteral_LOOKAHEAD}}'
+      set:
+        - meta_term_role_object_nq_MASK
+        - rdfLiteral
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.object.nq
+  stringLiteral:
+    - match: '"'
+      set:
+        - stringLiteral_AFTER_QUOTE
+      scope: punctuation.literal.double.long.begin.nq
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.stringLiteral.nq
+      pop: true
+  stringLiteral_AFTER_QUOTE:
+    - match: '[^"\\\r\n]+'
+      scope: string.quoted.double.literal.long.nq
+    - match: '"'
+      pop: true
+      scope: punctuation.literal.double.long.end.nq
+    - match: '{{ECHAR}}'
+      scope: string.quoted.double.literal.long.nq constant.character.escape.literal.escape.long.nq
+    - match: '{{UCHAR}}'
+      scope: string.quoted.double.literal.long.nq constant.character.escape.literal.unicode.long.nq
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.stringLiteral_AFTER_QUOTE.nq
+      pop: true
+  datatype:
+    - meta_include_prototype: false
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set:
+        - meta_term_role_datatype_nq_MASK
+        - iriRef
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.datatype.nq
+      pop: true
+  main:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - quads
+  quads:
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      set:
+        - quad_TERMINATE
+        - graph?
+        - object
+        - predicate
+        - subject
+  graph:
+    - match: '{{iriRef_LOOKAHEAD}}'
+      set:
+        - meta_term_role_graph_nq_MASK
+        - iriRef
+    - match: '{{labeledBlankNode_LOOKAHEAD}}'
+      set:
+        - meta_term_role_graph_nq_MASK
+        - labeledBlankNode
+  quad_TERMINATE:
+    - match: \.
+      scope: punctuation.terminator.quad.nq
+      pop: true
+    - match: '{{_SOMETHING}}'
+      scope: invalid.illegal.token.expected.quad_TERMINATE.nq
+  meta_term_role_subject_nq_MASK:
+    - meta_include_prototype: false
+    - meta_content_scope: meta.term.role.subject.nq
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  meta_term_role_predicate_nq_MASK:
+    - meta_include_prototype: false
+    - meta_content_scope: meta.term.role.predicate.nq
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  meta_term_role_object_nq_MASK:
+    - meta_include_prototype: false
+    - meta_content_scope: meta.term.role.object.nq
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  meta_term_role_datatype_nq_MASK:
+    - meta_include_prototype: false
+    - meta_content_scope: meta.term.role.datatype.nq
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  meta_term_role_graph_nq_MASK:
+    - meta_include_prototype: false
+    - meta_content_scope: meta.term.role.graph.nq
+    - match: '{{_ANYTHING_LOOKAHEAD}}'
+      pop: true
+  graph?:
+    - include: graph
+    - include: _OTHERWISE_POP

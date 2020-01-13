@@ -1,0 +1,507 @@
+{
+	"globals": {
+		"foreground": "#333366",
+		"background": "#eff1f5",
+		"gutter": "#c0c5ce",
+		"caret": "#666666",
+		"accent": "#333333",
+		"invisibles": "#bbbbcc77",
+		"line_highlight": "#a7adba",
+		"multi_edit_highlight": "#a5eb5144",
+		"find_highlight": "#ffe792",
+		"find_highlight_foreground": "#ffe792",
+		"selection": "#dfe1e8",
+		"selection_border": "#b0cde7",
+		"shadow": "#dfe1e8"
+	},
+	"rules": [
+		{
+			"foreground": "hsla(0, 70%, 26%, 0.7)",
+			"font_style": "italic",
+			"scope": "comment"
+		},
+		{
+			"foreground": "#6600771b",
+			"background": "#ff6677dd",
+			"scope": "invalid"
+		},
+		{
+			"scope": "meta.prefix-declaration.either.registered",
+			"background": "hsla(220, 63%, 89%, 0.61)"
+		},
+		{
+			"scope": "meta.path.inverse",
+			"background": "hsla(226, 94%, 62%, 0.12)",
+			"font_style": "italic"
+		},
+		{
+			"scope": "meta.path.negated",
+			"background": "hsla(290, 84%, 70%, 0.38)"
+		},
+		{
+			"scope": "keyword.operator.path.quantifier.one-or-more",
+			"font_style": "bold"
+		},
+		{
+			"scope": "storage.modifier",
+			"font_style": "italic"
+		},
+		{
+			"scope": "meta.annotation",
+			"font_style": "italic",
+			"background": "hsla(0, 20%, 50%, 0.1)",
+			"foreground_adjust": "saturation(20%)"
+		},
+		{
+			"scope": "meta.term.role.label.triple-expression",
+			"background": "hsla(120, 80%, 50%, 0.1)",
+			"foreground_adjust": "saturation(55%)"
+		},
+		{
+			"scope": "meta.term.role.include",
+			"background": "hsla(52, 74%, 76%, 0.38)"
+		},
+		{
+			"scope": "meta.term.role.exclusion",
+			"background": "hsla(342, 74%, 84%, 0.35)"
+		},
+		{
+			"name": "Regex Char Classes & Punctuation",
+			"scope": "string.regexp constant.other.character-class.predefined, string.regexp constant.other.character-class punctuation, string.regexp constant.other.character-class.set",
+			"foreground": "#8ABA8A"
+		},
+		{
+			"name": "Regex Char Class Dash",
+			"scope": "punctuation.definition.character-class.dash.regexp",
+			"foreground": "#577557"
+		},
+		{
+			"name": "Regex Char Class Negation",
+			"scope": "keyword.operator.negation.regexp",
+			"foreground": "#C59764"
+		},
+		{
+			"name": "Regex Char Classes (Predefined) & Escapes",
+			"scope": "string.regexp constant.other.character-class.predefined, string.regexp constant.character.escape, string.regexp keyword.other.back-reference",
+			"font_style": "bold"
+		},
+		{
+			"name": "Regex Char Classes (Character Property)",
+			"scope": "meta.character-property constant, meta.character-property punctuation",
+			"font_style": "italic",
+			"foreground": "#75CEA4"
+		},
+		{
+			"name": "Regex Char Classes (Character Property, Delimiters)",
+			"scope": "meta.character-property punctuation",
+			"foreground": "#9AD8BB"
+		},
+		{
+			"name": "Regex Char Escapes",
+			"scope": "string.regexp constant.character.escape",
+			"foreground": "#73D226"
+		},
+		{
+			"name": "Regex Backrefs",
+			"scope": "string.regexp keyword.other.back-reference",
+			"background": "#173A0A",
+			"foreground": "#37BC46"
+		},
+		{
+			"name": "Regex Quantifiers",
+			"scope": "keyword.operator.quantifier.regexp",
+			"foreground": "#7D9B6D"
+		},
+		{
+			"name": "Group Punctuation",
+			"scope": "string.regexp meta.group punctuation",
+			"foreground": "#59A233"
+		},
+		{
+			"name": "Regex Positive Assertions",
+			"scope": "keyword.control.anchor.regexp, string.regexp punctuation.definition.assertion.positive",
+			"foreground": "#75CEA4"
+		},
+		{
+			"name": "Regex Positive Assertion Text",
+			"scope": "meta.group.assertion.positive.regexp",
+			"foreground": "#5FC983"
+		},
+		{
+			"name": "Regex Negative Assertions",
+			"scope": "string.regexp punctuation.definition.assertion.negative",
+			"foreground": "#ED804A"
+		},
+		{
+			"name": "Regex Negative Assertion Text",
+			"scope": "meta.group.assertion.negative.regexp",
+			"foreground": "#AF9547"
+		},
+		{
+			"name": "Regex Capturing Groups 1",
+			"scope": "meta.group.capturing.regexp",
+			"background": "#7BB66420"
+		},
+		{
+			"name": "Regex Capturing Groups 2",
+			"scope": "meta.group.capturing.regexp meta.group.capturing.regexp",
+			"background": "#7BB66435"
+		},
+		{
+			"name": "Regex Capturing Groups 3",
+			"scope": "meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp",
+			"background": "#7BB6644A"
+		},
+		{
+			"name": "Regex Capturing Groups 4",
+			"scope": "meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp",
+			"background": "#7BB6645F"
+		},
+		{
+			"name": "Regex Capturing Groups 5",
+			"scope": "meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp",
+			"background": "#7BB66474"
+		},
+		{
+			"name": "Regex Capturing Groups 6+",
+			"scope": "meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp meta.group.capturing.regexp",
+			"background": "#7BB66489"
+		},
+		{
+			"name": "Regex Outer Punc",
+			"scope": "punctuation.definition.string.regexp",
+			"foreground": "#496549"
+		},
+		{
+			"name": "Regex Flags",
+			"scope": "string.regexp.flags",
+			"font_style": "italic",
+			"foreground": "#406E40"
+		},
+		{
+			"scope": "punctuation.definition.storage storage.type",
+			"foreground": "color(var(root) blend(#000 25% hsl))"
+		},
+		{
+			"scope": "storage.type",
+			"foreground": "color(var(root) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "storage.modifier",
+			"foreground": "color(var(root) blend(#000 8% hsl))"
+		},
+		{
+			"scope": "keyword.operator",
+			"foreground": "color(var(root) blend(#fff 15% hsl))"
+		},
+		{
+			"scope": "keyword.control",
+			"foreground": "color(var(root) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "keyword.operator.word.qualifier",
+			"foreground": "color(var(root_boost) blend(#000 10% hsl))"
+		},
+		{
+			"scope": "punctuation.section, meta.clause.where",
+			"foreground": "color(var(root_boost) blend(#fff 10% hsl))"
+		},
+		{
+			"scope": "support.function",
+			"foreground": "color(var(root_boost) blend(#fff 0% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.expression",
+			"foreground": "color(var(root_boost) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.arguments",
+			"foreground": "color(var(root_boost) blend(#fff 25% hsl))"
+		},
+		{
+			"scope": "storage.type.variable",
+			"foreground": "color(var(root_boost) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "keyword.operator.path",
+			"foreground": "color(var(root_boost) blend(#fff 0% hsl))"
+		},
+		{
+			"scope": "punctuation.section.group",
+			"foreground": "color(var(root_boost) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "punctuation.section.block",
+			"foreground": "color(var(root_boost) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "meta.path.negated punctuation.section.group",
+			"foreground": "color(var(root_boost) blend(#000 10% hsl))"
+		},
+		{
+			"scope": "meta.path.inverse punctuation.section.group",
+			"foreground": "color(var(root_boost) blend(#000 10% hsl))"
+		},
+		{
+			"scope": "constant.language",
+			"foreground": "color(var(root_boost) blend(#000 5% hsl))"
+		},
+		{
+			"scope": "keyword.operator.predicate",
+			"foreground": "color(var(root_boost) blend(#fff 0% hsl))"
+		},
+		{
+			"scope": "keyword.operator.unary.label",
+			"foreground": "color(var(root_boost) blend(#fff 15% hsl))"
+		},
+		{
+			"scope": "variable.other.readwrite.prefixed-name.namespace",
+			"foreground": "color(var(scape) blend(#000 25% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.prefixed-name",
+			"foreground": "color(var(scape) blend(#000 10% hsl))"
+		},
+		{
+			"scope": "variable.other.member.prefixed-name.local",
+			"foreground": "color(var(scape) blend(#fff 0% hsl))"
+		},
+		{
+			"scope": "constant.character.escape.prefixed-name",
+			"foreground": "color(var(scape) blend(#000 5% hsl))"
+		},
+		{
+			"scope": "support.constant.predicate.a",
+			"foreground": "color(var(scape) blend(#000 50% hsl))"
+		},
+		{
+			"scope": "keyword.operator.unary.exclusion",
+			"foreground": "color(var(scape) blend(#000 30% hsl))"
+		},
+		{
+			"scope": "punctuation.terminator.exclusion",
+			"foreground": "color(var(scape) blend(#fff 15% hsl))"
+		},
+		{
+			"scope": "variable.other.member.barename",
+			"foreground": "color(var(scape_boost) blend(#fff 20% hsl))"
+		},
+		{
+			"scope": "keyword.operator.unary.reference.shape",
+			"foreground": "color(var(scape_boost) blend(#000 5% hsl))"
+		},
+		{
+			"scope": "meta.term.role.include punctuation.definition.iri",
+			"foreground": "color(var(scape_boost) blend(#000 60% hsl))"
+		},
+		{
+			"scope": "meta.term.role.include string.unquoted.iri",
+			"foreground": "color(var(scape_boost) blend(#fff 15% hsl))"
+		},
+		{
+			"scope": "meta.term.role.label.shape-expression.declaration variable.other.readwrite.prefixed-name.namespace",
+			"foreground": "color(var(scape_boost) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "meta.term.role.label.shape-expression.declaration variable.other.member.prefixed-name.local",
+			"foreground": "color(var(scape_boost) blend(#fff 45% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.datatype.symbol",
+			"foreground": "color(var(flare) blend(#000 60% hsl))"
+		},
+		{
+			"scope": "meta.datatype variable.other.readwrite.prefixed-name.namespace",
+			"foreground": "color(var(flare) blend(#000 50% hsl))"
+		},
+		{
+			"scope": "meta.datatype variable.other.member.prefixed-name.local",
+			"foreground": "color(var(flare) blend(#000 35% hsl))"
+		},
+		{
+			"scope": "meta.datatype punctuation.separator.prefixed-name",
+			"foreground": "color(var(flare) blend(#000 50% hsl))"
+		},
+		{
+			"scope": "meta.datatype string.unquoted.iri",
+			"foreground": "color(var(flare) blend(#000 25% hsl))"
+		},
+		{
+			"scope": "meta.datatype constant.character.escape.iri",
+			"foreground": "color(var(flare) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "meta.datatype punctuation.definition.iri",
+			"foreground": "color(var(flare) blend(#000 50% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.blank-node-property-list",
+			"foreground": "color(var(flare) blend(#000 30% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.property-list",
+			"foreground": "color(var(flare) blend(#000 30% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.anonymous-blank-node",
+			"foreground": "color(var(flare) blend(#000 45% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.object",
+			"foreground": "color(var(flare) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.pair",
+			"foreground": "color(var(flare) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.predicate-object-list",
+			"foreground": "color(var(flare) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.property-list",
+			"foreground": "color(var(flare) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "punctuation.terminator.triple",
+			"foreground": "color(var(flare) blend(#000 100% hsl))"
+		},
+		{
+			"scope": "punctuation.terminator.statement",
+			"foreground": "color(var(flare) blend(#000 100% hsl))"
+		},
+		{
+			"scope": "punctuation.terminator.graph-pattern",
+			"foreground": "color(var(flare) blend(#000 60% hsl))"
+		},
+		{
+			"scope": "punctuation.terminator.prefix-declaration",
+			"foreground": "color(var(flare) blend(#000 60% hsl))"
+		},
+		{
+			"scope": "punctuation.terminator.shape-atom",
+			"foreground": "color(var(flare) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "variable.other.readwrite.var",
+			"foreground": "color(var(flare_boost) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "meta.term.role.include variable.other.readwrite.prefixed-name.namespace",
+			"foreground": "color(var(flare_boost) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "meta.term.role.include variable.other.member.prefixed-name.local",
+			"foreground": "color(var(flare_boost) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "string.quoted.double.literal, string.quoted.single.literal",
+			"foreground": "color(var(echo) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.string",
+			"foreground": "color(var(echo) blend(#000 35% hsl))"
+		},
+		{
+			"scope": "constant.character.escape.literal",
+			"foreground": "color(var(echo) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "string.regexp",
+			"foreground": "color(var(echo) blend(#000 10% hsl))"
+		},
+		{
+			"scope": "string.unquoted.language-tag",
+			"foreground": "color(var(echo) blend(#000 5% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.language-tag.symbol",
+			"foreground": "color(var(echo) blend(#000 35% hsl))"
+		},
+		{
+			"scope": "keyword.operator.arithmetic",
+			"foreground": "color(var(echo) blend(#fff 0% hsl))"
+		},
+		{
+			"scope": "constant.numeric",
+			"foreground": "color(var(echo) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "meta.numeric.exponent",
+			"foreground": "color(var(echo) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.repeat-range",
+			"foreground": "color(var(echo) blend(#000 45% hsl))"
+		},
+		{
+			"scope": "punctuation.separator.repeat-range",
+			"foreground": "color(var(echo) blend(#000 55% hsl))"
+		},
+		{
+			"scope": "support.constant",
+			"foreground": "color(var(echo_boost) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "text.plain",
+			"foreground": "color(var(echo_boost) blend(#000 25% hsl))"
+		},
+		{
+			"scope": "string.unquoted.iri",
+			"foreground": "color(var(chip) blend(#000 20% hsl))"
+		},
+		{
+			"scope": "constant.character.escape.iri",
+			"foreground": "color(var(chip) blend(#000 40% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.iri",
+			"foreground": "color(var(chip) blend(#000 55% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.collection",
+			"foreground": "color(var(chip) blend(#fff 20% hsl))"
+		},
+		{
+			"scope": "variable.other.readwrite.blank-node.underscore",
+			"foreground": "color(var(chip) blend(#000 45% hsl))"
+		},
+		{
+			"scope": "variable.other.member.blank-node.label",
+			"foreground": "color(var(chip) blend(#000 10% hsl))"
+		},
+		{
+			"scope": "meta.directive",
+			"foreground": "color(var(chip_boost) blend(#000 45% hsl))"
+		},
+		{
+			"scope": "punctuation.definition.annotation",
+			"foreground": "color(var(chip_boost) blend(#000 30% hsl))"
+		},
+		{
+			"scope": "keyword.operator.unary.include",
+			"foreground": "color(var(chip_boost) blend(#000 15% hsl))"
+		},
+		{
+			"scope": "meta.term.role.label.shape-expression.declaration punctuation.definition.iri",
+			"foreground": "color(var(chip_boost) blend(#000 60% hsl))"
+		},
+		{
+			"scope": "meta.term.role.label.shape-expression.declaration string.unquoted.iri",
+			"foreground": "color(var(chip_boost) blend(#fff 20% hsl))"
+		}
+	],
+	"name": "Macaron Light (LinkedData)",
+	"variables": {
+		"root": "hsl(199, 56%, 51%)",
+		"scape": "hsl(344, 81%, 65%)",
+		"flare": "hsl(42, 98%, 66%)",
+		"echo": "hsl(175, 58%, 53%)",
+		"chip": "hsl(250, 48%, 69%)",
+		"root_boost": "hsl(199, 85%, 53%)",
+		"scape_boost": "hsl(316, 94%, 31%)",
+		"flare_boost": "hsl(42, 100%, 61%)",
+		"echo_boost": "hsl(175, 85%, 53%)",
+		"chip_boost": "hsl(250, 83%, 67%)"
+	}
+}
