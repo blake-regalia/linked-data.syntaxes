@@ -73,13 +73,13 @@ ln -s LinkedData.sublime-settings sparql.sublime-settings
 
 For Windows, open command prompt in this directory and run:
 ```cmd
-mklink LinkedData.sublime-settings n-triples.sublime-settings
-mklink LinkedData.sublime-settings n-quads.sublime-settings
-mklink LinkedData.sublime-settings turtle.sublime-settings
-mklink LinkedData.sublime-settings trig.sublime-settings
-mklink LinkedData.sublime-settings notation3.sublime-settings
-mklink LinkedData.sublime-settings shex.sublime-settings
-mklink LinkedData.sublime-settings sparql.sublime-settings
+mklink n-triples.sublime-settings  LinkedData.sublime-settings
+mklink n-quads.sublime-settings    LinkedData.sublime-settings
+mklink turtle.sublime-settings     LinkedData.sublime-settings
+mklink trig.sublime-settings       LinkedData.sublime-settings
+mklink notation3.sublime-settings  LinkedData.sublime-settings
+mklink shex.sublime-settings       LinkedData.sublime-settings
+mklink sparql.sublime-settings     LinkedData.sublime-settings
 ```
 
 This will override the default color scheme when any of these syntaxes are loaded in the current view.
