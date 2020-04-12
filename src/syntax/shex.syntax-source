@@ -437,6 +437,12 @@ contexts:
 
   # [50]
   exclusion:
+    - match: '\.'
+      scope: keyword.operator.unary.exclusion-prefix.SYNTAX
+      set: exclusionNegation
+    - goto: exclusionNegation
+
+  exclusionNegation:
     - match: '-'
       scope: keyword.operator.unary.exclusion.SYNTAX
       set: [exclusion_END, exclusion_AFTER_DASH]
