@@ -82,6 +82,13 @@ module.exports = {
 			// background: 'hsla(252, 24%, 50%, 0.1)',
 		},
 
+		// rdf-star
+		{
+			scope: 'meta.triple.reified',
+			background: 'hsla(140, 80%, 70%, 0.2)',
+			foreground_adjust: 'saturation(55%)',
+		},
+
 		// shared regex scopes
 		...a_regex_scopes,
 	],

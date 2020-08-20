@@ -337,8 +337,38 @@ contexts:
 
   namedNode:
     - switch:
-        - iriRef
-        - prefixedName
+      - iriRef
+      - prefixedName
+
+  tripleX:
+    - match: '<<'
+      scope: punctuation.definition.triple-x.begin.SYNTAX meta.triple.reified.SYNTAX
+      mask: meta.triple.reified.SYNTAX
+      set: [tripleX_TERMINATE, tripleX_AFTER_BEGIN]
+
+  tripleX_AFTER_BEGIN:
+    - switch:
+      - tripleX: [predicateObjectListX^, tripleX]
+      - hollowAnonymousBlankNode: [predicateObjectListX^, hollowAnonymousBlankNode]
+      - anonymousBlankNode: [predicateObjectListX?, blankNodePropertyList]
+      - collection: [predicateObjectListX^, collection]
+      - namedNode: [predicateObjectListX^, namedNode]
+      - labeledBlankNode: [predicateObjectListX^, labeledBlankNode]
+    - throw
+
+  predicateObjectListX:
+    - switch:
+        - verb: [objectX, verb]
+
+  objectX:
+    - switch:
+      - tripleX
+    - goto: object
+
+  tripleX_TERMINATE:
+    - match: '>>'
+      scope: punctuation.definition.triple-x.end.SYNTAX
+      pop: true
 
   prefixedName:
     - goto: [prefixedNameLocal, prefixedNameNamespace]

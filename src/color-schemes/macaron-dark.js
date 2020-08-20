@@ -87,6 +87,12 @@ module.exports = {
 			// background: 'hsla(252, 24%, 50%, 0.1)',
 		},
 
+		// reified statement
+		{
+			scope: 'meta.triple.reified',
+			background: 'hsla(280, 70%, 10%, 0.2)',
+		},
+
 
 		// shared regex scopes
 		...a_regex_scopes,
@@ -265,6 +271,8 @@ module.exports = {
 			'variable.other.readwrite.blank-node.underscore': -45,
 			'variable.other.member.blank-node.label': -10,
 
+			// rdf-star
+			'punctuation.definition.triple-x': -30,
 		},
 
 		chip_boost: {

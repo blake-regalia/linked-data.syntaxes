@@ -85,6 +85,7 @@ contexts:
 
   triples:
     - switch:
+        - tripleX: [predicateObjectList^, tripleX]
         - hollowAnonymousBlankNode: [predicateObjectList^, hollowAnonymousBlankNode]
         - anonymousBlankNode: [predicateObjectList?, blankNodePropertyList]
         - collection: [predicateObjectList^, collection]
