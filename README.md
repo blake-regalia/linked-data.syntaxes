@@ -15,7 +15,7 @@ Alternatively, you can download the `.sublime-package` file (or the source code 
 #### Currently supported languages:
  - SPARQL 1.1
  - ShExC 2.1
- - Turtle (TTL)
+ - Turtle (TTL) and [Turtle*](https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/)
  - TriG
  - N-Triples (NT)
  - N-Quads (NQ)
