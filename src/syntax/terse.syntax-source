@@ -91,11 +91,12 @@ contexts:
 
   prefixDeclarationSparql:
     - word: prefix
+      boundary: '(?:{{KEYWORD_BOUNDARY}}|:)'
       scope: storage.type.prefix.sparql.SYNTAX
       set: [prefixDeclarationSparql_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD]
 
   prefixDeclaration_AFTER_KEYWORD:
-    - meta_include_prototype: false
+    - alone
     - match: '\s+|$'
       scope: meta.whitespace.SYNTAX
       pop: true
@@ -111,7 +112,7 @@ contexts:
         3: punctuation.separator.prefixed-name.namespace.prefix-declaration.SYNTAX
       set: iriRef
       mask: meta.term.role.prefix-declaration.SYNTAX
-    - throw: yes
+    - throw: true
       add.front: meta.prefix-declaration.sparql.namespace.SYNTAX
 
   predicateData:

@@ -16,9 +16,9 @@
     "emk": "^1.7.2",
     "eslint": "^6.8.0",
     "jmacs": "^1.4.0",
-    "js-yaml": "^3.13.1",
+    "js-yaml": "^3.14.0",
     "plist": "^3.0.1",
-    "syntax-source": "^0.3.1"
+    "syntax-source": "^0.3.2"
   },
   "dependencies": {}
 }

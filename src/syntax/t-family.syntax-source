@@ -52,15 +52,8 @@ contexts:
     - word: prefix
       boundary: '(?:{{KEYWORD_BOUNDARY}}|:)'
       scope: storage.type.prefix.at.SYNTAX
-      set: [prefixDeclarationAt_TERMINATE, prefixDeclarationAt_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD?]
+      set: [prefixDeclarationAt_TERMINATE, prefixDeclarationAt_AFTER_KEYWORD_SPACE, prefixDeclaration_AFTER_KEYWORD]
     - retry
-
-  prefixDeclaration_AFTER_KEYWORD:
-    - meta_include_prototype: false
-    - match: '\s+'
-      scope: meta.whitespace.SYNTAX
-      pop: true
-    - include: prototype
 
   prefixDeclarationAt_AFTER_KEYWORD_SPACE:
     - _registeredPrefixDeclarations: at
