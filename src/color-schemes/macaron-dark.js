@@ -93,6 +93,12 @@ module.exports = {
 			background: 'hsla(280, 70%, 10%, 0.2)',
 		},
 
+		// nested reified statement
+		{
+			scope: 'meta.triple.reified-nested',
+			background: 'hsla(280, 70%, 10%, 0.4)',
+		},
+
 
 		// shared regex scopes
 		...a_regex_scopes,

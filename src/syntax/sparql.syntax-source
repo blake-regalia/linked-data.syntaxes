@@ -696,7 +696,7 @@ contexts:
 
   bind_AFTER_BIND:
     - open.paren: section.bind
-      set: [bind_AFTER_EXPRESSION, expression]
+      set: [bind_AFTER_EXPRESSION, expressionOrEmbTP]
 
   bind_AFTER_EXPRESSION:
     - word: as
@@ -850,11 +850,48 @@ contexts:
       set: constructTriples_OPTIONAL
     - bail
 
+  ###################################
+  # < SPARQL* >
+  ###################################
+  embeddedTriplePattern:
+    - match: '<<'
+      scope: punctuation.definition.triple-x.begin.SYNTAX meta.triple.reified.SYNTAX
+      mask: meta.triple.reified.SYNTAX
+      set: [embeddedTriplePattern_TERMINATE, embeddedTriplePattern_THING, verb, embeddedTriplePattern_THING]
+
+  embeddedTriplePatternNested:
+    - goto: embeddedTriplePattern
+      mask: meta.triple.reified-nested.SYNTAX
+
+  embeddedTriplePattern_THING:
+    - switch:
+      - embeddedTriplePatternNested
+      - varOrTerm
+
+  embeddedTriplePattern_TERMINATE:
+    - match: '>>'
+      scope: punctuation.definition.triple-x.end.SYNTAX meta.triple.reified.SYNTAX
+      pop: true
+
+  varOrTermOrEmbTP:
+    - switch:
+      - embeddedTriplePattern
+    - include: varOrTerm
+
+  expressionOrEmbTP:
+    - switch:
+      - embeddedTriplePattern
+    - include: expression
+
+  ###################################
+  # </ SPARQL* >
+  ###################################
+
   triplesSameSubject:
     - switch:
         - hollowAnonymousBlankNode: [propertyListNotEmpty, hollowAnonymousBlankNode]
         - anonymousBlankNode: anonymousBlankNode_LATENT_PL_PLNE
-        - varOrTerm: [propertyListNotEmpty_REQUIRED, varOrTerm]
+        - varOrTermOrEmbTP: [propertyListNotEmpty_REQUIRED, varOrTermOrEmbTP]
         - triplesNode: [propertyList, triplesNode]
 
   anonymousBlankNode_LATENT:
@@ -934,7 +971,7 @@ contexts:
     - switch:
         - hollowAnonymousBlankNode: [propertyListPathNotEmpty, hollowAnonymousBlankNode]
         - anonymousBlankNode: anonymousBlankNode_LATENT_PLP_PLPNE
-        - varOrTerm: [propertyListPathNotEmpty, varOrTerm]
+        - varOrTermOrEmbTP: [propertyListPathNotEmpty, varOrTermOrEmbTP]
         - triplesNode: [propertyListPath, triplesNodePath]
 
   anonymousBlankNode_LATENT_PLP_PLPNE:
@@ -1105,14 +1142,14 @@ contexts:
     - switch:
         - hollowAnonymousBlankNode
         - anonymousBlankNode: anonymousBlankNode_LATENT
-        - varOrTerm
+        - varOrTermOrEmbTP
         - triplesNode
 
   graphNodePath:
     - switch:
         - hollowAnonymousBlankNode
         - anonymousBlankNode: anonymousBlankNodePath_LATENT
-        - varOrTerm
+        - varOrTermOrEmbTP
         - triplesNodePath
 
   varOrTerm:

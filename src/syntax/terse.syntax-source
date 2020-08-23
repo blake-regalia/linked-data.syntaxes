@@ -130,6 +130,7 @@ contexts:
     - switch:
         - collection
         - labeledBlankNode
+        - tripleX
         - namedNode
       mask: meta.term.role.object.SYNTAX
     - goto: literal
@@ -138,7 +139,9 @@ contexts:
   literal:
     - switch:
         - stringLiteral: rdfLiteral
-    - words: ['true', 'false']
+    - words:
+      - 'true'
+      - 'false'
       scope: constant.language.boolean.WORD.SYNTAX
       pop: true
     - include: numericLiteral
@@ -347,9 +350,13 @@ contexts:
       mask: meta.triple.reified.SYNTAX
       set: [tripleX_TERMINATE, tripleX_AFTER_BEGIN]
 
+  tripleXNested:
+    - goto: tripleX
+      mask: meta.triple.reified-nested.SYNTAX
+
   tripleX_AFTER_BEGIN:
     - switch:
-      - tripleX: [predicateObjectListX^, tripleX]
+      - tripleX: [predicateObjectListX^, tripleXNested]
       - hollowAnonymousBlankNode: [predicateObjectListX^, hollowAnonymousBlankNode]
       - anonymousBlankNode: [predicateObjectListX?, blankNodePropertyList]
       - collection: [predicateObjectListX^, collection]
@@ -363,7 +370,7 @@ contexts:
 
   objectX:
     - switch:
-      - tripleX
+      - tripleXNested
     - goto: object
 
   tripleX_TERMINATE:

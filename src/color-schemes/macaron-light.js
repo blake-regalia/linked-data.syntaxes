@@ -89,6 +89,14 @@ module.exports = {
 			foreground_adjust: 'saturation(55%)',
 		},
 
+		// nested reified statement
+		{
+			scope: 'meta.triple.reified-nested',
+			background: 'hsla(140, 80%, 70%, 0.4)',
+			foreground_adjust: 'saturation(55%)',
+		},
+
+
 		// shared regex scopes
 		...a_regex_scopes,
 	],
