@@ -13,13 +13,11 @@ Alternatively, you can download the `.sublime-package` file (or the source code 
  - Auto-completion and validation for prefix mappings registered on [prefix.cc](http://prefix.cc).
 
 #### Currently supported languages:
- - SPARQL 1.1
- - ShExC 2.1
- - Turtle (TTL) and [Turtle*](https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/)
- - TriG
- - N-Triples (NT)
- - N-Quads (NQ)
- - Notation3 (N3)
+ - [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/) and [SPARQL*](https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/)
+ - [RDF 1.1 Turtle](https://www.w3.org/TR/turtle/) (TTL), [Turtle*](https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/), and [RDF 1.1 TriG](https://www.w3.org/TR/trig/)
+ - [ShExC 2.1](https://shex.io/shex-semantics/#shexc)
+ - [RDF 1.1 N-Triples](https://www.w3.org/TR/n-triples/) (NT) and [RDF 1.1 N-Quads](https://www.w3.org/TR/n-quads/) (NQ)
+ - [Notation3](https://www.w3.org/TeamSubmission/n3/) (N3)
 
 #### Currently supported platforms:
  - Sublime Text 3
