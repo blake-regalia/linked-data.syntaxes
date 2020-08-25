@@ -8,7 +8,7 @@
     "email": "blake.regalia@gmail.com"
   },
   "scripts": {
-    "build": "npx emk",
+    "build": "npx emk -f",
     "test": "npm run build"
   },
   "repository": "blake-regalia/linked-data.syntaxes",
