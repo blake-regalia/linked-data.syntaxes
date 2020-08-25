@@ -195,12 +195,11 @@ module.exports = {
 
 					'linked-data.:preference.tmPreferences': h => ({
 						deps: [
-							`src/main/convert-yaml-to-plist.js`,
 							`src/supplementals/${h.preference}.preferences.yaml`,
 						],
 
 						run: /* syntax: bash */ `
-							node $1 < $2 > $@
+							npx syntax-source convert --from=yaml --to=plist < $1 > $@
 						`,
 					}),
 				},
