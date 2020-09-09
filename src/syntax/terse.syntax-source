@@ -357,11 +357,9 @@ contexts:
   tripleX_AFTER_BEGIN:
     - switch:
       - tripleX: [predicateObjectListX^, tripleXNested]
-      - hollowAnonymousBlankNode: [predicateObjectListX^, hollowAnonymousBlankNode]
-      - anonymousBlankNode: [predicateObjectListX?, blankNodePropertyList]
-      - collection: [predicateObjectListX^, collection]
-      - namedNode: [predicateObjectListX^, namedNode]
       - labeledBlankNode: [predicateObjectListX^, labeledBlankNode]
+      - namedNode: [predicateObjectListX^, namedNode]
+      - hollowAnonymousBlankNode: [predicateObjectListX^, hollowAnonymousBlankNode]
     - throw
 
   predicateObjectListX:
@@ -371,7 +369,12 @@ contexts:
   objectX:
     - switch:
       - tripleXNested
-    - goto: object
+      - labeledBlankNode
+      - namedNode
+      - hollowAnonymousBlankNode
+      mask: meta.term.role.object.SYNTAX
+    - goto: literal
+      mask: meta.term.role.object.SYNTAX
 
   tripleX_TERMINATE:
     - match: '>>'
