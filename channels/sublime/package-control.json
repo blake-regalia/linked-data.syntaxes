@@ -18,10 +18,16 @@
 			],
 			"releases": [
 				{
-					"version": "0.8.5",
-					"sublime_text": ">=3092",
-					"url": "https://raw.githubusercontent.com/blake-regalia/linked-data.syntaxes/assets/build/sublime/LinkedData.sublime-package",
-					"date": "2020-09-09 06:00:41"
+					"version": "1.0.0",
+					"sublime_text": ">=3092 <4069",
+					"url": "https://raw.githubusercontent.com/blake-regalia/linked-data.syntaxes/assets/build/sublime_3/LinkedData.sublime-package",
+					"date": "2021-09-05 00:24:49"
+				},
+				{
+					"version": "1.0.0",
+					"sublime_text": ">=4069",
+					"url": "https://raw.githubusercontent.com/blake-regalia/linked-data.syntaxes/assets/build/sublime_4/LinkedData.sublime-package",
+					"date": "2021-09-05 00:24:49"
 				}
 			]
 		}

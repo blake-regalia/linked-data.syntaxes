@@ -189,8 +189,8 @@ module.exports = {
 					deps: [
 						'src/channel/package-control.js',
 						'package.json',
-						'build/sublime_v3/**',
-						'build/sublime_v4/**',
+						'build/sublime_3/**',
+						'build/sublime_4/**',
 					],
 					run: /* syntax: bash */ `
 						node $1 < $2 > $@
