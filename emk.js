@@ -71,6 +71,85 @@ const A_COLOR_SCHEMES = [
 	'macaron-light',
 ];
 
+const sublime_build = (s_version) => ({
+	'LinkedData.sublime-package': () => ({
+		deps: [`build/sublime_${s_version}/assets/*`],
+		run: /* syntax: bash */ `
+			cd $(dirname $@)
+			zip -r $(basename $@) assets/
+		`,
+	}),
+
+	'assets': {
+		'LICENSE': () => ({
+			copy: 'LICENSE',
+		}),
+
+		':syntax': [s_syntax => ({
+			[`${s_syntax}.sublime-syntax`]: () => ({
+				deps: [
+					'src/main/sublime-syntax.js',
+					`src/syntax/${s_syntax}.syntax-source`,
+					...G_SYNTAXES[s_syntax].dependencies,
+				],
+
+				run: /* syntax: bash */ `
+					node $1 $2 < $3 > $@
+				`,
+			}),
+
+			[`${s_syntax}.sublime-settings`]: () => ({
+				deps: [
+					'src/supplementals/settings.jmacs.sublime-settings',
+				],
+
+				run: /* syntax: bash */ `
+					npx jmacs -g '${/* eslint-disable indent */JSON.stringify({
+						PACKAGE_PATH: p_package,
+						COLOR_SCHEME: A_COLOR_SCHEMES[0],
+					})}' $1 > $@
+				`,
+			}),
+
+			...G_SYNTAXES[s_syntax].supplementals,
+		})],
+
+		'prefix-declarations.:declaration_type.sublime-completions': h => ({
+			deps: [
+				'src/supplementals/completions.js',
+				'build/context.jsonld',
+			],
+
+			run: /* syntax: bash */ `
+				node $1 '${h.declaration_type}' < $2 > $@
+			`,
+		}),
+
+		':color_scheme.sublime-color-scheme': h => ({
+			deps: [
+				'src/main/color-scheme.js',
+				`src/color-schemes/${h.color_scheme}.js`,
+				'src/color-schemes/base/dark.js',
+				'src/color-schemes/base/light.js',
+			],
+
+			run: /* syntax: bash */ `
+				node $1 ${h.color_scheme} ${s_version} > $@
+			`,
+		}),
+
+		'linked-data.:preference.tmPreferences': h => ({
+			deps: [
+				`src/supplementals/${h.preference}.preferences.yaml`,
+			],
+
+			run: /* syntax: bash */ `
+				npx syntax-source convert --from=yaml --to=plist < $1 > $@
+			`,
+		}),
+	},
+});
+
 module.exports = {
 	defs: {
 		color_scheme: A_COLOR_SCHEMES,
@@ -110,7 +189,8 @@ module.exports = {
 					deps: [
 						'src/channel/package-control.js',
 						'package.json',
-						'build/sublime/**',
+						'build/sublime_v3/**',
+						'build/sublime_v4/**',
 					],
 					run: /* syntax: bash */ `
 						node $1 < $2 > $@
@@ -126,84 +206,9 @@ module.exports = {
 				`,
 			}),
 
-			sublime: {
-				'LinkedData.sublime-package': () => ({
-					deps: ['build/sublime/assets/*'],
-					run: /* syntax: bash */ `
-						cd $(dirname $@)
-						zip -r $(basename $@) assets/
-					`,
-				}),
+			sublime_3: sublime_build('3'),
+			sublime_4: sublime_build('4'),
 
-				'assets': {
-					'LICENSE': () => ({
-						copy: 'LICENSE',
-					}),
-
-					':syntax': [s_syntax => ({
-						[`${s_syntax}.sublime-syntax`]: () => ({
-							deps: [
-								'src/main/sublime-syntax.js',
-								`src/syntax/${s_syntax}.syntax-source`,
-								...G_SYNTAXES[s_syntax].dependencies,
-							],
-
-							run: /* syntax: bash */ `
-								node $1 $2 < $3 > $@
-							`,
-						}),
-
-						[`${s_syntax}.sublime-settings`]: () => ({
-							deps: [
-								'src/supplementals/settings.jmacs.sublime-settings',
-							],
-
-							run: /* syntax: bash */ `
-								npx jmacs -g '${/* eslint-disable indent */JSON.stringify({
-									PACKAGE_PATH: p_package,
-									COLOR_SCHEME: A_COLOR_SCHEMES[0],
-								})}' $1 > $@
-							`,
-						}),
-
-						...G_SYNTAXES[s_syntax].supplementals,
-					})],
-
-					'prefix-declarations.:declaration_type.sublime-completions': h => ({
-						deps: [
-							'src/supplementals/completions.js',
-							'build/context.jsonld',
-						],
-
-						run: /* syntax: bash */ `
-							node $1 '${h.declaration_type}' < $2 > $@
-						`,
-					}),
-
-					':color_scheme.sublime-color-scheme': h => ({
-						deps: [
-							'src/main/color-scheme.js',
-							`src/color-schemes/${h.color_scheme}.js`,
-							'src/color-schemes/base/dark.js',
-							'src/color-schemes/base/light.js',
-						],
-
-						run: /* syntax: bash */ `
-							node $1 ${h.color_scheme} > $@
-						`,
-					}),
-
-					'linked-data.:preference.tmPreferences': h => ({
-						deps: [
-							`src/supplementals/${h.preference}.preferences.yaml`,
-						],
-
-						run: /* syntax: bash */ `
-							npx syntax-source convert --from=yaml --to=plist < $1 > $@
-						`,
-					}),
-				},
-			},
 
 			// ace: {
 			// 	':syntax': [s_syntax => ({
