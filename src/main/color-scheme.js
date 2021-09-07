@@ -42,8 +42,8 @@ for(let [s_name, h_scopes] of Object.entries(h_blends)) {
 	}
 }
 
-// ST4
-if('4' === s_version) {
+// apply pre-blending
+PREBLEND: {
 	const R_COLOR = /^color\((.+)\)$/;
 	const R_MOD = /^var\((.+?)\)\s+(.+)$/;
 
@@ -52,7 +52,7 @@ if('4' === s_version) {
 
 	const lerp = (x_a, x_b, x_t) => (1 - x_t) * x_a + x_t * x_b;
 
-	function render_fix_color(g_rule, s_property) {
+	const render_fix_color = (g_rule, s_property) => {
 		const sx_color = g_rule[s_property];
 
 		const m_color = R_COLOR.exec(sx_color);
@@ -102,7 +102,7 @@ if('4' === s_version) {
 			// apply new hsl
 			g_rule[s_property] = `hsl(${x_new_hue}, ${Math.round(x_new_sat)}%, ${Math.round(x_new_lum)}%)`;
 		}
-	}
+	};
 
 	// apply bugged hsl blending
 	for(const g_rule of g_scheme.rules) {

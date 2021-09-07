@@ -71,7 +71,7 @@ const A_COLOR_SCHEMES = [
 	'macaron-light',
 ];
 
-const sublime_build = (s_version) => ({
+const sublime_build = s_version => ({
 	'LinkedData.sublime-package': () => ({
 		deps: [`build/sublime_${s_version}/assets/*`],
 		run: /* syntax: bash */ `
@@ -80,8 +80,8 @@ const sublime_build = (s_version) => ({
 		`,
 	}),
 
-	'assets': {
-		'LICENSE': () => ({
+	assets: {
+		LICENSE: () => ({
 			copy: 'LICENSE',
 		}),
 
