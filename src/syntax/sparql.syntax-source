@@ -581,8 +581,8 @@ contexts:
   quads_AFTER_QUADS_NOT_TRIPLES:
     - match: '\.'
       scope: punctuation.terminator.quad.SYNTAX
-      set: triplesTemplate
-    - goto: triplesTemplate
+      set: [quads_AFTER_TRIPLES_TEMPLATE, triplesTemplate]
+    - goto: [quads_AFTER_TRIPLES_TEMPLATE, triplesTemplate]
 
   quadsNotTriples:
     - word: graph
